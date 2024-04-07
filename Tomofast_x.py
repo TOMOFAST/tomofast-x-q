@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication,QFileInfo,QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction,QFileDialog
-from qgis.core import QgsMapLayerProxyModel,QgsCoordinateReferenceSystem,QgsVectorLayer,QgsProject,QgsRasterLayer,QgsFeature,QgsField,QgsGeometry,QgsPoint
+from qgis.core import QgsMapLayerProxyModel,QgsCoordinateReferenceSystem,QgsVectorLayer,QgsProject,QgsRasterLayer,QgsFeature,QgsField,QgsVectorFileWriter,QgsPoint
 #from PyQt4.QtCore import QFileInfo
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -230,7 +230,7 @@ class Tomofast_x:
         self.dlg.lineEdit_13.setEnabled(True)
         self.dlg.pushButton_3.setEnabled(True)
         self.dlg.pushButton_12.setEnabled(True)
-        
+
         #enable GroupBox 3
         self.dlg.groupBox_3.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox.setEnabled(True)
@@ -314,14 +314,51 @@ class Tomofast_x:
             #print(row)
         # saving changes and adding the layer
         temp.commitChanges()
-        crs = temp.crs()
-        crs.createFromId(int(self.proj_out.split(':')[1]))
+        crs = QgsCoordinateReferenceSystem(self.proj_out)
         temp.setCrs(crs)
         temp.renderer().symbol().setSize(0.25)
 
         temp.commitChanges()
 
         QgsProject.instance().addMapLayer(temp)
+        self.sample_elevation()
+
+        '''layer = QgsProject.instance().mapLayersByName("model_grid")[0]
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = "ESRI Shapefile"
+        options.layerName = 'model_grid'
+        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+
+        QgsVectorFileWriter.writeAsVectorFormatV3(layer,self.directoryname+'/mesh_grid.shp',QgsProject.instance().transformContext(), options)
+        '''
+
+    def sample_elevation(self):
+        mesh = QgsProject.instance().mapLayersByName("model_grid")[0]
+        dtm  = QgsProject.instance().mapLayersByName("Reprojected DTM")[0]
+        parameter={'INPUT':mesh,
+                    'RASTERCOPY':dtm,
+                    'COLUMN_PREFIX':'elevation',
+                    'OUTPUT':'TEMPORARY_OUTPUT'
+        }
+        processing.runAndLoadResults("native:rastersampling", parameter)
+
+        elev = QgsProject.instance().mapLayersByName("Sampled")[0]
+        elev.setName('elevation_grid')
+        elev.renderer().symbol().setSize(.25)
+
+        self.rename_dp_field(elev,'0','x')
+        self.rename_dp_field(elev,'2','y')
+        self.rename_dp_field(elev,'elevation1','elevation')
+
+        QgsVectorFileWriter.writeAsVectorFormat(elev,
+        self.directoryname+'/elevation_grid.csv',
+        "utf-8",driverName = "CSV" )
+
+    def rename_dp_field(self,rlayer, oldname, newname):
+        findex = rlayer.dataProvider().fieldNameIndex(oldname)
+        if findex != -1:
+            rlayer.dataProvider().renameAttributes({findex: newname})
+            rlayer.updateFields()
 
     def load_dtm(self):
         fileInfo = QFileInfo(self.dtm_filename)    
