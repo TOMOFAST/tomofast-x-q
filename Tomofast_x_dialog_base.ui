@@ -2779,7 +2779,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>930</x>
-       <y>640</y>
+       <y>560</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -2795,7 +2795,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>390</y>
+       <y>360</y>
        <width>321</width>
        <height>81</height>
       </rect>
@@ -2868,7 +2868,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>390</x>
-       <y>390</y>
+       <y>360</y>
        <width>321</width>
        <height>71</height>
       </rect>
@@ -2960,7 +2960,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>480</y>
+       <y>450</y>
        <width>321</width>
        <height>71</height>
       </rect>
@@ -3030,7 +3030,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>390</x>
-       <y>480</y>
+       <y>450</y>
        <width>391</width>
        <height>151</height>
       </rect>
@@ -3188,7 +3188,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>560</y>
+       <y>530</y>
        <width>321</width>
        <height>71</height>
       </rect>
@@ -3350,7 +3350,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>720</x>
-       <y>390</y>
+       <y>360</y>
        <width>321</width>
        <height>71</height>
       </rect>
@@ -3439,7 +3439,7 @@ font-size: 13px;
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>340</y>
+       <y>310</y>
        <width>201</width>
        <height>20</height>
       </rect>
