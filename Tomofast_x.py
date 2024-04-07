@@ -698,7 +698,7 @@ class Tomofast_x:
         if self.first_start == True:
             self.first_start = False
             self.dlg = Tomofast_xDialog()
-            self.dlg.setFixedSize(1131, 750)
+            self.dlg.setFixedSize(1131, 680)
             self.dlg.mQgsProjectionSelectionWidget_3.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
             self.dlg.mQgsProjectionSelectionWidget_5.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
             self.dlg.pushButton_14.setEnabled(False)
