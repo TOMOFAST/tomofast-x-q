@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/Tomofast_x" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
