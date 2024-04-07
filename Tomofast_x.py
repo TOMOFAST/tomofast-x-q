@@ -25,6 +25,7 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication,QFileInfo,
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction,QFileDialog
 from qgis.core import QgsMapLayerProxyModel,QgsCoordinateReferenceSystem,QgsVectorLayer,QgsProject,QgsRasterLayer,QgsFeature,QgsField,QgsVectorFileWriter,QgsPoint
+from qgis.core import QgsRendererRangeLabelFormat,QgsStyle,QgsGraduatedSymbolRenderer,QgsClassificationEqualInterval
 #from PyQt4.QtCore import QFileInfo
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -269,6 +270,7 @@ class Tomofast_x:
             result.renderer().symbol().setSize(1)
             QgsProject.instance().addMapLayer(result)
             # Refresh the layer to reflect the changes
+            self.colour_points(result,self.datacol)
             result.triggerRepaint()
 
         else:
@@ -350,6 +352,7 @@ class Tomofast_x:
         self.rename_dp_field(elev,'2','y')
         self.rename_dp_field(elev,'elevation1','elevation')
 
+        self.colour_points(elev,'elevation')
         QgsVectorFileWriter.writeAsVectorFormat(elev,
         self.directoryname+'/elevation_grid.csv',
         "utf-8",driverName = "CSV" )
@@ -540,6 +543,41 @@ class Tomofast_x:
 
         self.params.close()
 
+    def colour_points(self,layer,value_field):
+        #layer_name = 'Your_layer_name'
+        ramp_name = 'Spectral'
+        #value_field = 'Your_field_name'
+        num_classes = 5
+        classification_method = QgsClassificationEqualInterval()
+
+        #You can use any of these classification method classes:
+        #QgsClassificationQuantile()
+        #QgsClassificationEqualInterval()
+        #QgsClassificationJenks()
+        #QgsClassificationPrettyBreaks()
+        #QgsClassificationLogarithmic()
+        #QgsClassificationStandardDeviation()
+
+        #layer = QgsProject().instance().mapLayersByName(layer_name)[0]
+
+        # change format settings as necessary
+        format = QgsRendererRangeLabelFormat()
+        format.setFormat("%1 - %2")
+        format.setPrecision(2)
+        format.setTrimTrailingZeroes(True)
+
+        default_style = QgsStyle().defaultStyle()
+        color_ramp = default_style.colorRamp(ramp_name)
+
+        renderer = QgsGraduatedSymbolRenderer()
+        renderer.setClassAttribute(value_field)
+        renderer.setClassificationMethod(classification_method)
+        renderer.setLabelFormat(format)
+        renderer.updateClasses(layer, num_classes)
+        renderer.updateColorRamp(color_ramp)
+
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
 
     def parse_parameters(self):
 
