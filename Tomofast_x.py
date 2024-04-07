@@ -203,19 +203,8 @@ class Tomofast_x:
         self.proj_in=self.dlg.mQgsProjectionSelectionWidget_3.crs().authid()
         self.proj_out=self.dlg.mQgsProjectionSelectionWidget_5.crs().authid()
 
-        #enable GroupBox 2
-        self.dlg.groupBox_2.setEnabled(True)
-        self.dlg.label_20.setEnabled(True)
-        self.dlg.lineEdit_13.setEnabled(True)
-        self.dlg.pushButton_3.setEnabled(True)
-        self.dlg.pushButton_12.setEnabled(True)
 
-        #enable GroupBox 3
-        self.dlg.groupBox_15.setEnabled(True)
-        self.dlg.label_60.setEnabled(True)
-        self.dlg.lineEdit_19.setEnabled(True)
-        self.dlg.pushButton_13.setEnabled(True)
-        self.dlg.pushButton_4.setEnabled(True)
+
 
         #enable GroupBox 4
         self.dlg.groupBox_9.setEnabled(True)
@@ -234,7 +223,14 @@ class Tomofast_x:
         self.xcol=self.dlg.comboBox_2.currentText()
         self.ycol=self.dlg.comboBox_3.currentText()
         self.datacol=self.dlg.comboBox_4.currentText()
-
+        
+        #enable GroupBox 2
+        self.dlg.groupBox_2.setEnabled(True)
+        self.dlg.label_20.setEnabled(True)
+        self.dlg.lineEdit_13.setEnabled(True)
+        self.dlg.pushButton_3.setEnabled(True)
+        self.dlg.pushButton_12.setEnabled(True)
+        
         #enable GroupBox 3
         self.dlg.groupBox_3.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox.setEnabled(True)
