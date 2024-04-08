@@ -21,11 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication,QFileInfo,QVariant
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication,QFileInfo,QVariant,Qt
+from qgis.PyQt.QtGui import QIcon,QColor
 from qgis.PyQt.QtWidgets import QAction,QFileDialog
 from qgis.core import QgsMapLayerProxyModel,QgsCoordinateReferenceSystem,QgsVectorLayer,QgsProject,QgsRasterLayer,QgsFeature,QgsField,QgsVectorFileWriter,QgsPoint
-from qgis.core import QgsRendererRangeLabelFormat,QgsStyle,QgsGraduatedSymbolRenderer,QgsClassificationEqualInterval
+from qgis.core import QgsRendererRangeLabelFormat,QgsStyle,QgsGraduatedSymbolRenderer,QgsClassificationEqualInterval,QgsSymbol
 #from PyQt4.QtCore import QFileInfo
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -234,6 +234,7 @@ class Tomofast_x:
 
         #enable GroupBox 3
         self.dlg.groupBox_3.setEnabled(True)
+        '''
         self.dlg.mQgsDoubleSpinBox.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox_2.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox_3.setEnabled(True)
@@ -245,6 +246,7 @@ class Tomofast_x:
         self.dlg.mQgsDoubleSpinBox_9.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox_10.setEnabled(True)
         self.dlg.mQgsDoubleSpinBox_11.setEnabled(True)
+        '''
         self.dlg.spinBox.setEnabled(True)
         self.dlg.lineEdit_17.setEnabled(True)
         #self.dlg.pushButton_14.setEnabled(True)
@@ -267,7 +269,7 @@ class Tomofast_x:
             crs = layer.crs()
             crs.createFromId(int(self.proj_out.split(':')[1]))
             result.setCrs(crs)
-            result.renderer().symbol().setSize(1)
+            result.renderer().symbol().setSize(0.25)
             QgsProject.instance().addMapLayer(result)
             # Refresh the layer to reflect the changes
             self.colour_points(result,self.datacol)
@@ -430,17 +432,17 @@ class Tomofast_x:
 
 
     def save_outputs(self):   
-        self.cell_x=self.dlg.mQgsDoubleSpinBox.value()
-        self.cell_y=self.dlg.mQgsDoubleSpinBox_2.value()
-        self.padding=self.dlg.mQgsDoubleSpinBox_3.value()
+        self.cell_x=self.dlg.mQgsSpinBox.value()
+        self.cell_y=self.dlg.mQgsSpinBox_2.value()
+        self.padding=self.dlg.mQgsSpinBox_3.value()
         self.z_layers=self.dlg.spinBox.value()
-        self.z_layer1_base=int(self.dlg.mQgsDoubleSpinBox_4.value())
+        self.z_layer1_base=int(self.dlg.spinBox_2.value())
         self.z_layer1_size=int(self.dlg.mQgsDoubleSpinBox_5.value())
-        self.z_layer2_base=self.dlg.mQgsDoubleSpinBox_7.value()
+        self.z_layer2_base=self.dlg.spinBox_3.value()
         self.z_layer2_size=self.dlg.mQgsDoubleSpinBox_6.value()
-        self.z_layer3_base=self.dlg.mQgsDoubleSpinBox_8.value()
+        self.z_layer3_base=self.dlg.spinBox_4.value()
         self.z_layer3_size=self.dlg.mQgsDoubleSpinBox_9.value()
-        self.z_layer4_base=self.dlg.mQgsDoubleSpinBox_10.value()
+        self.z_layer4_base=self.dlg.spinBox_5.value()
         self.z_layer4_size=self.dlg.mQgsDoubleSpinBox_11.value()
         self.elevation=0
         self.dz = np.zeros(self.z_layer1_base)
@@ -512,7 +514,7 @@ class Tomofast_x:
         self.params.write("inversion.nMajorIterations          = {}\n".format(self.inversion_nMajorIterations))
         self.params.write("inversion.nMinorIterations          = {}\n".format(self.inversion_nMinorIterations))
         self.params.write("inversion.writeModelEveryNiter      = {}\n".format(self.inversion_writeModelEveryNiter))
-        self.params.write("inversion.minResidual               = {}\n".format(self.inversion_minResidual))
+        self.params.write("inversion.minResidual               = 1d{}\n".format(self.inversion_minResidual))
 
         self.spacer("MODEL DAMPING (m - m_prior)")
 
@@ -529,9 +531,9 @@ class Tomofast_x:
         self.params.write("inversion.admm.enableADMM           = {}\n".format(self.inversion_admm_enableADMM))
         self.params.write("inversion.admm.nLithologies         = {}\n".format(self.inversion_admm_nLithologies))
         self.params.write("inversion.admm.grav.bounds          = {}\n".format(self.inversion_admm_grav_bounds))
-        self.params.write("inversion.admm.grav.weight          = {}\n".format(self.inversion_admm_grav_weight))
+        self.params.write("inversion.admm.grav.weight          = 1d{}\n".format(self.inversion_admm_grav_weight))
         self.params.write("inversion.admm.magn.bounds          = {}\n".format(self.inversion_admm_magn_bounds))
-        self.params.write("inversion.admm.magn.weight          = {}\n".format(self.inversion_admm_magn_weight))
+        self.params.write("inversion.admm.magn.weight          = 1d{}\n".format(self.inversion_admm_magn_weight))
 
         self.spacer("MULTIPLIERS")
 
@@ -584,7 +586,7 @@ class Tomofast_x:
         self.global_outputFolderPath             = self.directoryname
         self.global_description                  = self.dlg.textEdit.toPlainText()
 
-        self.modelGrid_size                      = [int(self.dlg.mQgsDoubleSpinBox_12.value()), int(self.dlg.mQgsDoubleSpinBox_13.value()), int(self.dlg.mQgsDoubleSpinBox_14.value())]
+        self.modelGrid_size                      = [self.dlg.mQgsSpinBox_4.value(), self.dlg.mQgsSpinBox_4.value(), self.dlg.mQgsSpinBox_4.value()]
         self.modelGrid_grav_file                 = self.directoryname+'/data.csv'
         self.forward_data_grav_nData             = len(self.data2tomofast.df)
         self.forward_data_grav_dataGridFile      = self.directoryname+'/model_grid.txt'
@@ -596,7 +598,7 @@ class Tomofast_x:
         else:
             self.forward_depthWeighting_type      = 0
 
-        self.forward_depthWeighting_grav_power   = self.dlg.mQgsDoubleSpinBox_20.value()
+        self.forward_depthWeighting_grav_power   = self.dlg.mQgsSpinBox_10.value()
         self.sensit_readFromFiles                = self.dlg.checkBox.isChecked()
         self.sensit_folderPath                   = self.sensitivitydirectoryname
 
@@ -631,10 +633,10 @@ class Tomofast_x:
 
         self.inversion_startingModel_grav_value  = self.dlg.mQgsDoubleSpinBox_27.value()
 
-        self.inversion_nMajorIterations          = self.dlg.mQgsDoubleSpinBox_28.value()
-        self.inversion_nMinorIterations          = self.dlg.mQgsDoubleSpinBox_29.value()
-        self.inversion_writeModelEveryNiter      = self.dlg.mQgsDoubleSpinBox_31.value()
-        self.inversion_minResidual               = self.dlg.mQgsDoubleSpinBox_30.value()
+        self.inversion_nMajorIterations          = self.dlg.mQgsSpinBox_7.value()
+        self.inversion_nMinorIterations          = self.dlg.mQgsSpinBox_8.value()
+        self.inversion_writeModelEveryNiter      = self.dlg.mQgsSpinBox_9.value()
+        self.inversion_minResidual               = self.dlg.mQgsSpinBox_12.value()
 
         self.inversion_modelDamping_grav_weight  = self.dlg.mQgsDoubleSpinBox_33.value()
         self.inversion_modelDamping_normPower    = self.dlg.mQgsDoubleSpinBox_32.value()
@@ -654,9 +656,9 @@ class Tomofast_x:
         self.inversion_admm_nLithologies         = self.dlg.spinBox_11.value() #??
         self.inversion_admm_nLithologies         = self.dlg.spinBox_17.value() #??
         self.inversion_admm_grav_bounds          = self.dlg.textEdit_2.toPlainText()
-        self.inversion_admm_grav_weight          = self.dlg.mQgsDoubleSpinBox_38.value()
+        self.inversion_admm_grav_weight          = self.dlg.spinBox_19.value()
         self.inversion_admm_magn_bounds          = self.dlg.textEdit_5.toPlainText()
-        self.inversion_admm_magn_weight          = self.dlg.mQgsDoubleSpinBox_44.value()
+        self.inversion_admm_magn_weight          = self.dlg.spinBox_18.value()
 
         self.grav_dataUnitsMultiplier            = self.dlg.mQgsDoubleSpinBox_26.value()
         self.magn_dataUnitsMultiplier            = self.dlg.mQgsDoubleSpinBox_25.value()
@@ -726,6 +728,27 @@ class Tomofast_x:
             self.dlg.groupBox_31.setEnabled(True)
             self.dlg.groupBox_32.setEnabled(True)
             self.dlg.groupBox_35.setEnabled(True)
+    
+    def mesh_layers(self):
+
+        self.dlg.pushButton_14.setEnabled(False)
+        self.dlg.mQgsDoubleSpinBox_6.setEnabled(False)
+        self.dlg.spinBox_3.setEnabled(False)
+        self.dlg.spinBox_4.setEnabled(False)
+        self.dlg.mQgsDoubleSpinBox_9.setEnabled(False)
+        self.dlg.spinBox_5.setEnabled(False)
+        self.dlg.mQgsDoubleSpinBox_11.setEnabled(False)
+
+
+        if(self.dlg.spinBox.value()>1):
+            self.dlg.mQgsDoubleSpinBox_6.setEnabled(True)
+            self.dlg.spinBox_3.setEnabled(True)
+        if(self.dlg.spinBox.value()>2):
+            self.dlg.spinBox_4.setEnabled(True)
+            self.dlg.mQgsDoubleSpinBox_9.setEnabled(True)
+        if(self.dlg.spinBox.value()>3):
+            self.dlg.spinBox_5.setEnabled(True)
+            self.dlg.mQgsDoubleSpinBox_11.setEnabled(True)
 
 
     def run(self):
@@ -740,7 +763,14 @@ class Tomofast_x:
             self.dlg.mQgsProjectionSelectionWidget_3.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
             self.dlg.mQgsProjectionSelectionWidget_5.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
             self.dlg.pushButton_14.setEnabled(False)
-
+            self.dlg.mQgsDoubleSpinBox_6.setEnabled(False)
+            self.dlg.spinBox_3.setEnabled(False)
+            self.dlg.spinBox_4.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_9.setEnabled(False)
+            self.dlg.spinBox_5.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_11.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_5.setEnabled(True)
+            self.dlg.spinBox_2.setEnabled(True)
 
         self.dlg.pushButton_7.clicked.connect(self.select_data_file)
         self.dlg.pushButton_2.clicked.connect(self.confirm_data_file)
@@ -754,5 +784,6 @@ class Tomofast_x:
         self.dlg.radioButton.toggled.connect(self.inversion_type)
         self.dlg.radioButton_2.toggled.connect(self.inversion_type)
         self.dlg.radioButton_3.toggled.connect(self.inversion_type)
+        self.dlg.spinBox.valueChanged.connect(self.mesh_layers)
         #self.dlg.pushButton_5.clicked.connect(self.parse_parameters)
         result = self.dlg.exec_()

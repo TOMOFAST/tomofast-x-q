@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1123</width>
-    <height>919</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -78,7 +78,7 @@ QTabBar::tab:hover {
 </string>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="usesScrollButtons">
     <bool>false</bool>
@@ -404,7 +404,7 @@ border-style: solid;border-width: 1px;border-color: black
       </font>
      </property>
      <property name="title">
-      <string>Step 6 : Specify Mesh Parameters</string>
+      <string>Step 5 : Specify Mesh Parameters</string>
      </property>
      <widget class="QPushButton" name="pushButton_14">
       <property name="enabled">
@@ -432,31 +432,6 @@ font-size: 12px;
        <string>Generate Output Tomofast Files</string>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>40</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>50.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>600.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_21">
       <property name="geometry">
        <rect>
@@ -476,31 +451,6 @@ font-size: 13px;
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_2">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>80</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>50.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>600.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_27">
@@ -543,31 +493,6 @@ font-size: 13px;
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_3">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>120</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>100000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>500.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>10000.000000000000000</double>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_10">
@@ -643,31 +568,6 @@ font-size: 13px;
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_4">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>290</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>20.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_49">
@@ -783,31 +683,6 @@ font-size: 13px;
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_7">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>330</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>34.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_52">
       <property name="geometry">
        <rect>
@@ -827,31 +702,6 @@ font-size: 13px;
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_8">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>370</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>42.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_53">
@@ -919,31 +769,6 @@ font-size: 13px;
       </property>
       <property name="value">
        <double>1000.000000000000000</double>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_10">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>410</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>45.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_55">
@@ -1082,6 +907,148 @@ font-size: 13px;
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>40</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>50</number>
+      </property>
+      <property name="value">
+       <number>600</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_2">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>80</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>50</number>
+      </property>
+      <property name="value">
+       <number>600</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_3">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>120</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>100000</number>
+      </property>
+      <property name="singleStep">
+       <number>50</number>
+      </property>
+      <property name="value">
+       <number>10000</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_2">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>290</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="value">
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_3">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>330</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="value">
+       <number>34</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>370</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="value">
+       <number>42</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_5">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>410</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="value">
+       <number>45</number>
+      </property>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_9">
      <property name="enabled">
@@ -1183,7 +1150,7 @@ font-size: 13px;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>90</y>
+        <y>100</y>
         <width>111</width>
         <height>41</height>
        </rect>
@@ -1504,7 +1471,7 @@ font-size: 13px;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>90</y>
+        <y>100</y>
         <width>111</width>
         <height>41</height>
        </rect>
@@ -1725,81 +1692,6 @@ font-size: 13px;
      <property name="title">
       <string>Model Grid  Parameters</string>
      </property>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_12">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>60</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>20.000000000000000</double>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_13">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>180</x>
-        <y>60</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>20.000000000000000</double>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_14">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>310</x>
-        <y>60</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>20.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
@@ -1842,7 +1734,7 @@ font-size: 13px;
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>300</x>
+        <x>290</x>
         <y>60</y>
         <width>21</width>
         <height>20</height>
@@ -1850,6 +1742,72 @@ font-size: 13px;
       </property>
       <property name="text">
        <string>Z</string>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_4">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>60</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>20</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_5">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>60</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>20</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_6">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>60</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>20</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
       </property>
      </widget>
     </widget>
@@ -2027,7 +1985,7 @@ font-size: 13px;
        <x>350</x>
        <y>470</y>
        <width>431</width>
-       <height>101</height>
+       <height>111</height>
       </rect>
      </property>
      <property name="title">
@@ -2046,31 +2004,6 @@ font-size: 13px;
        <string>Major Iterations</string>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_28">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>30</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>10.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>60.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_63">
       <property name="geometry">
        <rect>
@@ -2082,31 +2015,6 @@ font-size: 13px;
       </property>
       <property name="text">
        <string>Minor Iterations</string>
-      </property>
-     </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_29">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>310</x>
-        <y>30</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>10.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>100.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_64">
@@ -2135,38 +2043,51 @@ font-size: 13px;
        <string>Model save iter</string>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_30">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_7">
       <property name="geometry">
        <rect>
-        <x>310</x>
-        <y>70</y>
+        <x>100</x>
+        <y>30</y>
         <width>90</width>
         <height>27</height>
        </rect>
       </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="minimum">
-       <double>-20.000000000000000</double>
-      </property>
       <property name="maximum">
-       <double>-10.000000000000000</double>
+       <number>10000</number>
       </property>
       <property name="singleStep">
-       <double>1.000000000000000</double>
+       <number>10</number>
       </property>
       <property name="value">
-       <double>-13.000000000000000</double>
+       <number>60</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_31">
-      <property name="enabled">
-       <bool>true</bool>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_8">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>30</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
       </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="singleStep">
+       <number>10</number>
+      </property>
+      <property name="value">
+       <number>100</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_9">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -2175,17 +2096,42 @@ font-size: 13px;
         <height>27</height>
        </rect>
       </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
       <property name="maximum">
-       <double>10000.000000000000000</double>
+       <number>10000</number>
       </property>
       <property name="singleStep">
-       <double>10.000000000000000</double>
+       <number>1</number>
       </property>
       <property name="value">
-       <double>0.000000000000000</double>
+       <number>0</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_12">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>70</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>-20</number>
+      </property>
+      <property name="maximum">
+       <number>-10</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>-13</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
       </property>
      </widget>
     </widget>
@@ -2580,34 +2526,6 @@ font-size: 13px;
        <string>Grav Weight (log)</string>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_38">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>110</y>
-        <width>80</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="minimum">
-       <double>-10.000000000000000</double>
-      </property>
-      <property name="maximum">
-       <double>0.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>0.100000000000000</double>
-      </property>
-      <property name="value">
-       <double>-5.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QCheckBox" name="checkBox_9">
       <property name="geometry">
        <rect>
@@ -2624,13 +2542,35 @@ font-size: 13px;
        <bool>true</bool>
       </property>
      </widget>
+     <widget class="QSpinBox" name="spinBox_19">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>110</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>-10</number>
+      </property>
+      <property name="maximum">
+       <number>0</number>
+      </property>
+      <property name="value">
+       <number>-5</number>
+      </property>
+     </widget>
      <zorder>label_72</zorder>
      <zorder>label_73</zorder>
      <zorder>label_74</zorder>
      <zorder>spinBox_11</zorder>
-     <zorder>mQgsDoubleSpinBox_38</zorder>
      <zorder>textEdit_2</zorder>
      <zorder>checkBox_9</zorder>
+     <zorder>spinBox_19</zorder>
     </widget>
     <widget class="QGroupBox" name="groupBox_21">
      <property name="enabled">
@@ -2717,31 +2657,6 @@ font-size: 13px;
      <property name="title">
       <string>Grav Depth Weighting</string>
      </property>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_20">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>210</x>
-        <y>30</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>2.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_17">
       <property name="geometry">
        <rect>
@@ -2771,9 +2686,28 @@ font-size: 13px;
        <bool>true</bool>
       </property>
      </widget>
-     <zorder>label_17</zorder>
-     <zorder>mQgsDoubleSpinBox_20</zorder>
-     <zorder>checkBox_3</zorder>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_10">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>30</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>2</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
     </widget>
     <widget class="QPushButton" name="pushButton_5">
      <property name="geometry">
@@ -2803,31 +2737,6 @@ font-size: 13px;
      <property name="title">
       <string>Mag  Depth Weighting</string>
      </property>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_40">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>210</x>
-        <y>30</y>
-        <width>90</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <double>10000.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>1.000000000000000</double>
-      </property>
-      <property name="value">
-       <double>3.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_23">
       <property name="geometry">
        <rect>
@@ -2857,9 +2766,28 @@ font-size: 13px;
        <bool>true</bool>
       </property>
      </widget>
-     <zorder>label_23</zorder>
-     <zorder>mQgsDoubleSpinBox_40</zorder>
-     <zorder>checkBox_6</zorder>
+     <widget class="QgsSpinBox" name="mQgsSpinBox_11">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>30</y>
+        <width>90</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>10</number>
+      </property>
+      <property name="singleStep">
+       <number>1</number>
+      </property>
+      <property name="value">
+       <number>3</number>
+      </property>
+      <property name="displayIntegerBase">
+       <number>10</number>
+      </property>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_30">
      <property name="enabled">
@@ -3109,34 +3037,6 @@ font-size: 13px;
        <string>Grav Weight (log)</string>
       </property>
      </widget>
-     <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_44">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>110</y>
-        <width>80</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
-      <property name="minimum">
-       <double>-10.000000000000000</double>
-      </property>
-      <property name="maximum">
-       <double>0.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>0.100000000000000</double>
-      </property>
-      <property name="value">
-       <double>-5.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QCheckBox" name="checkBox_10">
       <property name="geometry">
        <rect>
@@ -3153,13 +3053,35 @@ font-size: 13px;
        <bool>true</bool>
       </property>
      </widget>
+     <widget class="QSpinBox" name="spinBox_18">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>110</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>-10</number>
+      </property>
+      <property name="maximum">
+       <number>0</number>
+      </property>
+      <property name="value">
+       <number>-5</number>
+      </property>
+     </widget>
      <zorder>label_83</zorder>
      <zorder>label_84</zorder>
      <zorder>label_85</zorder>
      <zorder>textEdit_5</zorder>
      <zorder>spinBox_17</zorder>
-     <zorder>mQgsDoubleSpinBox_44</zorder>
      <zorder>checkBox_10</zorder>
+     <zorder>spinBox_18</zorder>
     </widget>
     <widget class="QLabel" name="label_7">
      <property name="geometry">
@@ -3502,6 +3424,11 @@ font-size: 13px;
    <class>QgsProjectionSelectionWidget</class>
    <extends>QWidget</extends>
    <header>qgsprojectionselectionwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>qgsspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
