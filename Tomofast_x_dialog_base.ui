@@ -72,7 +72,7 @@ QTabBar::tab:hover {
 </string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -125,7 +125,7 @@ QTabBar::tab:hover {
          <x>380</x>
          <y>40</y>
          <width>291</width>
-         <height>81</height>
+         <height>91</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -1353,7 +1353,7 @@ font-size: 13px;
          <x>10</x>
          <y>40</y>
          <width>361</width>
-         <height>88</height>
+         <height>91</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -1478,6 +1478,9 @@ border-style: solid;border-width: 1px;border-color: black
             <property name="text">
              <string>Grav weight</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
@@ -1503,6 +1506,9 @@ border-style: solid;border-width: 1px;border-color: black
            <widget class="QLabel" name="label_69">
             <property name="text">
              <string>Mag weight</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -1548,6 +1554,9 @@ border-style: solid;border-width: 1px;border-color: black
            <widget class="QLabel" name="label_22">
             <property name="text">
              <string>Rate</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -1921,6 +1930,9 @@ font-size: 13px;
             <property name="text">
              <string>Mag Weight</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="5" column="0" colspan="2">
@@ -1928,12 +1940,18 @@ font-size: 13px;
             <property name="text">
              <string>Mag Bounds (sp sep)</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QLabel" name="label_83">
             <property name="text">
              <string>No Lithologies</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -1981,6 +1999,9 @@ font-size: 13px;
             <property name="text">
              <string>Weight</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
@@ -2006,6 +2027,9 @@ font-size: 13px;
            <widget class="QLabel" name="label_66">
             <property name="text">
              <string>Norm Power</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -2136,6 +2160,9 @@ font-size: 13px;
            <widget class="QLabel" name="label_32">
             <property name="text">
              <string>Mag Value</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -2274,13 +2301,6 @@ font-size: 13px;
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_42">
-            <property name="text">
-             <string>Mag Value</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="2">
            <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_43">
             <property name="enabled">
@@ -2300,7 +2320,17 @@ font-size: 13px;
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_42">
+            <property name="text">
+             <string>Mag Value</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
            <widget class="QRadioButton" name="radioButton_12">
             <property name="text">
              <string>From file</string>
@@ -2350,6 +2380,9 @@ font-size: 13px;
             <property name="text">
              <string>Grav Value</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -2378,21 +2411,7 @@ font-size: 13px;
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_8">
-            <property name="text">
-             <string>From file</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_39">
-            <property name="text">
-             <string>Grav Value</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_27">
             <property name="enabled">
              <bool>true</bool>
@@ -2408,6 +2427,23 @@ font-size: 13px;
             </property>
             <property name="value">
              <double>0.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_39">
+            <property name="text">
+             <string>Grav Value</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="radioButton_8">
+            <property name="text">
+             <string>From file</string>
             </property>
            </widget>
           </item>
@@ -2427,6 +2463,9 @@ font-size: 13px;
            <widget class="QLabel" name="label_80">
             <property name="text">
              <string>Weight</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -2551,13 +2590,6 @@ font-size: 13px;
           <string>Grav ADMM Constraints</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_25">
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioButton_6">
-            <property name="text">
-             <string>Depth-based</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButton_7">
             <property name="text">
@@ -2565,10 +2597,10 @@ font-size: 13px;
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="label_72">
-            <property name="text">
-             <string>No Lithologies</string>
+          <item row="3" column="2">
+           <widget class="QTextEdit" name="textEdit_2">
+            <property name="placeholderText">
+             <string>-20. 20. 90. 130. 220. 260.</string>
             </property>
            </widget>
           </item>
@@ -2585,31 +2617,47 @@ font-size: 13px;
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_73">
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="radioButton_6">
             <property name="text">
-             <string>Grav Bounds (sp sep)</string>
+             <string>Depth-based</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QTextEdit" name="textEdit_2">
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_72">
+            <property name="text">
+             <string>No Lithologies</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="lineEdit_2">
             <property name="placeholderText">
-             <string>-20. 20. 90. 130. 220. 260.</string>
+             <string>1d-5</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="label_74">
             <property name="text">
              <string>Grav Weight</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="lineEdit_2">
-            <property name="placeholderText">
-             <string>1d-5</string>
+           <widget class="QLabel" name="label_73">
+            <property name="text">
+             <string>Grav Bounds (sp sep)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
