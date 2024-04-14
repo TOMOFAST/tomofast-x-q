@@ -119,6 +119,7 @@ class Data2Tomofast:
 
         self.nx=nx
         self.ny=ny
+        self.nz=nz
         print("nx, ny, nz =", nx, ny, nz)
 
         nelements = nx * ny * nz
