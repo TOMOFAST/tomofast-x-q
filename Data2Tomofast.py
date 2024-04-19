@@ -45,6 +45,7 @@ class Data2Tomofast:
         print("min/max data values:", np.min(data), np.max(data))
 
         Ndata = data.size
+        self.nData = Ndata
         print("Number of data:", Ndata)
 
         self.df = df
