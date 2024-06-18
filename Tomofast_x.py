@@ -821,8 +821,8 @@ class Tomofast_x:
         else:
             self.forward_depthWeighting_type      = 2
 
-        self.forward_depthWeighting_grav_power   = self.dlg.mQgsSpinBox_10.value()
-        self.forward_depthWeighting_magn_power   = self.dlg.mQgsSpinBox_11.value()
+        self.forward_depthWeighting_grav_power   = self.dlg.mQgsDoubleSpinBox_2.value()
+        self.forward_depthWeighting_magn_power   = self.dlg.mQgsDoubleSpinBox.value()
         if(self.dlg.checkBox.isChecked()):
             self.sensit_readFromFiles            = 1
         else:
@@ -932,8 +932,8 @@ class Tomofast_x:
         #DEPTH WEIGHTING
         "forward.depthWeighting.grav.type" : [self.forward_depthWeighting_grav_type,self.dlg.checkBox_3,int,'check'],
         "forward.depthWeighting.magn.type" : [self.forward_depthWeighting_magn_type,self.dlg.checkBox_6,int,'check'],
-        "forward.depthWeighting.grav.power" : [self.forward_depthWeighting_grav_power,self.dlg.mQgsSpinBox_10,int,'value'],
-        "forward.depthWeighting.magn.power" : [self.forward_depthWeighting_grav_power,self.dlg.mQgsSpinBox_11,int,'value'],
+        "forward.depthWeighting.grav.power" : [self.forward_depthWeighting_grav_power,self.dlg.mQgsDoubleSpinBox_2,float,'value'],
+        "forward.depthWeighting.magn.power" : [self.forward_depthWeighting_grav_power,self.dlg.mQgsDoubleSpinBox,float,'value'],
 
         #SENSITIVITY KERNEL
         "sensit.readFromFiles" : [self.sensit_readFromFiles,self.dlg.checkBox,int,'check'],

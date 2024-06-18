@@ -72,7 +72,7 @@ QTabBar::tab:hover {
 </string>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -2007,8 +2007,8 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>279</x>
-         <y>36</y>
+         <x>339</x>
+         <y>46</y>
          <width>321</width>
          <height>53</height>
         </rect>
@@ -2103,8 +2103,8 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>610</x>
-         <y>40</y>
+         <x>670</x>
+         <y>50</y>
          <width>249</width>
          <height>53</height>
         </rect>
@@ -2175,48 +2175,55 @@ font-size: 13px;
         <rect>
          <x>9</x>
          <y>293</y>
-         <width>264</width>
+         <width>271</width>
          <height>53</height>
         </rect>
        </property>
        <property name="title">
         <string>Mag  Depth Weighting</string>
        </property>
-       <layout class="QGridLayout" name="gridLayout_23">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="checkBox_6">
-          <property name="text">
-           <string>Enable Depth Weighting</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_23">
-          <property name="text">
-           <string>Power</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QgsSpinBox" name="mQgsSpinBox_11">
-          <property name="maximum">
-           <number>10</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>3</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QCheckBox" name="checkBox_6">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>36</y>
+          <width>193</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable Depth Weighting</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_23">
+        <property name="geometry">
+         <rect>
+          <x>140</x>
+          <y>20</y>
+          <width>41</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Power</string>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>20</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="value">
+         <double>3.000000000000000</double>
+        </property>
+       </widget>
       </widget>
       <widget class="QPushButton" name="pushButton_5">
        <property name="geometry">
@@ -2239,48 +2246,55 @@ font-size: 13px;
         <rect>
          <x>9</x>
          <y>36</y>
-         <width>264</width>
+         <width>311</width>
          <height>53</height>
         </rect>
        </property>
        <property name="title">
         <string>Grav Depth Weighting</string>
        </property>
-       <layout class="QGridLayout" name="gridLayout_17">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="checkBox_3">
-          <property name="text">
-           <string>Enable Depth Weighting</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_17">
-          <property name="text">
-           <string>Power</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QgsSpinBox" name="mQgsSpinBox_10">
-          <property name="maximum">
-           <number>10</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>2</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QCheckBox" name="checkBox_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>36</y>
+          <width>198</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable Depth Weighting</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_17">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>20</y>
+          <width>41</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Power</string>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_2">
+        <property name="geometry">
+         <rect>
+          <x>220</x>
+          <y>20</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="value">
+         <double>2.000000000000000</double>
+        </property>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_30">
        <property name="enabled">
@@ -2288,7 +2302,7 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>279</x>
+         <x>289</x>
          <y>293</y>
          <width>321</width>
          <height>53</height>
@@ -2361,8 +2375,8 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>610</x>
-         <y>300</y>
+         <x>620</x>
+         <y>290</y>
          <width>249</width>
          <height>53</height>
         </rect>
