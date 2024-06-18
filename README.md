@@ -10,7 +10,7 @@ Save repository to disk as a zip file. Use QGIS Plugin Manager to load directly 
 2. Select a data layer, define input and output projections, and Load data [Step 2a or Step 3a]
 3. Select fields for lat_x, long_y & data [Step 2b or Step 3a, data loaded to QGIS once Assign fields button selected]
 4. Select DTM tif file or use constant value (latter not working yet) [Step 4 reprojected dtm loaded to QGIS]
-5. Specify mesh parameters and output directory for mesh and parameter files [Step 5 mesh and data files written out and laoded to QGIS]
+5. Specify mesh parameters and output directory for mesh and parameter files [Step 5 mesh and data files written out and loaded to QGIS]
 6. Select Global Parameters tab
 7. Define compression file directory and project description and other Inversion parameters
 8. Select Grav/Mag Parameters tab
