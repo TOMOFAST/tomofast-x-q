@@ -17,7 +17,7 @@ Save repository to disk as a zip file. Use QGIS Plugin Manager to load directly 
 9. Modify parametesr and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]
 10. Run tomofast-x from command line using the just-generated files
 
-
+ ![tomofast dialog](plugin.png) 
 ## Credits    
 Plugin construction - Mark Jessell using QGIS Plugin Builder Plugin    
 Tomofast-x - Vitaliy Ogarko    
