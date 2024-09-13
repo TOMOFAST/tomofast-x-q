@@ -34,6 +34,7 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
     QgsVectorLayer,
     QgsProject,
     QgsRasterLayer,
@@ -57,8 +58,10 @@ from qgis.core import (
     QgsGeometry,
     QgsFeature,
     QgsFields,
+    QgsRasterLayer,
 )
 from qgis.PyQt.QtCore import QVariant
+from osgeo import gdal
 
 # from PyQt4.QtCore import QFileInfo
 # Initialize Qt resources from file resources.py
@@ -77,6 +80,7 @@ import processing
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtCore import Qt
 import os
+from pyproj import Transformer
 
 
 class Tomofast_x:
@@ -322,7 +326,8 @@ class Tomofast_x:
             None,
             "Select Data File",
             ".",
-            "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;ERS (*.ERS;*.ers);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
+            # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;ERS (*.ERS;*.ers);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
+            "CSV (*.csv;*.CSV);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
         )
         self.dlg.lineEdit_12.setText(self.filename_grav)
         # self.eTypglobal_experimentTypee=1
@@ -355,14 +360,23 @@ class Tomofast_x:
         self.grav_proj_out = self.dlg.mQgsProjectionSelectionWidget_5.crs().authid()
 
         # enable GroupBox 9
-        self.dlg.groupBox_9.setEnabled(True)
-        self.dlg.label_44.setEnabled(True)
-        self.dlg.label_45.setEnabled(True)
-        self.dlg.label_47.setEnabled(True)
-        self.dlg.comboBox_2.setEnabled(True)
-        self.dlg.comboBox_3.setEnabled(True)
-        self.dlg.comboBox_4.setEnabled(True)
-        self.dlg.pushButton_9.setEnabled(True)
+        if self.global_dataType == "points":
+            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.label_44.setEnabled(True)
+            self.dlg.label_45.setEnabled(True)
+            self.dlg.label_47.setEnabled(True)
+            self.dlg.comboBox_2.setEnabled(True)
+            self.dlg.comboBox_3.setEnabled(True)
+            self.dlg.comboBox_4.setEnabled(True)
+            self.dlg.pushButton_9.setEnabled(True)
+        else:
+            self.dlg.groupBox_2.setEnabled(True)
+            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.lineEdit_13.setEnabled(False)
+            self.dlg.label_46.setEnabled(True)
+            self.dlg.pushButton_12.setEnabled(False)
+            self.dlg.radioButton_16.setEnabled(True)
+            self.update_widgets()
 
     def confirm_data_file_mag(self):
         self.process_data_file()
@@ -428,7 +442,7 @@ class Tomofast_x:
             self.dlg.pushButton_10.setEnabled(True)
 
     def load_csv_vector_grav(self):
-        # print("grfile", self.filename_grav, self.global_experimentType)
+
         fileInfo = QFileInfo(self.filename_grav)
         baseName = fileInfo.baseName()
         layer = QgsVectorLayer(
@@ -669,6 +683,18 @@ class Tomofast_x:
                 self.dlg.comboBox_10.addItems(self.data.columns)
                 self.dlg.comboBox_10.setCurrentIndex(2)
                 self.input_data_magn = filename
+            self.global_dataType = "points"
+        elif suffix.lower() == "tif" or suffix.lower() == "tiff":
+            # Load the TIFF file as a QgsRasterLayer
+            self.data_raster_layer = QgsRasterLayer(filename, "data")
+
+            # Check if the layer was loaded successfully
+            if not self.data_raster_layer.isValid():
+                print("Failed to load the raster layer!")
+            else:
+                # Add the raster layer to the QGIS project
+                QgsProject.instance().addMapLayer(self.data_raster_layer)
+            self.global_dataType = "raster"
 
     def select_ouput_directory(self):
         self.global_outputFolderPath = QFileDialog.getExistingDirectory(
@@ -693,8 +719,14 @@ class Tomofast_x:
             self.global_elevType = 1
         else:
             self.global_elevType = 2
+        self.setupMesh()
 
-        self.convert_data()
+        if self.global_dataType == "points":
+            self.convert_point_data(self.global_dataType)
+        else:
+            self.convert_raster_data()
+            self.convert_point_data(self.global_dataType)
+
         self.load_mesh_vector()
         if self.global_elevType == 2:
             self.data2tomofast.add_topography(
@@ -702,7 +734,7 @@ class Tomofast_x:
                 self.global_outputFolderPath + "/elevation_grid.csv",
             )
 
-    def convert_data(self):
+    def setupMesh(self):
         self.cell_x = self.dlg.mQgsSpinBox.value()
         self.cell_y = self.dlg.mQgsSpinBox_2.value()
         self.padding = self.dlg.mQgsSpinBox_3.value()
@@ -722,16 +754,150 @@ class Tomofast_x:
         self.grav_proj_in = self.dlg.mQgsProjectionSelectionWidget_3.crs().authid()
         self.grav_proj_out = self.dlg.mQgsProjectionSelectionWidget_5.crs().authid()
 
+    def convert_raster_data(self):
+        self.datacol_grav = "data"
+        self.parse_parameters()
+
+        self.data2tomofast.write_model_grid(
+            self.padding,
+            self.cell_x,
+            self.cell_y,
+            self.dz,
+            self.meshBox,
+            self.global_dataType,
+            self.global_outputFolderPath,
+        )
+        df = pd.read_csv(
+            self.global_outputFolderPath + "/model_grid.txt",
+            sep=" ",
+            skiprows=1,
+            header=None,
+            nrows=self.data2tomofast.nx * self.data2tomofast.ny,
+            names=["x1", "x2", "y1", "y2", "z1", "z2,", "value", "i", "j", "k"],
+        )
+
+        # Create an empty memory layer (point geometry type, with a CRS, e.g., EPSG:4326)
+
+        mesh_layer = QgsVectorLayer(f"Point", "Extracted Data", "memory")
+
+        new_crs = QgsCoordinateReferenceSystem(self.grav_proj_out)
+        mesh_layer.setCrs(new_crs)
+
+        # Get the data provider for the layer
+        provider = mesh_layer.dataProvider()
+
+        # Define the fields (attributes) for the layer
+        fields = QgsFields()
+        fields.append(QgsField("id", QVariant.Int))
+
+        # Add the fields to the provider
+        provider.addAttributes(fields)
+        mesh_layer.updateFields()
+
+        # Loop over the DataFrame rows to create features and add them to the layer
+        for idx, row in df.iterrows():
+            # Create a new feature
+            feature = QgsFeature()
+
+            # Set the geometry (Point) for the feature
+            x = row["x1"] + ((row["x1"] - row["x2"]) / 2.0)
+            y = row["y1"] + ((row["y1"] - row["y2"]) / 2.0)
+            point = QgsPointXY(x, y)
+
+            feature.setGeometry(QgsGeometry.fromPointXY(point))
+
+            # Add the feature to the layer
+            provider.addFeature(feature)
+
+        # Update the layer's extent
+        mesh_layer.updateExtents()
+
+        # Add the layer to the QGIS project
+        QgsProject.instance().addMapLayer(mesh_layer)
+
+        data_layer = QgsProject.instance().mapLayersByName("data")[0]
+        print("mesh crs", mesh_layer.crs())
+        print("data crs", data_layer.crs())
+
+        parameter = {
+            "INPUT": self.filename_grav,
+            "SOURCE_CRS": data_layer.crs(),
+            "TARGET_CRS": QgsCoordinateReferenceSystem(self.grav_proj_out),
+            "RESAMPLING": 0,
+            "NODATA": None,
+            "TARGET_RESOLUTION": None,
+            "OPTIONS": "",
+            "DATA_TYPE": 0,
+            "TARGET_EXTENT": None,
+            "TARGET_EXTENT_CRS": None,
+            "MULTITHREADING": False,
+            "EXTRA": "",
+            "OUTPUT": self.global_outputFolderPath + "/reproj_data.tif",
+        }
+
+        # Run the processing algorithm
+        processing.run("gdal:warpreproject", parameter)
+
+        parameter = {
+            "INPUT": mesh_layer,
+            "RASTERCOPY": self.global_outputFolderPath + "/reproj_data.tif",
+            "COLUMN_PREFIX": "data",
+            "OUTPUT": "memory2",
+        }
+        processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
+
+        new_data_layer = QgsProject.instance().mapLayersByName("memory2")[0]
+
+        data = []
+        # Extract the fields (attributes) names
+        fields = [field.name() for field in new_data_layer.fields()]
+        fields.append("POINT_X")
+        fields.append("POINT_Y")
+        # Loop through features in the layer
+        for feature in new_data_layer.getFeatures():
+            # Extract attribute values
+            attributes = feature.attributes()
+            geometry = feature.geometry()
+            point = geometry.asPoint()
+            attributes.append(point.x())
+            attributes.append(point.y())
+            # Add attributes and geometry to the data list
+            data.append(attributes)
+
+        # Create a pandas DataFrame
+        data_df = pd.DataFrame(data, columns=fields)
+
+        data_df = data_df.drop(columns=["fid", "id"])
+        print(data_df.columns)
+        new_column_order = ["POINT_X", "POINT_Y", "data1"]
+        data_df = data_df[new_column_order]
+        QgsProject.instance().removeMapLayer(new_data_layer)
+
+        data_df.to_csv(self.global_outputFolderPath + "/reproj_data.csv", index=False)
+
+    def convert_point_data(self, dataType):
+
         # add elevation to data
         if self.global_experimentType == 1:
-            self.data2tomofast.read_data(
-                self.filename_grav,
-                self.ycol_grav,
-                self.xcol_grav,
-                self.datacol_grav,
-                self.grav_proj_in,
-                self.grav_proj_out,
-            )
+            if dataType == "points":
+                self.data2tomofast.read_data(
+                    self.filename_grav,
+                    self.ycol_grav,
+                    self.xcol_grav,
+                    self.datacol_grav,
+                    self.grav_proj_in,
+                    self.grav_proj_out,
+                )
+            else:
+                self.data2tomofast.read_data(
+                    self.global_outputFolderPath + "/reproj_data.csv",
+                    "POINT_Y",
+                    "POINT_X",
+                    "data1",
+                    self.grav_proj_out,
+                    self.grav_proj_out,
+                )
+                self.datacol_grav = "data1"
             if self.global_elevType == 1:
                 self.data2tomofast.add_elevation(
                     self.global_elevConst, self.global_elevType, 0
@@ -798,6 +964,8 @@ class Tomofast_x:
             self.cell_x,
             self.cell_y,
             self.dz,
+            self.meshBox,
+            self.global_dataType,
             self.global_outputFolderPath,
         )
 
@@ -812,11 +980,8 @@ class Tomofast_x:
 
     # add raster dtm or gridded flight height to data file
     def add_dtm(self, data_column, data_type):
-
         dtm = QgsProject.instance().mapLayersByName("Reprojected DTM")[0]
-        # print(self.data2tomofast.df.to_string())
         df = pd.DataFrame(self.data2tomofast.df)
-        # print("cols=", df.columns, df.columns[0], self.grav_proj_in)
         column_list = {
             df.columns[0]: "x",
             df.columns[1]: "y",
@@ -824,7 +989,6 @@ class Tomofast_x:
             # df.columns[2]: data_column,
         }
         df = df.rename(columns=column_list)
-        # print("cols2=", df.columns, df.columns[0], self.grav_proj_in)
         layer = QgsVectorLayer(
             "Point?crs=" + self.grav_proj_in, "My Points Layer", "memory"
         )
@@ -886,7 +1050,6 @@ class Tomofast_x:
 
         # Create a pandas DataFrame
         data_df = pd.DataFrame(data, columns=fields)
-        # print(data_df.to_string())
         column_list = {
             data_df.columns[5]: "POINT_Z",
         }
@@ -912,7 +1075,7 @@ class Tomofast_x:
 
     def save_parameter_file(self):
         self.parse_parameters()
-        # print("elev=", self.global_elevType)
+
         self.params = open(self.global_outputFolderPath + "/paramfile.txt", "w")
 
         self.spacer("GLOBAL")
@@ -1409,6 +1572,13 @@ class Tomofast_x:
         else:
             self.global_elevType = 2
 
+        self.meshBox = {
+            "south": self.dlg.mQgsSpinBox_10.value(),
+            "west": self.dlg.mQgsSpinBox_11.value(),
+            "north": self.dlg.mQgsSpinBox_14.value(),
+            "east": self.dlg.mQgsSpinBox_13.value(),
+        }
+
     def load_parfile(self):
 
         #   set up dict with form
@@ -1792,7 +1962,7 @@ class Tomofast_x:
 
                     if len(pls) == 2:
                         pval = pls[1].strip()
-                        # print(pval)
+
                         if (
                             params[pkey][-2] == float
                         ):  # check for fortran 2d5.0 format floats
@@ -1811,7 +1981,7 @@ class Tomofast_x:
                         p = params[pkey]
                         if p[0] != "":
                             if p[-1] == "value":
-                                # print(pkey, p[-2], p[0])
+
                                 p[1].setValue(p[-2](p[0]))
                             elif p[-1] == "plainText":
                                 p[1].setText(p[-2](p[0]))
@@ -1843,7 +2013,7 @@ class Tomofast_x:
             parfile.close()
 
     def enable_boxes(self):
-        # print(self.global_experimentType)
+
         self.dlg.groupBox_16.setEnabled(True)
         self.dlg.groupBox_26.setEnabled(True)
         self.dlg.groupBox_22.setEnabled(True)
@@ -1852,6 +2022,12 @@ class Tomofast_x:
         self.dlg.groupBox_19.setEnabled(True)
         self.dlg.groupBox_5.setEnabled(True)
         self.dlg.groupBox_25.setEnabled(True)
+        if self.dataType == "raster":
+            self.dlg.mQgsSpinBox_10.setEnabled(False)
+            self.dlg.mQgsSpinBox_11.setEnabled(False)
+            self.dlg.mQgsSpinBox_12.setEnabled(False)
+            self.dlg.mQgsSpinBox_13.setEnabled(False)
+
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.dlg.groupBox.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)

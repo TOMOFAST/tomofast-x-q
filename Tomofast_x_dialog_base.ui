@@ -476,7 +476,7 @@ font-size: 12px;</string>
          <x>590</x>
          <y>120</y>
          <width>541</width>
-         <height>351</height>
+         <height>391</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -495,463 +495,883 @@ font-size: 12px;</string>
        <property name="title">
         <string>Step 5 : Specify Mesh Parameters</string>
        </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="7" column="3" colspan="2">
-         <widget class="QLabel" name="label_54">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+       <widget class="QSpinBox" name="spinBox_3">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>111</x>
+          <y>227</y>
+          <width>47</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>34</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_48">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>322</y>
+          <width>95</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 3 Z cell size</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QSpinBox" name="spinBox_3">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>34</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2" colspan="2">
-         <widget class="QLabel" name="label_58">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Output Directory</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_3">
+        <property name="geometry">
+         <rect>
+          <x>366</x>
+          <y>110</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>100000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>10000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox">
+        <property name="geometry">
+         <rect>
+          <x>366</x>
+          <y>58</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>2000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_55">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>278</y>
+          <width>81</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Number of Cell thicknesses</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="5">
-         <widget class="QPushButton" name="pushButton_10">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>Choose your Main Project </string>
-          </property>
-          <property name="whatsThis">
-           <string/>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_49">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 4  Base</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>366</x>
+          <y>176</y>
+          <width>29</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>4</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_2">
+        <property name="geometry">
+         <rect>
+          <x>366</x>
+          <y>84</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>2000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_49">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>200</y>
+          <width>77</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 1 Base</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="0">
-         <widget class="QLabel" name="label_48">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 1 Base</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_57">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>154</y>
+          <width>125</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>-1</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Output Directory</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="label_27">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Cell size with depth</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lineEdit_17">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>351</y>
+          <width>271</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-color:gray
+</string>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="text">
+         <string>Select directory to save tomofast files</string>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_21">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>58</y>
+          <width>67</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Cell Size x </string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="5">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_6">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>50.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>200.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="label_21">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Cell Size x </string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_52">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>226</y>
+          <width>110</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Cell Size x </string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="5">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_9">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>50.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>1000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="3" colspan="2">
-         <widget class="QLabel" name="label_52">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 2  Z cell size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_54">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>252</y>
+          <width>106</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 2  Z cell size</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="1">
-         <widget class="QSpinBox" name="spinBox_5">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>45</number>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_53">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 3 Z cell size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_50">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>200</y>
+          <width>106</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 3  Base</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QLabel" name="label_57">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>Arial</family>
-            <pointsize>-1</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 1 Z cell size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_58">
+        <property name="geometry">
+         <rect>
+          <x>196</x>
+          <y>176</y>
+          <width>159</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Cell size with depth</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="4">
-         <widget class="QgsSpinBox" name="mQgsSpinBox_3">
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>10000</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3" colspan="2">
-         <widget class="QLabel" name="label_50">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Number of Cell thicknesses</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_56">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>278</y>
+          <width>106</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 1 Z cell size</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="3" colspan="2">
-         <widget class="QLabel" name="label_56">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 4 Z cell size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_33">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>110</y>
+          <width>77</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 4 Z cell size</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="0" colspan="5">
-         <widget class="QLineEdit" name="lineEdit_17">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="autoFillBackground">
-           <bool>false</bool>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-color:gray
-</string>
-          </property>
-          <property name="inputMask">
-           <string/>
-          </property>
-          <property name="text">
-           <string>Select directory to save tomofast files</string>
-          </property>
-          <property name="placeholderText">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
-         <widget class="QgsSpinBox" name="mQgsSpinBox">
-          <property name="maximum">
-           <number>10000</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>600</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="QSpinBox" name="spinBox_2">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>20</number>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_5">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>50.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>200.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="5">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_11">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>50.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>1000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="1">
-         <widget class="QSpinBox" name="spinBox_4">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>42</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="4">
-         <widget class="QSpinBox" name="spinBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>4</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_55">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Padding Size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_27">
+        <property name="geometry">
+         <rect>
+          <x>281</x>
+          <y>84</y>
+          <width>67</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 4  Base</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="4">
-         <widget class="QgsSpinBox" name="mQgsSpinBox_2">
-          <property name="maximum">
-           <number>10000</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>600</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
-         <widget class="QLabel" name="label_33">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Cell Size x </string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox_2">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>111</x>
+          <y>201</y>
+          <width>47</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>20</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_51">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>226</y>
+          <width>77</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Padding Size</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="label_51">
-          <property name="styleSheet">
-           <string notr="true">font-family: Arial; 
+        </property>
+        <property name="text">
+         <string>Layer 2 Base</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_53">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>252</y>
+          <width>81</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
 font-size: 13px;
 </string>
-          </property>
-          <property name="text">
-           <string>Layer 2 Base</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
+        </property>
+        <property name="text">
+         <string>Layer 3  Base</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox_4">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>111</x>
+          <y>253</y>
+          <width>47</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>42</number>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spinBox_5">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>111</x>
+          <y>279</y>
+          <width>47</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>45</number>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_5">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>451</x>
+          <y>200</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>50.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>200.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_6">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>451</x>
+          <y>226</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>50.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>200.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_9">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>451</x>
+          <y>252</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>50.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1000.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_11">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>451</x>
+          <y>278</y>
+          <width>80</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>50.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1000.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_10">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>451</x>
+          <y>350</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>Choose your Main Project </string>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_60">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>30</y>
+          <width>151</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>-1</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>Mesh Limits</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_28">
+        <property name="geometry">
+         <rect>
+          <x>11</x>
+          <y>86</y>
+          <width>31</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>West</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_24">
+        <property name="geometry">
+         <rect>
+          <x>1</x>
+          <y>60</y>
+          <width>41</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>South</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_10">
+        <property name="geometry">
+         <rect>
+          <x>60</x>
+          <y>60</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>-1000000000</number>
+        </property>
+        <property name="maximum">
+         <number>1000000000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>6660000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_11">
+        <property name="geometry">
+         <rect>
+          <x>60</x>
+          <y>86</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>-1000000000</number>
+        </property>
+        <property name="maximum">
+         <number>1000000000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>-750000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_75">
+        <property name="geometry">
+         <rect>
+          <x>290</x>
+          <y>30</y>
+          <width>151</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>-1</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>Cell Dimensions</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_13">
+        <property name="geometry">
+         <rect>
+          <x>190</x>
+          <y>86</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>-1000000000</number>
+        </property>
+        <property name="maximum">
+         <number>1000000000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>-700000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_29">
+        <property name="geometry">
+         <rect>
+          <x>141</x>
+          <y>86</y>
+          <width>31</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>East</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_25">
+        <property name="geometry">
+         <rect>
+          <x>131</x>
+          <y>60</y>
+          <width>41</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+        </property>
+        <property name="text">
+         <string>North</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QgsSpinBox" name="mQgsSpinBox_14">
+        <property name="geometry">
+         <rect>
+          <x>190</x>
+          <y>60</y>
+          <width>64</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>-1000000000</number>
+        </property>
+        <property name="maximum">
+         <number>1000000000</number>
+        </property>
+        <property name="singleStep">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>6770000</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_7">
        <property name="enabled">

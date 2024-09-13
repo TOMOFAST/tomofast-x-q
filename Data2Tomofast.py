@@ -65,7 +65,7 @@ class Data2Tomofast:
         # print("Number of data:", Ndata)
 
         self.df = df
-        print(self.df.columns)
+        # print(self.df.columns)
 
     # =================================================================================
     def add_elevation(self, elevation, eType, df_elev):
@@ -113,22 +113,30 @@ class Data2Tomofast:
         plt.show()
 
     # =================================================================================
-    def write_model_grid(self, padding_size, dx, dy, dz, directory):
+    def write_model_grid(self, padding_size, dx, dy, dz, meshBox, dataType, directory):
         """
         Writes the Tomofast-x model grid.
         dx, dy: scalars
         dz: vector of size nz
         """
-        print(self.df.columns)
-        data_x = self.df["POINT_X"].values
-        data_y = self.df["POINT_Y"].values
 
-        # Define the model horizontal dimensions, based on the observed data extent.
-        # The model core area size (adding 1m on each side not to coinside with data position).
-        xcore_min = data_x.min() - 1.0
-        xcore_max = data_x.max() + 1.0
-        ycore_min = data_y.min() - 1.0
-        ycore_max = data_y.max() + 1.0
+        print(padding_size, dx, dy, dz, meshBox, dataType, directory)
+        if dataType == "points":
+            # print(self.df.columns)
+            data_x = self.df["POINT_X"].values
+            data_y = self.df["POINT_Y"].values
+
+            # Define the model horizontal dimensions, based on the observed data extent.
+            # The model core area size (adding 1m on each side not to coinside with data position).
+            xcore_min = data_x.min() - 1.0
+            xcore_max = data_x.max() + 1.0
+            ycore_min = data_y.min() - 1.0
+            ycore_max = data_y.max() + 1.0
+        else:
+            xcore_min = meshBox["west"] - 1.0
+            xcore_max = meshBox["east"] + 1.0
+            ycore_min = meshBox["south"] - 1.0
+            ycore_max = meshBox["north"] + 1.0
 
         Zmin = 0.0
         Zmax = Zmin + np.sum(dz)
