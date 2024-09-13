@@ -190,6 +190,7 @@ class Tomofast_x:
         self.global_magn_dataUnitsMultiplier = 0
         self.global_grav_modelUnitsMultiplier = 0
         self.global_magn_modelUnitsMultiplier = 0
+        self.meshBox = 0
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
