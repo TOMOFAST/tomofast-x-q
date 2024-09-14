@@ -801,8 +801,8 @@ class Tomofast_x:
             feature = QgsFeature()
 
             # Set the geometry (Point) for the feature
-            x = row["x1"] + ((row["x1"] - row["x2"]) / 2.0)
-            y = row["y1"] + ((row["y1"] - row["y2"]) / 2.0)
+            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)
+            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)
             point = QgsPointXY(x, y)
 
             feature.setGeometry(QgsGeometry.fromPointXY(point))
