@@ -3184,7 +3184,7 @@ Day/Month/Year</string>
         </rect>
        </property>
        <property name="title">
-        <string>Magnetic Field Parameters (not yet active!!)</string>
+        <string>Magnetic Field Parameters</string>
        </property>
        <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
         <property name="enabled">
