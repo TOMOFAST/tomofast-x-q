@@ -310,6 +310,26 @@ class Tomofast_x:
             "Space separated pairs of upper and lower ADMM magnetic susceptibility bounds"
         )
 
+        # ------------------------new tootips--------------------------------------------------
+        self.dlg.doubleSpinBox_5.setToolTip(
+            "Height of mag sensor above DTM, assumes draped survey at const height"
+        )
+        self.dlg.doubleSpinBox_6.setToolTip(
+            "Height of grav sensor above DTM, assumes draped survey at const height"
+        )
+        self.dlg.dateEdit.setToolTip(
+            "Date of Mag Survey, used for auto IGRF calculation"
+        )
+        self.dlg.pushButton_14.setToolTip(
+            "Load a shapefile to define x,y limts of Mesh (converts max/min extents of shape into a rectangle)"
+        )
+        self.dlg.pushButton.setToolTip(
+            "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh"
+        )
+        self.dlg.doubleSpinBox_2.setToolTip("Manual overide of Magnetic Declination")
+        self.dlg.doubleSpinBox_3.setToolTip("Manual overide of Magnetic Inclination")
+        self.dlg.doubleSpinBox_4.setToolTip("Manual overide of Magnetic Intensity")
+
     # establish default values for parameters
 
     def initialise_variables(self):
@@ -1063,7 +1083,7 @@ class Tomofast_x:
                     .split(":")[1]
                 )
             layer_crs = int(self.data_raster_layer.crs().authid().split(":")[1])
-            print(layer_crs, out_proj)
+
             proj = Transformer.from_crs(layer_crs, out_proj, always_xy=True)
             x, y = (extent.xMinimum(), extent.yMinimum())
             minx, miny = proj.transform(x, y)
