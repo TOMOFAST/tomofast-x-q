@@ -6,7 +6,7 @@ Save repository to disk as a zip file. Use QGIS Plugin Manager to load directly 
 
 ## Simple instructions
 0. **Select tomofast-x-q plugin and Select Import existing field databases tab**
-1. Optioanlly pre-load an existing paramfile from disk
+1. Optionally pre-load an existing paramfile from disk
 2. Select Grav, mag or both Inversion stype [Step 1]
 3. Select a data layer (csv or tif format), define input and output projections, and Load data [Step 2a or Step 3a]
 4. If csv data, select fields for lat_x, long_y & data [Step 2b or Step 3a, data loaded to QGIS once Assign fields button selected]
