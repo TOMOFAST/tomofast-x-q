@@ -81,6 +81,8 @@ from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtCore import Qt
 import os
 from pyproj import Transformer
+from .ppigrf import igrf, get_inclination_declination
+from datetime import datetime
 
 
 class Tomofast_x:
@@ -382,6 +384,14 @@ class Tomofast_x:
         self.global_grav_modelUnitsMultiplier = 0
         self.global_magn_modelUnitsMultiplier = 0
         self.meshBox = 0
+        self.grav_SurveyHeight = 0
+        self.magn_SurveyHeight = 0
+        self.magn_SurveyDay = 0
+        self.magn_SurveyMonth = 0
+        self.magn_SurveyYear = 0
+        self.forward_magneticField_declination = 0
+        self.forward_magneticField_inclination = 0
+        self.forward_magneticField_intensity = 0
         self.dataType = "points"
 
     # noinspection PyMethodMayBeStatic
@@ -515,6 +525,32 @@ class Tomofast_x:
         )
         self.dlg.lineEdit_15.setText(self.parfilename)
 
+    # select existing ROI shapefile
+    def load_ROI(self):
+
+        self.ROIFileName, _filter = QFileDialog.getOpenFileName(
+            None, "Select ROI File", ".", "SHP (*.shp)"
+        )
+        self.dlg.lineEdit_16.setText(self.ROIFileName)
+        layer = QgsVectorLayer(self.ROIFileName, "ROI", "ogr")
+        if layer.isValid():
+            if self.global_experimentType == 1 or self.global_experimentType == 3:
+                proj = self.grav_proj_out
+            else:
+                proj = self.magn_proj_out
+
+            parameter = {
+                "INPUT": layer,
+                "TARGET_CRS": proj,
+                "OUTPUT": "memory:{}_Reprojected".format("ROI"),
+            }
+            result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
+
+            QgsProject.instance().addMapLayer(result)
+
+            # Use the coordinates of the bounding box as limits of mesh (without padding)
+            self.data_extents(result)
+
     def select_grav_data_file(self):
 
         self.filename_grav, _filter = QFileDialog.getOpenFileName(
@@ -615,6 +651,49 @@ class Tomofast_x:
             self.filename_magn, self.xcol_magn, self.ycol_magn, self.datacol_magn
         )
 
+    # estomate mag field from centroid of data, date and sensor height
+    def update_mag_field(self):
+
+        # retrieve parameters
+        self.magn_SurveyHeight = self.dlg.doubleSpinBox_5.value()
+        date_text = str(self.dlg.dateEdit.date().toPyDate())
+
+        date_split = date_text.split("-")
+        self.magn_SurveyDay = date_split[2]
+        self.magn_SurveyMonth = date_split[1]
+        self.magn_SurveyYear = date_split[0]
+        date = datetime(2021, 3, 28)
+
+        # calculate midpoint of mesh
+        midx = self.meshBox["west"] + (
+            (self.meshBox["east"] - self.meshBox["west"]) / 2.0
+        )
+        midy = self.meshBox["south"] + (
+            (self.meshBox["north"] - self.meshBox["south"]) / 2.0
+        )
+
+        # convert midpoint to lat/long
+        magn_proj = int(self.magn_proj_out.split(":")[1])
+
+        proj = Transformer.from_crs(magn_proj, 4326, always_xy=True)
+        x, y = (midx, midy)
+        long, lat = proj.transform(x, y)
+
+        # calculate IGRF compnents and  convert to Inc, Dec, Int
+        Be, Bn, Bu = igrf(
+            long, lat, self.magn_SurveyHeight, date
+        )  # returns east, north, up
+        (
+            self.forward_magneticField_inclination,
+            self.forward_magneticField_declination,
+        ) = get_inclination_declination(Be, Bn, Bu, degrees=True)
+        self.forward_magneticField_intensity = np.sqrt(Be**2 + Bn**2 + Bu**2)
+
+        # update widgets
+        self.dlg.doubleSpinBox_2.setValue(self.forward_magneticField_declination)
+        self.dlg.doubleSpinBox_3.setValue(self.forward_magneticField_inclination)
+        self.dlg.doubleSpinBox_4.setValue(self.forward_magneticField_intensity)
+
     # enable gui widgets after data loaded
     def update_widgets(self):
 
@@ -637,6 +716,7 @@ class Tomofast_x:
             self.dlg.spinBox.setEnabled(True)
             self.dlg.lineEdit_17.setEnabled(True)
             self.dlg.pushButton_10.setEnabled(True)
+            self.dlg.pushButton_14.setEnabled(True)
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.xcol_magn = self.dlg.comboBox_8.currentText()
             self.ycol_magn = self.dlg.comboBox_9.currentText()
@@ -686,6 +766,10 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_grav, "Spectral")
             result.triggerRepaint()
+
+            # Use the coordinates of the bounding box as limits of mesh (without padding)
+            self.data_extents(result)
+
         else:
             self.iface.messageBar().pushMessage(
                 "Invalid grav layer", level=Qgis.Warning, duration=15
@@ -719,10 +803,32 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_magn, "Spectral")
             result.triggerRepaint()
+
+            # Use the coordinates of the bounding box as limits of mesh (without padding)
+            self.data_extents(result)
+
         else:
             self.iface.messageBar().pushMessage(
                 "Invalid magn layer", level=Qgis.Warning, duration=15
             )
+
+    # calc data extends and update widget
+    def data_extents(self, layer):
+        extent = layer.extent()  # Get the extent (bounding box) of the layer
+
+        # Use the coordinates of the bounding box as limits of mesh (without padding)
+
+        self.dlg.mQgsSpinBox_10.setValue(int(extent.yMinimum()))
+        self.dlg.mQgsSpinBox_14.setValue(int(extent.yMaximum()))
+        self.dlg.mQgsSpinBox_11.setValue(int(extent.xMinimum()))
+        self.dlg.mQgsSpinBox_13.setValue(int(extent.xMaximum()))
+
+        self.meshBox = {
+            "south": int(extent.yMinimum()),
+            "west": int(extent.xMinimum()),
+            "north": int(extent.yMaximum()),
+            "east": int(extent.xMaximum()),
+        }
 
     # rearrange layers so points ontop of rasters
     def rearrange(self):
@@ -943,6 +1049,38 @@ class Tomofast_x:
         elif suffix.lower() == "tif" or suffix.lower() == "tiff":
             # Load the TIFF file as a QgsRasterLayer
             self.data_raster_layer = QgsRasterLayer(filename, "data")
+            extent = self.data_raster_layer.extent()
+            if self.global_experimentType == 1 or self.global_experimentType == 3:
+                out_proj = int(
+                    self.dlg.mQgsProjectionSelectionWidget_5.crs()
+                    .authid()
+                    .split(":")[1]
+                )
+            else:
+                out_proj = int(
+                    self.dlg.mQgsProjectionSelectionWidget_8.crs()
+                    .authid()
+                    .split(":")[1]
+                )
+            layer_crs = int(self.data_raster_layer.crs().authid().split(":")[1])
+            print(layer_crs, out_proj)
+            proj = Transformer.from_crs(layer_crs, out_proj, always_xy=True)
+            x, y = (extent.xMinimum(), extent.yMinimum())
+            minx, miny = proj.transform(x, y)
+            x, y = (extent.xMaximum(), extent.yMaximum())
+            maxx, maxy = proj.transform(x, y)
+
+            self.dlg.mQgsSpinBox_10.setValue(int(miny))
+            self.dlg.mQgsSpinBox_14.setValue(int(maxy))
+            self.dlg.mQgsSpinBox_11.setValue(int(minx))
+            self.dlg.mQgsSpinBox_13.setValue(int(maxx))
+
+            self.meshBox = {
+                "south": int(miny),
+                "west": int(maxy),
+                "north": int(minx),
+                "east": int(maxx),
+            }
 
             # Check if the layer was loaded successfully
             if not self.data_raster_layer.isValid():
@@ -961,7 +1099,7 @@ class Tomofast_x:
 
         self.dlg.lineEdit_17.setText(self.global_outputFolderPath)
         if self.global_outputFolderPath:
-            # self.dlg.pushButton_14.setEnabled(True)
+
             self.output_directory = os.path.split(self.dlg.lineEdit_17.text())[-1]
             self.save_outputs()
             self.iface.messageBar().pushMessage(
@@ -980,6 +1118,12 @@ class Tomofast_x:
             self.global_elevType = 2
 
         self.setupMesh()
+        if self.global_experimentType == 1:
+            self.dlg.mQgsDoubleSpinBox_36.setValue(1.0)
+            self.dlg.mQgsDoubleSpinBox_37.setValue(0.0)
+        elif self.global_experimentType == 2:
+            self.dlg.mQgsDoubleSpinBox_36.setValue(0.0)
+            self.dlg.mQgsDoubleSpinBox_37.setValue(1.0)
 
         if self.global_dataType == "points":
             self.convert_point_data(self.global_dataType)
@@ -1616,12 +1760,37 @@ class Tomofast_x:
                 self.modelGrid_size[0], self.modelGrid_size[1], self.modelGrid_size[2]
             )
         )
-        # if(self.global_experimentType==1 or self.global_experimentType==3):
-        self.params.write(
-            "modelGrid.grav.file                 = {}\n".format(
-                self.output_directory + "/model_grid.txt"
+        if self.global_experimentType == 1 or self.global_experimentType == 3:
+            self.params.write(
+                "modelGrid.grav.file                 = {}\n".format(
+                    self.output_directory + "/model_grid.txt"
+                )
             )
-        )
+        if self.global_experimentType == 2 or self.global_experimentType == 3:
+            self.params.write(
+                "modelGrid.magn.file                 = {}\n".format(
+                    self.output_directory + "/model_grid.txt"
+                )
+            )
+
+        if self.global_experimentType == 2 or self.global_experimentType == 3:
+            self.spacer("MAGNETIC FIELD constants")
+
+            self.params.write(
+                "forward.magneticField.inclination                 = {}\n".format(
+                    self.forward_magneticField_inclination.item()
+                )
+            )
+            self.params.write(
+                "forward.magneticField.declination                 = {}\n".format(
+                    self.forward_magneticField_declination.item()
+                )
+            )
+            self.params.write(
+                "forward.magneticField.intensity_nT                = {}\n".format(
+                    self.forward_magneticField_intensity.item()
+                )
+            )
 
         # if(self.global_experimentType==2 or self.global_experimentType==3):
         #    self.params.write("modelGrid.magn.file                 = {}\n".format(self.output_directory+"/model_magn_grid.txt"))
@@ -2057,6 +2226,10 @@ class Tomofast_x:
             "east": self.dlg.mQgsSpinBox_13.value(),
         }
 
+        self.forward_magneticField_declination = self.dlg.doubleSpinBox_2.value()
+        self.forward_magneticField_inclination = self.dlg.doubleSpinBox_3.value()
+        self.forward_magneticField_intensity = self.dlg.doubleSpinBox_4.value()
+
     # load and parse existing parfile updating gui and storing parameters
     def load_parfile(self):
 
@@ -2426,6 +2599,25 @@ class Tomofast_x:
                 float,
                 "value",
             ],
+            # Mag Field
+            "forward.magneticField.declination": [
+                self.forward_magneticField_declination,
+                self.dlg.doubleSpinBox_2,
+                float,
+                "value",
+            ],
+            "forward.magneticField.inclination": [
+                self.forward_magneticField_inclination,
+                self.dlg.doubleSpinBox_3,
+                float,
+                "value",
+            ],
+            "forward.magneticField.intensity": [
+                self.forward_magneticField_intensity,
+                self.dlg.doubleSpinBox_4,
+                float,
+                "value",
+            ],
         }
         # parse parfile file and copy valid parameters to associated variables
         if os.path.exists(self.parfilename) and self.parfilename:
@@ -2677,6 +2869,7 @@ class Tomofast_x:
             self.dlg.spinBox_2.setEnabled(True)
             self.dlg.radioButton_2.setChecked(False)
 
+            self.dlg.pushButton.clicked.connect(self.update_mag_field)
             self.dlg.pushButton_2.clicked.connect(self.confirm_data_file_grav)
             self.dlg.pushButton_6.clicked.connect(self.confirm_data_file_mag)
             self.dlg.pushButton_5.clicked.connect(self.save_parameter_file)
@@ -2688,7 +2881,7 @@ class Tomofast_x:
             # self.dlg.pushButton_11.clicked.connect(self.select_sensitivity_directory)
             self.dlg.pushButton_12.clicked.connect(self.select_dtm)
             self.dlg.pushButton_13.clicked.connect(self.process_parameter_file)
-            # self.dlg.pushButton_14.clicked.connect(self.save_outputs)
+            self.dlg.pushButton_14.clicked.connect(self.load_ROI)
 
             self.dlg.radioButton.toggled.connect(self.inversion_type)
             self.dlg.radioButton_2.toggled.connect(self.inversion_type)

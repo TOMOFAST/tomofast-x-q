@@ -32,7 +32,7 @@
    <property name="rightMargin">
     <number>25</number>
    </property>
-   <item row="0" column="1">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
       <bool>true</bool>
@@ -246,6 +246,9 @@ font-size: 13px;
 border-style: solid;border-width: 1px;border-color: black
 }
 </string>
+          </property>
+          <property name="placeholderText">
+           <string>path to grav data file</string>
           </property>
          </widget>
         </item>
@@ -703,8 +706,8 @@ font-size: 13px;
         </property>
         <property name="geometry">
          <rect>
-          <x>10</x>
-          <y>351</y>
+          <x>100</x>
+          <y>350</y>
           <width>271</width>
           <height>20</height>
          </rect>
@@ -721,6 +724,9 @@ font-size: 13px;
         </property>
         <property name="text">
          <string>Select directory to save tomofast files</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
         <property name="placeholderText">
          <string/>
@@ -1099,11 +1105,17 @@ font-size: 13px;
         </property>
         <property name="geometry">
          <rect>
-          <x>451</x>
+          <x>375</x>
           <y>350</y>
-          <width>75</width>
+          <width>151</width>
           <height>23</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
         <property name="toolTip">
          <string>Choose your Main Project </string>
@@ -1115,7 +1127,7 @@ font-size: 13px;
          <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
         </property>
         <property name="text">
-         <string>...</string>
+         <string>Save Data and Mesh</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_60">
@@ -1214,7 +1226,7 @@ font-size: 13px;
          <number>50</number>
         </property>
         <property name="value">
-         <number>6670000</number>
+         <number>6790000</number>
         </property>
         <property name="displayIntegerBase">
          <number>10</number>
@@ -1239,7 +1251,7 @@ font-size: 13px;
          <number>50</number>
         </property>
         <property name="value">
-         <number>-742000</number>
+         <number>430000</number>
         </property>
         <property name="displayIntegerBase">
          <number>10</number>
@@ -1299,7 +1311,7 @@ font-size: 13px;
          <number>50</number>
         </property>
         <property name="value">
-         <number>-700000</number>
+         <number>482000</number>
         </property>
         <property name="displayIntegerBase">
          <number>10</number>
@@ -1366,10 +1378,60 @@ font-size: 13px;
          <number>50</number>
         </property>
         <property name="value">
-         <number>6720000</number>
+         <number>6730000</number>
         </property>
         <property name="displayIntegerBase">
          <number>10</number>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_14">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>256</x>
+          <y>118</y>
+          <width>41</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lineEdit_16">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>240</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLineEdit {
+    border-radius:0px; /* Ajustez la valeur pour contrôler l'arrondi des coins */
+    background-color: rgb(255, 255, 255, 255);
+
+border-style: solid;border-width: 1px;border-color: black
+}
+</string>
+        </property>
+        <property name="placeholderText">
+         <string>Define Mesh Limits by shapefile</string>
         </property>
        </widget>
       </widget>
@@ -1419,6 +1481,9 @@ font-size: 13px;
 border-style: solid;border-width: 1px;border-color: black
 }
 </string>
+          </property>
+          <property name="placeholderText">
+           <string>Path to mag data file</string>
           </property>
          </widget>
         </item>
@@ -1663,6 +1728,9 @@ border-style: solid;border-width: 1px;border-color: black
 }
 </string>
         </property>
+        <property name="placeholderText">
+         <string>Path to DTM file</string>
+        </property>
        </widget>
        <widget class="QPushButton" name="pushButton_12">
         <property name="enabled">
@@ -1824,9 +1892,35 @@ border-style: solid;border-width: 1px;border-color: black
 }
 </string>
           </property>
+          <property name="placeholderText">
+           <string>Path to exisiting parameter file</string>
+          </property>
          </widget>
         </item>
        </layout>
+      </widget>
+      <widget class="QLabel" name="label_20">
+       <property name="geometry">
+        <rect>
+         <x>570</x>
+         <y>520</y>
+         <width>559</width>
+         <height>96</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Continue on to Global Parameters Tab...</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <zorder>groupBox_3</zorder>
       <zorder>groupBox_2</zorder>
@@ -1837,6 +1931,7 @@ border-style: solid;border-width: 1px;border-color: black
       <zorder>groupBox_8</zorder>
       <zorder>label_19</zorder>
       <zorder>groupBox_11</zorder>
+      <zorder>label_20</zorder>
      </widget>
      <widget class="QWidget" name="Fieldwork_preparation">
       <property name="styleSheet">
@@ -1852,6 +1947,147 @@ border-style: solid;border-width: 1px;border-color: black
        <string>Global Parameters</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_12">
+       <item row="5" column="1" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_25">
+         <property name="title">
+          <string>Inversion Parameters</string>
+         </property>
+         <widget class="QLabel" name="label_41">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>23</y>
+            <width>77</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Major Iterations</string>
+          </property>
+         </widget>
+         <widget class="QgsSpinBox" name="mQgsSpinBox_7">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>23</y>
+            <width>64</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+          <property name="singleStep">
+           <number>10</number>
+          </property>
+          <property name="value">
+           <number>3</number>
+          </property>
+          <property name="displayIntegerBase">
+           <number>10</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_63">
+          <property name="geometry">
+           <rect>
+            <x>208</x>
+            <y>20</y>
+            <width>76</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Minor Iterations</string>
+          </property>
+         </widget>
+         <widget class="QgsSpinBox" name="mQgsSpinBox_8">
+          <property name="geometry">
+           <rect>
+            <x>290</x>
+            <y>20</y>
+            <width>64</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+          <property name="singleStep">
+           <number>10</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+          <property name="displayIntegerBase">
+           <number>10</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_65">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>49</y>
+            <width>73</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Model save iter</string>
+          </property>
+         </widget>
+         <widget class="QgsSpinBox" name="mQgsSpinBox_9">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>50</y>
+            <width>64</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="displayIntegerBase">
+           <number>10</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_64">
+          <property name="geometry">
+           <rect>
+            <x>208</x>
+            <y>50</y>
+            <width>59</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>min Residual</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QTextEdit" name="textEdit_3">
+          <property name="geometry">
+           <rect>
+            <x>290</x>
+            <y>50</y>
+            <width>121</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="placeholderText">
+           <string>1d-13</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
        <item row="1" column="1">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
@@ -1883,6 +2119,150 @@ border-style: solid;border-width: 1px;border-color: black
            <string>Description</string>
           </property>
          </widget>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QGroupBox" name="groupBox_19">
+         <property name="title">
+          <string>Sensitivity Kernel</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkBox">
+            <property name="text">
+             <string>Read from Files</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="6" column="2">
+        <widget class="QLabel" name="label_11">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Continue on to Grav/Mag Parameters Tab...</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_10">
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Global Parameters</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>Model Grid  Parameters</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_15">
+          <item row="7" column="4">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Z</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="5">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_6">
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="3">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_5">
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>X</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Y</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_4">
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Model Grid Size</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item row="1" column="2">
@@ -2000,284 +2380,109 @@ border-style: solid;border-width: 1px;border-color: black
          </layout>
         </widget>
        </item>
-       <item row="2" column="2">
-        <widget class="QGroupBox" name="groupBox_19">
-         <property name="title">
-          <string>Sensitivity Kernel</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_9">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkBox">
-            <property name="text">
-             <string>Read from Files</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="QGroupBox" name="groupBox_5">
-         <property name="title">
-          <string>Model Grid  Parameters</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_15">
-          <item row="7" column="4">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Z</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="5">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_6">
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="value">
-             <number>20</number>
-            </property>
-            <property name="displayIntegerBase">
-             <number>10</number>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="3">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_5">
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="value">
-             <number>20</number>
-            </property>
-            <property name="displayIntegerBase">
-             <number>10</number>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>X</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Y</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_4">
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="value">
-             <number>20</number>
-            </property>
-            <property name="displayIntegerBase">
-             <number>10</number>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Model Grid Size</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="5" column="2">
-        <widget class="QLabel" name="label_11">
-         <property name="font">
-          <font>
-           <pointsize>13</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Continue on to Grav/Mag  Parameters Tab...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_10">
-         <property name="font">
-          <font>
-           <pointsize>13</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Global Parameters</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1" rowspan="2" colspan="2">
-        <widget class="QGroupBox" name="groupBox_25">
+        <widget class="QGroupBox" name="groupBox_13">
          <property name="title">
-          <string>Inversion Parameters</string>
+          <string>Survey Parameters</string>
          </property>
-         <widget class="QLabel" name="label_41">
+         <widget class="QLabel" name="label_16">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>23</y>
-            <width>77</width>
+            <y>30</y>
+            <width>181</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>Major Iterations</string>
-          </property>
-         </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_7">
-          <property name="geometry">
-           <rect>
-            <x>93</x>
-            <y>23</y>
-            <width>64</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>10000</number>
-          </property>
-          <property name="singleStep">
-           <number>10</number>
-          </property>
-          <property name="value">
-           <number>3</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_63">
-          <property name="geometry">
-           <rect>
-            <x>208</x>
-            <y>20</y>
-            <width>76</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Minor Iterations</string>
-          </property>
-         </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_8">
-          <property name="geometry">
-           <rect>
-            <x>290</x>
-            <y>20</y>
-            <width>64</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>10000</number>
-          </property>
-          <property name="singleStep">
-           <number>10</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_65">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>49</y>
-            <width>73</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Model save iter</string>
-          </property>
-         </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_9">
-          <property name="geometry">
-           <rect>
-            <x>90</x>
-            <y>50</y>
-            <width>64</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>10000</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_64">
-          <property name="geometry">
-           <rect>
-            <x>208</x>
-            <y>50</y>
-            <width>59</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>min Residual</string>
+           <string>Height of mag sensor above ground</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QTextEdit" name="textEdit_3">
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="geometry">
            <rect>
-            <x>280</x>
-            <y>50</y>
+            <x>200</x>
+            <y>30</y>
             <width>121</width>
-            <height>21</height>
+            <height>22</height>
            </rect>
           </property>
-          <property name="placeholderText">
-           <string>1d-13</string>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>50.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_18">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>181</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Height of grav sensor above ground</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>60</y>
+            <width>121</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>50.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDateEdit" name="dateEdit">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>460</x>
+            <y>40</y>
+            <width>81</width>
+            <height>22</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_15">
+          <property name="geometry">
+           <rect>
+            <x>350</x>
+            <y>30</y>
+            <width>101</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Mag Survey 
+Day/Month/Year</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
         </widget>
@@ -2357,7 +2562,7 @@ border-style: solid;border-width: 1px;border-color: black
         <item row="5" column="0" colspan="2">
          <widget class="QLabel" name="label_84">
           <property name="text">
-           <string>Mag Bounds (sp sep)</string>
+           <string>Mag Bounds (space separated pairs)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2645,11 +2850,17 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QPushButton" name="pushButton_5">
        <property name="geometry">
         <rect>
-         <x>980</x>
+         <x>943</x>
          <y>540</y>
-         <width>104</width>
+         <width>141</width>
          <height>23</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
        <property name="text">
         <string>Save Parameter File</string>
@@ -2894,7 +3105,7 @@ border-style: solid;border-width: 1px;border-color: black
         <item row="4" column="1">
          <widget class="QLabel" name="label_73">
           <property name="text">
-           <string>Grav Bounds (sp sep)</string>
+           <string>Grav Bounds (space separated pairs)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2962,7 +3173,7 @@ border-style: solid;border-width: 1px;border-color: black
       </widget>
       <widget class="QGroupBox" name="groupBox_12">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -2973,42 +3184,16 @@ border-style: solid;border-width: 1px;border-color: black
         </rect>
        </property>
        <property name="title">
-        <string>Mag Survey Parameters (not yet active!!)</string>
+        <string>Magnetic Field Parameters (not yet active!!)</string>
        </property>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>20</y>
-          <width>121</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <double>10000.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>50.000000000000000</double>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_6">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Flight Height</string>
-        </property>
-       </widget>
        <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>120</x>
-          <y>50</y>
+          <y>60</y>
           <width>121</width>
           <height>22</height>
          </rect>
@@ -3021,10 +3206,13 @@ border-style: solid;border-width: 1px;border-color: black
         </property>
        </widget>
        <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>120</x>
-          <y>80</y>
+          <y>90</y>
           <width>121</width>
           <height>22</height>
          </rect>
@@ -3040,10 +3228,13 @@ border-style: solid;border-width: 1px;border-color: black
         </property>
        </widget>
        <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>120</x>
-          <y>110</y>
+          <y>120</y>
           <width>121</width>
           <height>22</height>
          </rect>
@@ -3059,7 +3250,7 @@ border-style: solid;border-width: 1px;border-color: black
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>50</y>
+          <y>60</y>
           <width>81</width>
           <height>16</height>
          </rect>
@@ -3072,7 +3263,7 @@ border-style: solid;border-width: 1px;border-color: black
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>80</y>
+          <y>90</y>
           <width>81</width>
           <height>16</height>
          </rect>
@@ -3085,13 +3276,29 @@ border-style: solid;border-width: 1px;border-color: black
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>110</y>
+          <y>120</y>
           <width>81</width>
           <height>16</height>
          </rect>
         </property>
         <property name="text">
          <string>Intensity</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>221</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Calculate from Survey Parameters</string>
         </property>
        </widget>
       </widget>
@@ -3111,17 +3318,67 @@ border-style: solid;border-width: 1px;border-color: black
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_8">
+        <widget class="QGroupBox" name="groupBox_14">
          <property name="font">
           <font>
-           <pointsize>13</pointsize>
+           <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
-         <property name="text">
+         <property name="title">
           <string>Run Inversion</string>
          </property>
+         <widget class="QLabel" name="label_6">
+          <property name="geometry">
+           <rect>
+            <x>50</x>
+            <y>30</y>
+            <width>1031</width>
+            <height>361</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Once you have saved the parameter file in the previous tab, you can copy the entire directory that contains the parfile to your machine with tomofast-x installed and from the tomofast-x directory you can run the inversion by entering either of the following lines on the command line: 
+
+1) For single node calculations type
+
+./tomofastx -j &lt;Parfile path&gt;
+
+2) For multiprocessor calculations type:
+
+ mpirun -np &lt;Number-of-cores&gt; ./tomofastx -j &lt;Parfile path&gt;</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_8">
+          <property name="geometry">
+           <rect>
+            <x>50</x>
+            <y>420</y>
+            <width>1021</width>
+            <height>181</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>If the code runs successfully you will see in the end of the screen log the messages &quot;Writing the full model...&quot;, and &quot;THE END&quot;. To visualize the final model, open in Paraview the file Paraview/grav_final_model3D_full.vtk (or Paraview/mag_final_model3D_full.vtk), located in the output folder. </string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
         </widget>
        </item>
       </layout>

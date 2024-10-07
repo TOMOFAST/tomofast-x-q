@@ -137,7 +137,7 @@ class Data2Tomofast:
         dz: vector of size nz
         """
 
-        if dataType == "points":
+        """        if dataType == "points":
             # print(self.df.columns)
             data_x = self.df["POINT_X"].values
             data_y = self.df["POINT_Y"].values
@@ -148,11 +148,11 @@ class Data2Tomofast:
             xcore_max = data_x.max() + 1.0
             ycore_min = data_y.min() - 1.0
             ycore_max = data_y.max() + 1.0
-        else:
-            xcore_min = meshBox["west"] - 1.0
-            xcore_max = meshBox["east"] + 1.0
-            ycore_min = meshBox["south"] - 1.0
-            ycore_max = meshBox["north"] + 1.0
+        else:"""
+        xcore_min = meshBox["west"] - 1.0
+        xcore_max = meshBox["east"] + 1.0
+        ycore_min = meshBox["south"] - 1.0
+        ycore_max = meshBox["north"] + 1.0
 
         Zmin = 0.0
         Zmax = Zmin + np.sum(dz)
@@ -164,7 +164,7 @@ class Data2Tomofast:
         Xmax = xcore_max + padding_size
         Ymin = ycore_min - padding_size
         Ymax = ycore_max + padding_size
-
+        print()
         # Grid dimensions.
         nx = int((Xmax - Xmin) / dx)
         ny = int((Ymax - Ymin) / dy)
