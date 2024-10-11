@@ -152,7 +152,7 @@ QTabBar::tab:hover {
        </property>
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
-         <widget class="QRadioButton" name="radioButton">
+         <widget class="QRadioButton" name="radioButton_grav_inv">
           <property name="text">
            <string>Gravity</string>
           </property>
@@ -162,7 +162,7 @@ QTabBar::tab:hover {
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QRadioButton" name="radioButton_2">
+         <widget class="QRadioButton" name="radioButton_magn_inv">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -175,7 +175,7 @@ QTabBar::tab:hover {
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QRadioButton" name="radioButton_3">
+         <widget class="QRadioButton" name="radioButton_joint_inv">
           <property name="text">
            <string>Joint</string>
           </property>
@@ -237,7 +237,7 @@ font-size: 13px;
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit_12">
+         <widget class="QLineEdit" name="lineEdit_grav_data_path">
           <property name="styleSheet">
            <string notr="true">QLineEdit {
     border-radius:0px; /* Ajustez la valeur pour contrôler l'arrondi des coins */
@@ -253,7 +253,7 @@ border-style: solid;border-width: 1px;border-color: black
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QPushButton" name="pushButton_7">
+         <widget class="QPushButton" name="pushButton_grav_data_path">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
           </property>
@@ -278,7 +278,7 @@ font-size: 13px;
          </widget>
         </item>
         <item row="1" column="1" colspan="2">
-         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_3"/>
+         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_grav_in"/>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_62">
@@ -296,10 +296,13 @@ font-size: 13px;
          </widget>
         </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_5"/>
+         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_grav_out"/>
         </item>
         <item row="3" column="2">
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pushButton_load_grav_data">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Load Grav Data</string>
           </property>
@@ -359,7 +362,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QComboBox" name="comboBox_2">
+       <widget class="QComboBox" name="comboBox_grav_field_x">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -396,7 +399,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QComboBox" name="comboBox_3">
+       <widget class="QComboBox" name="comboBox_grav_field_y">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -433,7 +436,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QComboBox" name="comboBox_4">
+       <widget class="QComboBox" name="comboBox_grav_field_data">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -446,7 +449,7 @@ font-size: 13px;
          </rect>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_9">
+       <widget class="QPushButton" name="pushButton_assign_grav_fields">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -498,7 +501,7 @@ font-size: 12px;</string>
        <property name="title">
         <string>Step 5 : Specify Mesh Parameters</string>
        </property>
-       <widget class="QSpinBox" name="spinBox_3">
+       <widget class="QSpinBox" name="spinBox_mesh_layer_2">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -538,7 +541,7 @@ font-size: 13px;
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_3">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_padding">
         <property name="geometry">
          <rect>
           <x>423</x>
@@ -560,7 +563,7 @@ font-size: 13px;
          <number>10</number>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_size_x">
         <property name="geometry">
          <rect>
           <x>423</x>
@@ -603,7 +606,7 @@ font-size: 13px;
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox">
+       <widget class="QSpinBox" name="spinBox_mesh_thick_number">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -615,6 +618,9 @@ font-size: 13px;
           <height>18</height>
          </rect>
         </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
         <property name="maximum">
          <number>4</number>
         </property>
@@ -622,7 +628,7 @@ font-size: 13px;
          <number>1</number>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_2">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_size_y">
         <property name="geometry">
          <rect>
           <x>423</x>
@@ -700,7 +706,7 @@ font-size: 13px;
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QLineEdit" name="lineEdit_17">
+       <widget class="QLineEdit" name="lineEdit_output_directory_path">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -900,7 +906,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox_2">
+       <widget class="QSpinBox" name="spinBox_mesh_layer_1">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -961,7 +967,7 @@ font-size: 13px;
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox_4">
+       <widget class="QSpinBox" name="spinBox_mesh_layer_3">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -980,7 +986,7 @@ font-size: 13px;
          <number>42</number>
         </property>
        </widget>
-       <widget class="QSpinBox" name="spinBox_5">
+       <widget class="QSpinBox" name="spinBox_mesh_layer_4">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -999,7 +1005,7 @@ font-size: 13px;
          <number>45</number>
         </property>
        </widget>
-       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_5">
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mesh_zsize_1">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1024,7 +1030,7 @@ font-size: 13px;
          <double>200.000000000000000</double>
         </property>
        </widget>
-       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_6">
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mesh_zsize_2">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1049,7 +1055,7 @@ font-size: 13px;
          <double>200.000000000000000</double>
         </property>
        </widget>
-       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_9">
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mesh_zsize_3">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1074,7 +1080,7 @@ font-size: 13px;
          <double>1000.000000000000000</double>
         </property>
        </widget>
-       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_11">
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mesh_zsize_4">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1099,7 +1105,7 @@ font-size: 13px;
          <double>1000.000000000000000</double>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_10">
+       <widget class="QPushButton" name="lineEdit_output_directory_path_select">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1207,7 +1213,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_10">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_south">
         <property name="geometry">
          <rect>
           <x>60</x>
@@ -1232,7 +1238,7 @@ font-size: 13px;
          <number>10</number>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_11">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_west">
         <property name="geometry">
          <rect>
           <x>60</x>
@@ -1292,7 +1298,7 @@ font-size: 13px;
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_13">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_east">
         <property name="geometry">
          <rect>
           <x>234</x>
@@ -1359,7 +1365,7 @@ font-size: 13px;
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_14">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_north">
         <property name="geometry">
          <rect>
           <x>234</x>
@@ -1384,7 +1390,7 @@ font-size: 13px;
          <number>10</number>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_14">
+       <widget class="QPushButton" name="lineEdit_ROI_path_select">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1409,7 +1415,7 @@ font-size: 13px;
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QLineEdit" name="lineEdit_16">
+       <widget class="QLineEdit" name="lineEdit_ROI_path">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1465,14 +1471,14 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="3" column="2">
-         <widget class="QPushButton" name="pushButton_6">
+         <widget class="QPushButton" name="pushButton_load_magn_data">
           <property name="text">
            <string>Load Mag Data</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit_14">
+         <widget class="QLineEdit" name="lineEdit_magn_data_path">
           <property name="styleSheet">
            <string notr="true">QLineEdit {
     border-radius:0px; /* Ajustez la valeur pour contrôler l'arrondi des coins */
@@ -1488,7 +1494,7 @@ border-style: solid;border-width: 1px;border-color: black
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QPushButton" name="pushButton_8">
+         <widget class="QPushButton" name="pushButton_magn_data_path">
           <property name="styleSheet">
            <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
           </property>
@@ -1543,10 +1549,10 @@ font-size: 13px;
          </widget>
         </item>
         <item row="1" column="1" colspan="2">
-         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_6"/>
+         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_magn_in"/>
         </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_8"/>
+         <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget_magn_out"/>
         </item>
        </layout>
       </widget>
@@ -1640,7 +1646,7 @@ font-size: 13px;
          </widget>
         </item>
         <item row="3" column="1" colspan="2">
-         <widget class="QPushButton" name="pushButton_16">
+         <widget class="QPushButton" name="pushButton_assign_magn_fields">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1657,21 +1663,21 @@ font-size: 12px;</string>
          </widget>
         </item>
         <item row="0" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_8">
+         <widget class="QComboBox" name="comboBox_magn_field_x">
           <property name="enabled">
            <bool>false</bool>
           </property>
          </widget>
         </item>
         <item row="1" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_9">
+         <widget class="QComboBox" name="comboBox_magn_field_y">
           <property name="enabled">
            <bool>false</bool>
           </property>
          </widget>
         </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_10">
+         <widget class="QComboBox" name="comboBox_magn_field_data">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1707,7 +1713,7 @@ font-size: 12px;</string>
        <property name="title">
         <string>Step 4 : Select DTM (optional)</string>
        </property>
-       <widget class="QLineEdit" name="lineEdit_13">
+       <widget class="QLineEdit" name="lineEdit_dtm_path">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1732,7 +1738,7 @@ border-style: solid;border-width: 1px;border-color: black
          <string>Path to DTM file</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_12">
+       <widget class="QPushButton" name="pushButton_select_dtm_path">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1751,7 +1757,7 @@ border-style: solid;border-width: 1px;border-color: black
          <string>...</string>
         </property>
        </widget>
-       <widget class="QRadioButton" name="radioButton_16">
+       <widget class="QRadioButton" name="radioButton_elev_const">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1770,7 +1776,7 @@ border-style: solid;border-width: 1px;border-color: black
          <bool>true</bool>
         </property>
        </widget>
-       <widget class="QRadioButton" name="radioButton_17">
+       <widget class="QRadioButton" name="radioButton_elev_dtm">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -1783,7 +1789,7 @@ border-style: solid;border-width: 1px;border-color: black
          <string>From file</string>
         </property>
        </widget>
-       <widget class="QgsSpinBox" name="mQgsSpinBox_12">
+       <widget class="QgsSpinBox" name="mQgsSpinBox_elev">
         <property name="geometry">
          <rect>
           <x>220</x>
@@ -1860,7 +1866,7 @@ font-size: 13px;
        </property>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="1">
-         <widget class="QPushButton" name="pushButton_13">
+         <widget class="QPushButton" name="pushButton_param_load_path">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -1879,7 +1885,7 @@ font-size: 13px;
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QLineEdit" name="lineEdit_15">
+         <widget class="QLineEdit" name="lineEdit_param_load_path">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -1965,7 +1971,7 @@ border-style: solid;border-width: 1px;border-color: black
            <string>Major Iterations</string>
           </property>
          </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_7">
+         <widget class="QgsSpinBox" name="mQgsSpinBox_major_iters">
           <property name="geometry">
            <rect>
             <x>100</x>
@@ -2000,7 +2006,7 @@ border-style: solid;border-width: 1px;border-color: black
            <string>Minor Iterations</string>
           </property>
          </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_8">
+         <widget class="QgsSpinBox" name="mQgsSpinBox_minor_iters">
           <property name="geometry">
            <rect>
             <x>290</x>
@@ -2035,7 +2041,7 @@ border-style: solid;border-width: 1px;border-color: black
            <string>Model save iter</string>
           </property>
          </widget>
-         <widget class="QgsSpinBox" name="mQgsSpinBox_9">
+         <widget class="QgsSpinBox" name="mQgsSpinBox_model_save_iters">
           <property name="geometry">
            <rect>
             <x>100</x>
@@ -2073,7 +2079,7 @@ border-style: solid;border-width: 1px;border-color: black
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QTextEdit" name="textEdit_3">
+         <widget class="QTextEdit" name="textEdit_min_residual">
           <property name="geometry">
            <rect>
             <x>290</x>
@@ -2093,13 +2099,13 @@ border-style: solid;border-width: 1px;border-color: black
          <property name="title">
           <string>Experiment Parameters</string>
          </property>
-         <widget class="QTextEdit" name="textEdit">
+         <widget class="QTextEdit" name="textEdit_experiment_description">
           <property name="geometry">
            <rect>
             <x>10</x>
             <y>42</y>
             <width>541</width>
-            <height>192</height>
+            <height>51</height>
            </rect>
           </property>
           <property name="placeholderText">
@@ -2126,15 +2132,19 @@ border-style: solid;border-width: 1px;border-color: black
          <property name="title">
           <string>Sensitivity Kernel</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_9">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkBox">
-            <property name="text">
-             <string>Read from Files</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QCheckBox" name="checkBox_read_sens_matrix">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>97</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Read from Files</string>
+          </property>
+         </widget>
         </widget>
        </item>
        <item row="6" column="2">
@@ -2185,7 +2195,10 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="7" column="5">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_6">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_cells_z">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>10000</number>
             </property>
@@ -2201,7 +2214,10 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="7" column="3">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_5">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_cells_y">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>10000</number>
             </property>
@@ -2237,7 +2253,10 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="QgsSpinBox" name="mQgsSpinBox_4">
+           <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_cells_x">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximum">
              <number>10000</number>
             </property>
@@ -2282,7 +2301,7 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_36">
+           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_weight">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -2311,7 +2330,7 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_37">
+           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_weight">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -2339,7 +2358,7 @@ border-style: solid;border-width: 1px;border-color: black
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkBox_use_compression">
             <property name="text">
              <string>Use Compression</string>
             </property>
@@ -2349,7 +2368,7 @@ border-style: solid;border-width: 1px;border-color: black
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_22">
+           <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_compression_ratio">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -2401,7 +2420,7 @@ border-style: solid;border-width: 1px;border-color: black
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2436,7 +2455,7 @@ border-style: solid;border-width: 1px;border-color: black
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2455,19 +2474,6 @@ border-style: solid;border-width: 1px;border-color: black
            <double>50.000000000000000</double>
           </property>
          </widget>
-         <widget class="QDateEdit" name="dateEdit">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>460</x>
-            <y>40</y>
-            <width>81</width>
-            <height>22</height>
-           </rect>
-          </property>
-         </widget>
          <widget class="QLabel" name="label_15">
           <property name="geometry">
            <rect>
@@ -2483,6 +2489,16 @@ Day/Month/Year</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QDateEdit" name="dateEdit">
+          <property name="geometry">
+           <rect>
+            <x>470</x>
+            <y>40</y>
+            <width>91</width>
+            <height>22</height>
+           </rect>
           </property>
          </widget>
         </widget>
@@ -2519,28 +2535,28 @@ Day/Month/Year</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_26">
         <item row="5" column="2" colspan="2">
-         <widget class="QTextEdit" name="textEdit_5">
+         <widget class="QTextEdit" name="textEdit_5_magn_ADMM_bounds">
           <property name="placeholderText">
            <string>-20. 20. 90. 130. 220. 260.</string>
           </property>
          </widget>
         </item>
         <item row="0" column="0" colspan="2">
-         <widget class="QRadioButton" name="radioButton_5">
+         <widget class="QRadioButton" name="radioButton_magn_ADMM_dist_based">
           <property name="text">
            <string>Distance-based</string>
           </property>
          </widget>
         </item>
         <item row="6" column="1" colspan="3">
-         <widget class="QLineEdit" name="lineEdit">
+         <widget class="QLineEdit" name="lineEdit_magn_ADMM_weight">
           <property name="placeholderText">
            <string>1d-5</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QRadioButton" name="radioButton_4">
+         <widget class="QRadioButton" name="radioButton_magn_ADMM_depth_based">
           <property name="text">
            <string>Depth-based</string>
           </property>
@@ -2580,7 +2596,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QSpinBox" name="spinBox_17">
+         <widget class="QSpinBox" name="spinBox_magn_ADMM_number_litho">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2641,7 +2657,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_33">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_mmodel_damping_weight">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2670,7 +2686,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_32">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_mmodel_norm_power">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2737,7 +2753,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_26">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_data_multiplier">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2769,7 +2785,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_25">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_model_multiplier">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2804,7 +2820,7 @@ Day/Month/Year</string>
        <property name="title">
         <string>Mag  Depth Weighting</string>
        </property>
-       <widget class="QCheckBox" name="checkBox_6">
+       <widget class="QCheckBox" name="checkBox_magn_depth_weighting">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -2847,7 +2863,10 @@ Day/Month/Year</string>
         </property>
        </widget>
       </widget>
-      <widget class="QPushButton" name="pushButton_5">
+      <widget class="QPushButton" name="pushButton_save_paramfile">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>943</x>
@@ -2881,7 +2900,7 @@ Day/Month/Year</string>
        <property name="title">
         <string>Grav Depth Weighting</string>
        </property>
-       <widget class="QCheckBox" name="checkBox_3">
+       <widget class="QCheckBox" name="checkBox_grav_depth_weighting">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -2910,7 +2929,7 @@ Day/Month/Year</string>
          <string>Power</string>
         </property>
        </widget>
-       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_2">
+       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_depth_weight_power">
         <property name="geometry">
          <rect>
           <x>220</x>
@@ -2951,7 +2970,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_42">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_weight">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -2977,7 +2996,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_41">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_norm_power">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -3024,7 +3043,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_35">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_data_multiplier">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -3056,7 +3075,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_34">
+         <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_multiplier">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -3113,7 +3132,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QSpinBox" name="spinBox_11">
+         <widget class="QSpinBox" name="spinBox_grav_number_ADMM_litho">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -3136,21 +3155,21 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="4" column="2">
-         <widget class="QTextEdit" name="textEdit_2">
+         <widget class="QTextEdit" name="textEdit_grav_ADMM_bounds">
           <property name="placeholderText">
            <string>-20. 20. 90. 130. 220. 260.</string>
           </property>
          </widget>
         </item>
         <item row="5" column="1">
-         <widget class="QLineEdit" name="lineEdit_2">
+         <widget class="QLineEdit" name="lineEdit_grav_ADMM_weight">
           <property name="placeholderText">
            <string>1d-5</string>
           </property>
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QRadioButton" name="radioButton_7">
+         <widget class="QRadioButton" name="radioButton_grav_dist_based_ADMM">
           <property name="text">
            <string>Distance-based</string>
           </property>
@@ -3160,7 +3179,7 @@ Day/Month/Year</string>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QRadioButton" name="radioButton_6">
+         <widget class="QRadioButton" name="radioButton_grav_depth_based_ADMM">
           <property name="text">
            <string>Depth-based</string>
           </property>
@@ -3186,7 +3205,7 @@ Day/Month/Year</string>
        <property name="title">
         <string>Magnetic Field Parameters</string>
        </property>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_mag_dec">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -3205,7 +3224,7 @@ Day/Month/Year</string>
          <double>90.000000000000000</double>
         </property>
        </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_mag_inc">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -3227,7 +3246,7 @@ Day/Month/Year</string>
          <double>-45.000000000000000</double>
         </property>
        </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_mag_int">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -3285,9 +3304,9 @@ Day/Month/Year</string>
          <string>Intensity</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_calc_IGRF">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
