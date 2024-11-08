@@ -16,7 +16,7 @@ F. Specify mesh parameters (optionally defined from max/min extents of a polygon
     
 **Select Global Parameters tab**
 ![tomofast dialog tab 2](plugin2.png) 
-G. Define compression file directory and project description and other Inversion parameters. Check the Estimated Memory Requirements to make sure you run the inversion of a computer with enough memory.   
+G. Define compression file directory and project description and other Inversion parameters. Check the Estimated Memory Requirements to make sure you run the inversion on a computer with enough memory.   
 H. Specify Survey parameters   
    
 **Select Grav/Mag Parameters tab**
