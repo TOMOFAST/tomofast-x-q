@@ -243,14 +243,17 @@ class Tomofast_x:
         self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
             "Define uniform padding distance around model"
         )
-        self.dlg.mQgsSpinBox_mesh_cells_x.setToolTip(
-            "Number of model grid cells in the x direciton (this will be calculated from the cell dimensions and model extents in the previous tab)"
+        self.dlg.nx_label.setToolTip(
+            "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)"
         )
-        self.dlg.mQgsSpinBox_mesh_cells_y.setToolTip(
-            "Number of model grid cells in the y direciton (this will be calculated from the cell dimensions and model extents in the previous tab)"
+        self.dlg.ny_label.setToolTip(
+            "Number of model grid cells in the y direction (this will be calculated from the cell dimensions and model extents)"
         )
-        self.dlg.mQgsSpinBox_mesh_cells_z.setToolTip(
-            "Number of model grid cells in the z direciton (this will be calculated from the cell dimensions and model extents in the previous tab)"
+        self.dlg.nz_label.setToolTip(
+            "Number of model grid cells in the z direction (this will be calculated from the cell dimensions and model extents)"
+        )
+        self.dlg.memory_label.setToolTip(
+            "Estimate of the memory required in GB to run the inversion, based on: 8 * nx * ny * nz * ndata * compression"
         )
         self.dlg.mQgsSpinBox_major_iters.setToolTip(
             "Number of major iterations of inversion to run, unless minimum residual value if data error is reached"
@@ -665,6 +668,12 @@ class Tomofast_x:
             self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
         )
 
+        suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
+        if suffix.lower() == "csv":
+            self.global_dataType = "points"
+        else:
+            self.global_dataType = "raster"
+
         # enable GroupBox 9
         if self.global_dataType == "points":
             self.dlg.groupBox_9.setEnabled(True)
@@ -693,6 +702,11 @@ class Tomofast_x:
         self.magn_proj_out = (
             self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
         )
+        suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
+        if suffix.lower() == "csv":
+            self.global_dataType = "points"
+        else:
+            self.global_dataType = "raster"
 
         # enable GroupBox 10
         if self.global_dataType == "points":
@@ -704,6 +718,8 @@ class Tomofast_x:
             self.dlg.comboBox_magn_field_y.setEnabled(True)
             self.dlg.comboBox_magn_field_data.setEnabled(True)
             self.dlg.pushButton_assign_magn_fields.setEnabled(True)
+            self.dlg.lineEdit_ROI_path_select.setEnabled(True)
+            self.dlg.lineEdit_ROI_path.setEnabled(True)
         else:
             self.dlg.groupBox_2.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
@@ -711,6 +727,8 @@ class Tomofast_x:
             self.dlg.label_46.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
             self.dlg.radioButton_elev_const.setEnabled(True)
+            self.dlg.lineEdit_ROI_path_select.setEnabled(True)
+            self.dlg.lineEdit_ROI_path.setEnabled(True)
             self.update_widgets()
 
     # process load grav data, update gui and display as layer
@@ -1072,7 +1090,6 @@ class Tomofast_x:
             temppath = result["OUTPUT"]
             gd = gdal.Open(temppath)
             self.dtm_array = gd.ReadAsArray()
-
             layers = QgsProject.instance().mapLayersByName("Reprojected")
             layers[0].setName("Reprojected DTM")
             self.rearrange()
@@ -1149,6 +1166,7 @@ class Tomofast_x:
             proj = Transformer.from_crs(layer_crs, out_proj, always_xy=True)
             x, y = (extent.xMinimum(), extent.yMinimum())
             minx, miny = proj.transform(x, y)
+
             x, y = (extent.xMaximum(), extent.yMaximum())
             maxx, maxy = proj.transform(x, y)
 
@@ -1159,8 +1177,8 @@ class Tomofast_x:
 
             self.meshBox = {
                 "south": int(miny),
-                "west": int(maxy),
-                "north": int(minx),
+                "west": int(minx),
+                "north": int(maxy),
                 "east": int(maxx),
             }
 
@@ -1170,6 +1188,7 @@ class Tomofast_x:
             else:
                 # Add the raster layer to the QGIS project
                 QgsProject.instance().addMapLayer(self.data_raster_layer)
+                self.update_model_grid_size()
 
             self.global_dataType = "raster"
 
@@ -1181,20 +1200,22 @@ class Tomofast_x:
 
         self.dlg.lineEdit_output_directory_path.setText(self.global_outputFolderPath)
         if self.global_outputFolderPath:
+            if os.path.exists(self.global_outputFolderPath):
+                self.output_directory = os.path.split(
+                    self.dlg.lineEdit_output_directory_path.text()
+                )[-1]
 
-            self.output_directory = os.path.split(
-                self.dlg.lineEdit_output_directory_path.text()
-            )[-1]
-            self.save_outputs()
-            self.iface.messageBar().pushMessage(
-                "Files saved to ",
-                self.dlg.lineEdit_output_directory_path.text(),
-                "Directory",
-                level=Qgis.Success,
-                duration=15,
-            )
-            self.dlg.pushButton_save_paramfile.setEnabled(True)
-            self.dlg.pushButton_calc_IGRF.setEnabled(True)
+                self.save_outputs()
+                self.iface.messageBar().pushMessage(
+                    "Files saved to ",
+                    self.dlg.lineEdit_output_directory_path.text(),
+                    "Directory",
+                    level=Qgis.Success,
+                    duration=15,
+                )
+                self.dlg.pushButton_save_paramfile.setEnabled(True)
+                self.dlg.pushButton_calc_IGRF.setEnabled(True)
+                self.update_memory_size()
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
@@ -1204,6 +1225,7 @@ class Tomofast_x:
             self.global_elevType = 2
 
         self.setupMesh()
+
         if self.global_experimentType == 1:
             self.dlg.mQgsDoubleSpinBox_grav_weight.setValue(1.0)
             self.dlg.mQgsDoubleSpinBox_magn_weight.setValue(0.0)
@@ -1232,10 +1254,12 @@ class Tomofast_x:
 
         self.load_mesh_vector()
         if self.global_elevType == 2:
-            self.data2tomofast.add_topography(
+            mean_elevation = self.data2tomofast.add_topography(
                 self.global_outputFolderPath + "/model_grid.txt",
                 self.global_outputFolderPath + "/elevation_grid.csv",
             )
+        else:
+            mean_elevation = 0
 
         # self.tidy_layers()
 
@@ -1627,14 +1651,65 @@ class Tomofast_x:
             self.global_outputFolderPath,
         )
 
-        self.dlg.mQgsSpinBox_mesh_cells_x.setValue(self.data2tomofast.nx)
-        self.dlg.mQgsSpinBox_mesh_cells_y.setValue(self.data2tomofast.ny)
-        self.dlg.mQgsSpinBox_mesh_cells_z.setValue(self.data2tomofast.nz)
+        self.dlg.nx_label.setText(str(self.data2tomofast.nx))
+        self.dlg.ny_label.setText(str(self.data2tomofast.ny))
+        self.dlg.nz_label.setText(str(self.data2tomofast.nz))
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.forward_data_grav_nData = self.data2tomofast.nData
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.forward_data_magn_nData = self.data2tomofast.nData
+
+    def update_model_grid_size(self):
+        self.setupMesh()
+
+        nx = int(
+            (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
+            / self.cell_x
+        )
+        ny = int(
+            (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
+            / self.cell_y
+        )
+        nz = self.z_layer1_base
+
+        self.dlg.nx_label.setText(str(nx))
+        self.dlg.ny_label.setText(str(ny))
+        self.dlg.nz_label.setText(str(nz))
+
+    def update_memory_size(self):
+        self.setupMesh()
+        if self.dlg.checkBox_use_compression.isChecked():
+            compression = self.dlg.mQgsDoubleSpinBox_compression_ratio.value()
+        else:
+            compression = 1.0
+
+        nx = int(
+            (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
+            / self.cell_x
+        )
+        ny = int(
+            (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
+            / self.cell_y
+        )
+        nz = self.z_layer1_base
+
+        if self.global_experimentType == 1:
+            memory = 8 * compression * nx * ny * nz * self.forward_data_grav_nData
+        elif self.global_experimentType == 2:
+            memory = 8 * compression * nx * ny * nz * self.forward_data_magn_nData
+        else:
+            memory = (
+                8
+                * compression
+                * nx
+                * ny
+                * nz
+                * (self.forward_data_magn_nData + self.forward_data_grav_nData)
+            )
+
+        memory = round(memory / (1024 * 1024 * 1024), 3)
+        self.dlg.memory_label.setText(str(memory))
 
     def reproj_raster(self, rasterInPath, targetCrs, dataType):
         parameter = {
@@ -1764,8 +1839,6 @@ class Tomofast_x:
 
         data_df = data_df.rename(columns=column_list)
         data_df = data_df.drop(columns=["fid"])
-        # print("data_column", data_column)
-        # print("data_df", data_df.head().to_string())
 
         new_column_order = ["POINT_X", "POINT_Y", "POINT_Z", "data1"]
         data_df = data_df[new_column_order]
@@ -2213,9 +2286,9 @@ class Tomofast_x:
         self.global_description = self.dlg.textEdit_experiment_description.toPlainText()
 
         self.modelGrid_size = [
-            self.dlg.mQgsSpinBox_mesh_cells_x.value(),
-            self.dlg.mQgsSpinBox_mesh_cells_y.value(),
-            self.dlg.mQgsSpinBox_mesh_cells_z.value(),
+            int(self.dlg.nx_label.text()),
+            int(self.dlg.ny_label.text()),
+            int(self.dlg.nz_label.text()),
         ]
         self.modelGrid_grav_file = self.global_outputFolderPath + "/model_grav_grid.txt"
         self.modelGrid_magn_file = self.global_outputFolderPath + "/model_magn_grid.txt"
@@ -2474,22 +2547,22 @@ class Tomofast_x:
             ],
             "modelGrid.size": [
                 self.modelGrid_size,
-                self.dlg.mQgsSpinBox_mesh_cells_x,
-                self.dlg.mQgsSpinBox_mesh_cells_y,
-                self.dlg.mQgsSpinBox_mesh_cells_z,
-                int,
+                self.dlg.nx_label,
+                self.dlg.ny_label,
+                self.dlg.nz_label,
+                str,
                 "size",
             ],
             "forward.data.grav.nData": [self.forward_data_grav_nData, "", int, "ndata"],
             "forward.data.magn.nData": [self.forward_data_magn_nData, "", int, "ndata"],
             # MODEL GRID parameters
-            "modelGrid.grav.file": [
+            "anomalies.grav.data_file": [
                 self.modelGrid_grav_file,
                 self.dlg.lineEdit_grav_data_path,
                 str,
                 "text",
             ],
-            "modelGrid.magn.file": [
+            "anomalies.magn.data_file": [
                 self.modelGrid_magn_file,
                 self.dlg.lineEdit_magn_data_path,
                 str,
@@ -2813,9 +2886,9 @@ class Tomofast_x:
                             elif p[-1] == "path":
                                 p[1] = p[0]
                             elif p[-1] == "size":
-                                p[1].setValue(p[-2](p[0][0]))
-                                p[2].setValue(p[-2](p[0][1]))
-                                p[3].setValue(p[-2](p[0][2]))
+                                p[1].setText(p[-2](p[0][0]))
+                                p[2].setText(p[-2](p[0][1]))
+                                p[3].setText(p[-2](p[0][2]))
 
                         else:
                             print("blank", pkey)
@@ -2831,7 +2904,7 @@ class Tomofast_x:
         self.dlg.groupBox_4.setEnabled(True)
         self.dlg.groupBox_28.setEnabled(True)
         self.dlg.groupBox_19.setEnabled(True)
-        self.dlg.groupBox_5.setEnabled(True)
+        self.dlg.Model_grid_size.setEnabled(True)
         self.dlg.groupBox_25.setEnabled(True)
         if self.dataType == "raster":
             self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
@@ -3040,4 +3113,37 @@ class Tomofast_x:
             self.dlg.radioButton_elev_const.toggled.connect(self.dtm_type)
             self.dlg.radioButton_elev_dtm.toggled.connect(self.dtm_type)
 
+            # updating model grid size
+            self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_north.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_east.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_west.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.spinBox_mesh_layer_1.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.lineEdit_ROI_path_select.clicked.connect(
+                self.update_model_grid_size
+            )
+
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
+                self.update_memory_size
+            )
+            self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
         result = self.dlg.exec_()

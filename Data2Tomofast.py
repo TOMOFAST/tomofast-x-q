@@ -28,8 +28,6 @@ class Data2Tomofast:
         # Read input data file.
         df = pd.read_csv(input_file)
 
-        # print(df.head())
-
         # Convert data positions from lat/long to cartesian.
         transformer = Transformer.from_crs(
             epsg_from,  # degrees
@@ -40,33 +38,16 @@ class Data2Tomofast:
             df[long_column].values, df[lat_column].values
         )
 
-        """        
-        print(
-            "min/max X:",
-            np.min(data_x),
-            np.max(data_x),
-            np.max(data_x) - np.min(data_x),
-        )
-        print(
-            "min/max Y:",
-            np.min(data_y),
-            np.max(data_y),
-            np.max(data_y) - np.min(data_y),
-        )
-        """
         # Update data frame with converted data positions.
         df["POINT_X"] = data_x
         df["POINT_Y"] = data_y
 
         data = df[data_column].values
-        # print("min/max data values:", np.min(data), np.max(data))
 
         Ndata = data.size
         self.nData = Ndata
-        # print("Number of data:", Ndata)
 
         self.df = df
-        # print(self.df.columns)
 
     # =================================================================================
     def add_elevation(self, elevation, elevType, df_elev):
@@ -114,8 +95,6 @@ class Data2Tomofast:
             filename, sep=" ", columns=column_list, index=False, header=False, mode="a"
         )
 
-        # print("Wrote data to file:", out_file)
-
     # =================================================================================
     def plot_data(self, data_column):
         """
@@ -157,14 +136,12 @@ class Data2Tomofast:
         Zmin = 0.0
         Zmax = Zmin + np.sum(dz)
 
-        # print("Zmax =", Zmax)
-
         # Grid with paddings.
         Xmin = xcore_min - padding_size
         Xmax = xcore_max + padding_size
         Ymin = ycore_min - padding_size
         Ymax = ycore_max + padding_size
-        print()
+
         # Grid dimensions.
         nx = int((Xmax - Xmin) / dx)
         ny = int((Ymax - Ymin) / dy)
@@ -173,7 +150,6 @@ class Data2Tomofast:
         self.nx = nx
         self.ny = ny
         self.nz = nz
-        # print("nx, ny, nz =", nx, ny, nz)
 
         nelements = nx * ny * nz
 
@@ -218,8 +194,6 @@ class Data2Tomofast:
             comments="",
         )
 
-        # print("Wrote model grid to file:", model_grid_file_name)
-
     # =================================================================================
     def add_topography(self, model_grid_file, elevation_grid_file):
         """
@@ -237,7 +211,6 @@ class Data2Tomofast:
         nx = int(model_grid[-1, 7])
         ny = int(model_grid[-1, 8])
         nz = int(model_grid[-1, 9])
-        # print("nx, ny, nz =", nx, ny, nz)
 
         # Convert to 2D array.
         elevation_grid = elevation_grid.reshape((ny, nx))
@@ -275,6 +248,7 @@ class Data2Tomofast:
             header=str(nelements),
             comments="",
         )
+        return elevation_grid.mean()
 
 
 # =================================================================================
