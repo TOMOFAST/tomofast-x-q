@@ -1,11 +1,11 @@
 #/***************************************************************************
 # Tomofast_x
 #
-# Supprts Tomofast-x geophysical inversion code
+# Supports Tomofast-x geophysical inversion code
 #							 -------------------
-#		begin				: 2024-04-03
+#		begin				: 2024-11-08
 #		git sha				: $Format:%H$
-#		copyright			: (C) 2024 by uwa.edu.au
+#		copyright			: (C) 2024 by Mark Jessell
 #		email				: mark.jessell@uwa.edu.au
 # ***************************************************************************/
 #
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	Tomofast_x.py Tomofast_x_dialog.py
+	Tomofast_x.py Tomofast_x_dockwidget.py
 
 PLUGINNAME = Tomofast_x
 
 PY_FILES = \
 	__init__.py \
-	Tomofast_x.py Tomofast_x_dialog.py
+	Tomofast_x.py Tomofast_x_dockwidget.py
 
-UI_FILES = Tomofast_x_dialog_base.ui
+UI_FILES = Tomofast_x_dockwidget_base.ui
 
 EXTRAS = metadata.txt icon.png
 

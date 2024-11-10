@@ -1,7 +1,7 @@
 Plugin Builder Results
 
 Your plugin Tomofast_x was created in:
-    C:/Users/00073294/Dropbox/loop_minex/Tomfastx\tomofast_x
+    C:/Users/00073294/Dropbox/temp_dropbox/Tomofast_x\Tomofast_x
 
 Your QGIS plugin directory is located at:
     C:/Users/00073294/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
@@ -21,7 +21,7 @@ What's Next:
 
   * Create your own custom icon, replacing the default icon.png
 
-  * Modify your user interface by opening Tomofast_x_dialog_base.ui in Qt Designer
+  * Modify your user interface by opening Tomofast_x_dockwidget_base.ui in Qt Designer
 
   * You can use the Makefile to compile your Ui and resource files when
     you make changes. This requires GNU make (gmake)

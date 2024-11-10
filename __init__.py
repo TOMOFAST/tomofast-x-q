@@ -33,4 +33,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .Tomofast_x import Tomofast_x
+
     return Tomofast_x(iface)

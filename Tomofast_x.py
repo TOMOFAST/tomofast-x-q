@@ -21,16 +21,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import (
-    QSettings,
-    QTranslator,
-    QCoreApplication,
-    QFileInfo,
-    QVariant,
-    Qt,
-)
-from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtWidgets import QAction, QFileDialog
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
@@ -43,12 +36,13 @@ from qgis.core import (
     QgsVectorFileWriter,
     QgsPoint,
 )
-from qgis.core import (
-    QgsRendererRangeLabelFormat,
-    QgsStyle,
-    QgsGraduatedSymbolRenderer,
-    QgsClassificationEqualInterval,
-    QgsSymbol,
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QTranslator,
+    QCoreApplication,
+    QFileInfo,
+    QVariant,
+    Qt,
 )
 from qgis.core import (
     QgsProject,
@@ -60,16 +54,16 @@ from qgis.core import (
     QgsFields,
     QgsRasterLayer,
 )
-from qgis.PyQt.QtCore import QVariant
-from osgeo import gdal
+from qgis.core import (
+    QgsRendererRangeLabelFormat,
+    QgsStyle,
+    QgsGraduatedSymbolRenderer,
+    QgsClassificationEqualInterval,
+    QgsSymbol,
+)
 
-# from PyQt4.QtCore import QFileInfo
-# Initialize Qt resources from file resources.py
-from .resources import *
-
-# Import the code for the dialog
-from .Tomofast_x_dialog import Tomofast_xDialog
-import os.path
+from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtWidgets import QAction, QFileDialog
 
 # import functions from scripts
 from .Data2Tomofast import Data2Tomofast
@@ -85,6 +79,14 @@ from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
 
 
+# Initialize Qt resources from file resources.py
+from .resources import *
+
+# Import the code for the DockWidget
+from .Tomofast_x_dockwidget import Tomofast_xDockWidget
+import os.path
+
+
 class Tomofast_x:
     """QGIS Plugin Implementation."""
 
@@ -98,8 +100,10 @@ class Tomofast_x:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
+
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
         locale_path = os.path.join(
@@ -113,355 +117,17 @@ class Tomofast_x:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr("&Tomofast-x")
+        self.menu = self.tr("&Tomofast_x")
+        # TODO: We are going to let the user set this up in a future iteration
+        self.toolbar = self.iface.addToolBar("Tomofast_x")
+        self.toolbar.setObjectName("Tomofast_x")
+
+        # print "** INITIALIZING Tomofast_x"
+
+        self.pluginIsActive = False
+        self.dlg = None
 
         self.initialise_variables()
-
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
-
-    def define_tips(self):
-        self.dlg.checkBox_read_sens_matrix.setToolTip(
-            "Load previously calculated sensistivity matrix"
-        )
-        self.dlg.checkBox_use_compression.setToolTip(
-            "Use wavelet compression to speed calculations and reduce memory demands of inversion"
-        )
-        self.dlg.checkBox_grav_depth_weighting.setToolTip(
-            "Enable depth weighting for gravity inversion"
-        )
-        self.dlg.checkBox_magn_depth_weighting.setToolTip(
-            "Enable depth weighting for magnetic inversion"
-        )
-        self.dlg.comboBox_grav_field_x.setToolTip(
-            "Define column in csv file that contains Longitude/Easting information"
-        )
-        self.dlg.comboBox_grav_field_y.setToolTip(
-            "Define column in csv file that contains Latitude/Northing information"
-        )
-        self.dlg.comboBox_grav_field_data.setToolTip(
-            "Define column in csv file that contains Gravity information"
-        )
-        self.dlg.comboBox_magn_field_x.setToolTip(
-            "Define column in csv file that contains Longitude/Easting information"
-        )
-        self.dlg.comboBox_magn_field_y.setToolTip(
-            "Define column in csv file that contains Latitude/Northing information"
-        )
-        self.dlg.groupBox_10.setToolTip(
-            "Define column in csv file that contains Magnetic information"
-        )
-        self.dlg.lineEdit_grav_ADMM_weight.setToolTip(
-            "Define weighting of ADMM constraint"
-        )
-        self.dlg.lineEdit_magn_ADMM_weight.setToolTip(
-            "Define weighting of ADMM constraint"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
-            "Index of power term for depth weighting [3 for magnetics]"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setToolTip(
-            "Define cell z size between 3rd and 4th depths"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.setToolTip(
-            "Index of power term for depth weighting [2 for gravity]"
-        )
-        self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
-            "Amount of wavelt compression [smaller value means more compression]"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.setToolTip(
-            "Multiplier for scaling of output models"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_data_multiplier.setToolTip(
-            "Multiplier for input gravity data to convert it to SI units"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power.setToolTip(
-            "Define power exponent of gravity model damping term"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
-            "Define weight of gravity model damping term (m - m_prior)"
-        )
-        self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.setToolTip(
-            "Multiplier for scaling of output models"
-        )
-        self.dlg.mQgsDoubleSpinBox_magn_data_multiplier.setToolTip(
-            "Multiplier for input magnetic data to convert it to SI units"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_weight.setToolTip(
-            "Relative weighting of gravity data for joint inversion"
-        )
-        self.dlg.mQgsDoubleSpinBox_magn_weight.setToolTip(
-            "Relative weighting of magnetic data for joint inversion"
-        )
-        self.dlg.mQgsDoubleSpinBox_magn_model_norm_power.setToolTip(
-            "Define power exponent of magnetic model damping term"
-        )
-        self.dlg.mQgsDoubleSpinBox_magn_model_weight.setToolTip(
-            "Define weight of magnetic model damping term (m - m_prior)"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setToolTip(
-            "Define cell z size down to base of 1st depth"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setToolTip(
-            "Define cell z size between 1st and 2nd depth"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setToolTip(
-            "Define cell z size between 2nd and 3rd depth"
-        )
-        self.dlg.label_61.setToolTip(
-            "Define input gravity data projection system [EPSG:4326]"
-        )
-        self.dlg.label_62.setToolTip(
-            "Define processed gravity data projection system [EPSG:4326]"
-        )
-        self.dlg.label_68.setToolTip(
-            "Define input magnetic data projection system [EPSG:4326]"
-        )
-        self.dlg.label_71.setToolTip(
-            "Define processed magnetic data projection system [EPSG:4326]"
-        )
-        self.dlg.mQgsSpinBox_mesh_south.setToolTip(
-            "Define minimum Northing value for model grid (not taking into account the padding)"
-        )
-        self.dlg.mQgsSpinBox_mesh_east.setToolTip(
-            "Define minimum Easting value for model grid (not taking into account the padding)"
-        )
-        self.dlg.mQgsSpinBox_elev.setToolTip("Define constant surface elevation value")
-        self.dlg.mQgsSpinBox_mesh_west.setToolTip(
-            "Define maximum Easting value for model grid (not taking into account the padding)"
-        )
-        self.dlg.mQgsSpinBox_mesh_north.setToolTip(
-            "Define maximum Northing value for model grid (not taking into account the padding)"
-        )
-        self.dlg.mQgsSpinBox_mesh_size_x.setToolTip(
-            "Define model grid x cell dimension"
-        )
-        self.dlg.mQgsSpinBox_mesh_size_y.setToolTip(
-            "Define model grid x cell dimension"
-        )
-        self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
-            "Define uniform padding distance around model"
-        )
-        self.dlg.nx_label.setToolTip(
-            "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)"
-        )
-        self.dlg.ny_label.setToolTip(
-            "Number of model grid cells in the y direction (this will be calculated from the cell dimensions and model extents)"
-        )
-        self.dlg.nz_label.setToolTip(
-            "Number of model grid cells in the z direction (this will be calculated from the cell dimensions and model extents)"
-        )
-        self.dlg.memory_label.setToolTip(
-            "Estimate of the memory required in GB to run the inversion, based on: 8 * nx * ny * nz * ndata * compression"
-        )
-        self.dlg.mQgsSpinBox_major_iters.setToolTip(
-            "Number of major iterations of inversion to run, unless minimum residual value if data error is reached"
-        )
-        self.dlg.mQgsSpinBox_minor_iters.setToolTip(
-            "Number of minor iterations of inversion to run per major iteration"
-        )
-        self.dlg.mQgsSpinBox_model_save_iters.setToolTip(
-            "spacing between major iterations to save model outputs (0 means only save final model)"
-        )
-        self.dlg.lineEdit_output_directory_path_select.setToolTip(
-            "Select or create directory that will store all data, model grid and parfiles, then process data, dtm and model grid files"
-        )
-        self.dlg.pushButton_select_dtm_path.setToolTip(
-            "Load TIF format Digital Terrane Model"
-        )
-        self.dlg.pushButton_param_load_path.setToolTip(
-            "Optional: Load existing parfile as the basis for updating an experiment"
-        )
-        self.dlg.pushButton_assign_magn_fields.setToolTip(
-            "Assign x,y,data fields defined above"
-        )
-        self.dlg.pushButton_load_grav_data.setToolTip("Load gravity data as QGIS Layer")
-        self.dlg.pushButton_save_paramfile.setToolTip(
-            "Save out parameter file based on current dialog settings"
-        )
-        self.dlg.pushButton_load_magn_data.setToolTip(
-            "Load magnetic data as QGIS Layer"
-        )
-        self.dlg.pushButton_grav_data_path.setToolTip(
-            "Select a gravity dataset in csv, tif or ers format"
-        )
-        self.dlg.pushButton_magn_data_path.setToolTip(
-            "Select a magnetic dataset in csv, tif or ers format"
-        )
-        self.dlg.pushButton_assign_grav_fields.setToolTip(
-            "Assign x,y,data fields defined above"
-        )
-        self.dlg.radioButton_grav_inv.setToolTip(
-            "Define parameters for gravity inversion experiemnt"
-        )
-        self.dlg.radioButton_elev_const.setToolTip(
-            "Assume constant elevaiton for ground surface"
-        )
-        self.dlg.radioButton_elev_dtm.setToolTip(
-            "Define ground topography by loading a TIF format Digital Terrane Model"
-        )
-        self.dlg.radioButton_magn_inv.setToolTip(
-            "Define parameters for magnetic inversion experiemnt"
-        )
-        self.dlg.radioButton_joint_inv.setToolTip(
-            "Define parameters for joint gravity-magnetic inversion experiemnt"
-        )
-        self.dlg.radioButton_magn_ADMM_depth_based.setToolTip(
-            "Select depth-based ADMM constraints"
-        )
-        self.dlg.radioButton_magn_ADMM_dist_based.setToolTip(
-            "Select distance-based ADMM constraints"
-        )
-        self.dlg.radioButton_grav_depth_based_ADMM.setToolTip(
-            "Select depth-based ADMM constraints"
-        )
-        self.dlg.radioButton_grav_dist_based_ADMM.setToolTip(
-            "Select distance-based ADMM constraints"
-        )
-        self.dlg.spinBox_mesh_thick_number.setToolTip(
-            "Define number of different cell z sizes for model grid"
-        )
-        self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
-            "Number of distinct pairs of ADMM density upper and lower bounds"
-        )
-        self.dlg.spinBox_magn_ADMM_number_litho.setToolTip(
-            "Number of distinct pairs of ADMM magnetic susceptibility upper and lower bounds"
-        )
-        self.dlg.spinBox_mesh_layer_1.setToolTip(
-            "Depth to base of model with 1st cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_2.setToolTip(
-            "Depth to base of model with 2nd cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_3.setToolTip(
-            "Depth to base of model with 3rd cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_4.setToolTip(
-            "Depth to base of model with 4th cell z size"
-        )
-        self.dlg.textEdit_experiment_description.setToolTip(
-            "Provide free-form metadata for experiment"
-        )
-        self.dlg.textEdit_grav_ADMM_bounds.setToolTip(
-            "Space separated pairs of upper and lower ADMM density bounds"
-        )
-        self.dlg.textEdit_min_residual.setToolTip(
-            "Residual data error threshold before inversion stops"
-        )
-        self.dlg.textEdit_5_magn_ADMM_bounds.setToolTip(
-            "Space separated pairs of upper and lower ADMM magnetic susceptibility bounds"
-        )
-
-        # ------------------------new tootips--------------------------------------------------
-        self.dlg.doubleSpinBox_magn_sensor_height.setToolTip(
-            "Height of mag sensor above DTM, assumes draped survey at const height"
-        )
-        self.dlg.doubleSpinBox_grav_sensor_height.setToolTip(
-            "Height of grav sensor above DTM, assumes draped survey at const height"
-        )
-        self.dlg.dateEdit.setToolTip(
-            "Date of Mag Survey, used for auto IGRF calculation"
-        )
-        self.dlg.lineEdit_ROI_path_select.setToolTip(
-            "Load a shapefile to define x,y limts of Mesh (converts max/min extents of shape into a rectangle)"
-        )
-        self.dlg.pushButton_calc_IGRF.setToolTip(
-            "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh"
-        )
-        self.dlg.doubleSpinBox_mag_dec.setToolTip(
-            "Manual overide of Magnetic Declination"
-        )
-        self.dlg.doubleSpinBox_mag_inc.setToolTip(
-            "Manual overide of Magnetic Inclination"
-        )
-        self.dlg.doubleSpinBox_mag_int.setToolTip(
-            "Manual overide of Magnetic Intensity"
-        )
-
-    # establish default values for parameters
-
-    def initialise_variables(self):
-        self.global_experimentType = 1
-        self.modelGrid_grav_file = 0
-        self.global_outputFolderPath = 0
-        self.global_description = 0
-        self.modelGrid_size0 = 0
-        self.forward_data_grav_nData = 0
-        self.forward_data_grav_dataGridFile = 0
-        self.forward_data_grav_dataValuesFile = 0
-        self.modelGrid_magn_file = 0
-        self.forward_data_magn_nData = 0
-        self.forward_data_magn_dataGridFile = 0
-        self.forward_data_magn_dataValuesFile = 0
-        self.forward_depthWeighting_grav_type = 0
-        self.forward_depthWeighting_magn_type = 0
-        self.forward_depthWeighting_grav_power = 0
-        self.forward_depthWeighting_magn_power = 0
-        self.sensit_readFromFiles = 0
-        self.sensit_folderPath = 0
-        self.forward_matrixCompression_type = 0
-        self.forward_matrixCompression_rate = 0
-        self.inversion_priorModel_type = 0
-        self.inversion_priorModel_grav_value = 0
-        self.inversion_startingModel_type = 0
-        self.inversion_startingModel_grav_value = 0
-        self.inversion_nMajorIterations = 0
-        self.inversion_nMinorIterations = 0
-        self.inversion_writeModelEveryNiter = 0
-        self.inversion_minResidual = 1e-7
-        self.inversion_modelDamping_grav_weight = 0
-        self.inversion_modelDamping_grav_normPower = 0
-        self.inversion_modelDamping_magn_weight = 0
-        self.inversion_modelDamping_magn_normPower = 0
-        self.inversion_joint_grav_problemWeight = 0
-        self.inversion_joint_magn_problemWeight = 0
-        self.inversion_admm_grav_enableADMM = 0
-        self.inversion_admm_grav_nLithologies = 0
-        self.inversion_admm_grav_bounds = ""
-        self.inversion_admm_grav_weight = 0
-        self.inversion_admm_magn_enableADMM = 0
-        self.inversion_admm_magn_nLithologies = 0
-        self.inversion_admm_magn_bounds = ""
-        self.inversion_admm_magn_weight = 0
-        self.cell_x = 0
-        self.cell_y = 0
-        self.padding = 0
-        self.z_layers = 0
-        self.z_layer1_base = 0
-        self.z_layer1_size = 0
-        self.z_layer2_base = 0
-        self.z_layer2_size = 0
-        self.z_layer3_base = 0
-        self.z_layer3_size = 0
-        self.z_layer4_base = 0
-        self.z_layer4_size = 0
-        self.elevation = 0
-        self.filename_grav = 0
-        self.filename_magn = 0
-        self.grav_proj_in = 0
-        self.grav_proj_out = 0
-        self.magn_proj_in = 0
-        self.magn_proj_out = 0
-        self.dtmFixed = 0
-        self.global_elevType = 0
-        self.global_elevFilename = 0
-        self.modelGrid_size = [0, 0, 0]
-        self.global_elevConst = 0
-        self.global_grav_dataUnitsMultiplier = 0
-        self.global_magn_dataUnitsMultiplier = 0
-        self.global_grav_modelUnitsMultiplier = 0
-        self.global_magn_modelUnitsMultiplier = 0
-        self.meshBox = 0
-        self.grav_SurveyHeight = 0
-        self.magn_SurveyHeight = 0
-        self.magn_SurveyDay = 0
-        self.magn_SurveyMonth = 0
-        self.magn_SurveyYear = 0
-        self.forward_magneticField_declination = 0
-        self.forward_magneticField_inclination = 0
-        self.forward_magneticField_intensity = 0
-        self.dataType = "points"
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -541,8 +207,7 @@ class Tomofast_x:
             action.setWhatsThis(whats_this)
 
         if add_to_toolbar:
-            # Adds plugin icon to Plugins toolbar
-            self.iface.addToolBarIcon(action)
+            self.toolbar.addAction(action)
 
         if add_to_menu:
             self.iface.addPluginToMenu(self.menu, action)
@@ -553,25 +218,167 @@ class Tomofast_x:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        # Set DPI Awareness
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 
         icon_path = ":/plugins/Tomofast_x/icon.png"
         self.add_action(
             icon_path,
-            text=self.tr("Tomofast-x"),
+            text=self.tr("Tomofast_x"),
             callback=self.run,
             parent=self.iface.mainWindow(),
         )
 
-        # will be set False in run()
-        self.first_start = True
+    # --------------------------------------------------------------------------
+
+    def onClosePlugin(self):
+        """Cleanup necessary items here when plugin dockwidget is closed"""
+
+        # print "** CLOSING Tomofast_x"
+
+        # disconnects
+        self.dlg.closingPlugin.disconnect(self.onClosePlugin)
+
+        # remove this statement if dockwidget is to remain
+        # for reuse if plugin is reopened
+        # Commented next statement since it causes QGIS crashe
+        # when closing the docked window:
+        # self.dlg = None
+
+        self.pluginIsActive = False
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+
+        # print "** UNLOAD Tomofast_x"
+
         for action in self.actions:
-            self.iface.removePluginMenu(self.tr("&Tomofast-x"), action)
+            self.iface.removePluginMenu(self.tr("&Tomofast_x"), action)
             self.iface.removeToolBarIcon(action)
+        # remove the toolbar
+        del self.toolbar
+
+    # --------------------------------------------------------------------------
+
+    def run(self):
+        """Run method that loads and starts the plugin"""
+
+        if not self.pluginIsActive:
+            self.pluginIsActive = True
+
+            # print "** STARTING Tomofast_x"
+
+            # dockwidget may not exist if:
+            #    first run of plugin
+            #    removed on close (see self.onClosePlugin method)
+            if self.dlg == None:
+                # Create the dockwidget (after translation) and keep reference
+                self.dlg = Tomofast_xDockWidget()
+
+            # connect to provide cleanup on closing of dockwidget
+            self.dlg.closingPlugin.connect(self.onClosePlugin)
+
+            # show the dockwidget
+            # TODO: fix to allow choice of dock location
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dlg)
+
+            self.dlg.show()
+            self.define_tips()
+            # self.dlg.setFixedSize(1131, 680)
+            self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
+                QgsCoordinateReferenceSystem("EPSG:4326")
+            )
+            self.dlg.mQgsProjectionSelectionWidget_grav_out.setCrs(
+                QgsCoordinateReferenceSystem("EPSG:4326")
+            )
+            self.dlg.mQgsProjectionSelectionWidget_magn_in.setCrs(
+                QgsCoordinateReferenceSystem("EPSG:4326")
+            )
+            self.dlg.mQgsProjectionSelectionWidget_magn_out.setCrs(
+                QgsCoordinateReferenceSystem("EPSG:4326")
+            )
+            # self.dlg.lineEdit_ROI_path_select.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
+            self.dlg.spinBox_mesh_layer_2.setEnabled(False)
+            # self.dlg.spinBox_4.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
+            # self.dlg.spinBox_5.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
+            self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
+            self.dlg.spinBox_mesh_layer_1.setEnabled(True)
+            self.dlg.radioButton_magn_inv.setChecked(False)
+
+            self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
+            self.dlg.pushButton_load_grav_data.clicked.connect(
+                self.confirm_data_file_grav
+            )
+            self.dlg.pushButton_load_magn_data.clicked.connect(
+                self.confirm_data_file_mag
+            )
+            self.dlg.pushButton_save_paramfile.clicked.connect(self.save_parameter_file)
+            self.dlg.pushButton_grav_data_path.clicked.connect(
+                self.select_grav_data_file
+            )
+            self.dlg.pushButton_magn_data_path.clicked.connect(
+                self.select_magn_data_file
+            )
+            self.dlg.pushButton_assign_grav_fields.clicked.connect(
+                self.process_data_fields_grav
+            )
+            self.dlg.pushButton_assign_magn_fields.clicked.connect(
+                self.process_data_fields_magn
+            )
+            self.dlg.lineEdit_output_directory_path_select.clicked.connect(
+                self.select_ouput_directory
+            )
+            # self.dlg.pushButton_11.clicked.connect(self.select_sensitivity_directory)
+            self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
+            self.dlg.pushButton_param_load_path.clicked.connect(
+                self.process_parameter_file
+            )
+            self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
+
+            self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type)
+            self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type)
+            self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
+
+            self.dlg.spinBox_mesh_thick_number.valueChanged.connect(self.mesh_layers)
+
+            self.dlg.radioButton_elev_const.toggled.connect(self.dtm_type)
+            self.dlg.radioButton_elev_dtm.toggled.connect(self.dtm_type)
+
+            # updating model grid size
+            self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_north.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_east.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_west.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.spinBox_mesh_layer_1.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.lineEdit_ROI_path_select.clicked.connect(
+                self.update_model_grid_size
+            )
+
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
+                self.update_memory_size
+            )
+            self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
+        # result = self.dlg.exec_()
 
     # load and parse existing paramfiel and set gui widgets accordingly
     def process_parameter_file(self):
@@ -1370,6 +1177,7 @@ class Tomofast_x:
 
     # convert raster data into points based on mesh locations
     def convert_raster_data(self, filename, proj_out, dataType):
+
         # define  and update raster parameters
         if dataType == 1:
             self.datacol_grav = "data"
@@ -1871,6 +1679,8 @@ class Tomofast_x:
                 self.output_directory + "/OUTPUT"
             )
         )
+        if not self.global_description:
+            self.global_description = "Inversion Experiment"
         self.params.write(
             "global.description                  = {}\n".format(self.global_description)
         )
@@ -3041,7 +2851,265 @@ class Tomofast_x:
             self.dlg.spinBox_mesh_layer_4.setEnabled(True)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(True)
 
-    def run(self):
+    def define_tips(self):
+        self.dlg.checkBox_read_sens_matrix.setToolTip(
+            "Load previously calculated sensistivity matrix"
+        )
+        self.dlg.checkBox_use_compression.setToolTip(
+            "Use wavelet compression to speed calculations and reduce memory demands of inversion"
+        )
+        self.dlg.checkBox_grav_depth_weighting.setToolTip(
+            "Enable depth weighting for gravity inversion"
+        )
+        self.dlg.checkBox_magn_depth_weighting.setToolTip(
+            "Enable depth weighting for magnetic inversion"
+        )
+        self.dlg.comboBox_grav_field_x.setToolTip(
+            "Define column in csv file that contains Longitude/Easting information"
+        )
+        self.dlg.comboBox_grav_field_y.setToolTip(
+            "Define column in csv file that contains Latitude/Northing information"
+        )
+        self.dlg.comboBox_grav_field_data.setToolTip(
+            "Define column in csv file that contains Gravity information"
+        )
+        self.dlg.comboBox_magn_field_x.setToolTip(
+            "Define column in csv file that contains Longitude/Easting information"
+        )
+        self.dlg.comboBox_magn_field_y.setToolTip(
+            "Define column in csv file that contains Latitude/Northing information"
+        )
+        self.dlg.groupBox_10.setToolTip(
+            "Define column in csv file that contains Magnetic information"
+        )
+        self.dlg.lineEdit_grav_ADMM_weight.setToolTip(
+            "Define weighting of ADMM constraint"
+        )
+        self.dlg.lineEdit_magn_ADMM_weight.setToolTip(
+            "Define weighting of ADMM constraint"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
+            "Index of power term for depth weighting [3 for magnetics]"
+        )
+        self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setToolTip(
+            "Define cell z size between 3rd and 4th depths"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.setToolTip(
+            "Index of power term for depth weighting [2 for gravity]"
+        )
+        self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
+            "Amount of wavelt compression [smaller value means more compression]"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.setToolTip(
+            "Multiplier for scaling of output models"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_data_multiplier.setToolTip(
+            "Multiplier for input gravity data to convert it to SI units"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power.setToolTip(
+            "Define power exponent of gravity model damping term"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
+            "Define weight of gravity model damping term (m - m_prior)"
+        )
+        self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.setToolTip(
+            "Multiplier for scaling of output models"
+        )
+        self.dlg.mQgsDoubleSpinBox_magn_data_multiplier.setToolTip(
+            "Multiplier for input magnetic data to convert it to SI units"
+        )
+        self.dlg.mQgsDoubleSpinBox_grav_weight.setToolTip(
+            "Relative weighting of gravity data for joint inversion"
+        )
+        self.dlg.mQgsDoubleSpinBox_magn_weight.setToolTip(
+            "Relative weighting of magnetic data for joint inversion"
+        )
+        self.dlg.mQgsDoubleSpinBox_magn_model_norm_power.setToolTip(
+            "Define power exponent of magnetic model damping term"
+        )
+        self.dlg.mQgsDoubleSpinBox_magn_model_weight.setToolTip(
+            "Define weight of magnetic model damping term (m - m_prior)"
+        )
+        self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setToolTip(
+            "Define cell z size down to base of 1st depth"
+        )
+        self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setToolTip(
+            "Define cell z size between 1st and 2nd depth"
+        )
+        self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setToolTip(
+            "Define cell z size between 2nd and 3rd depth"
+        )
+        self.dlg.label_61.setToolTip(
+            "Define input gravity data projection system [EPSG:4326]"
+        )
+        self.dlg.label_62.setToolTip(
+            "Define processed gravity data projection system [EPSG:4326]"
+        )
+        self.dlg.label_68.setToolTip(
+            "Define input magnetic data projection system [EPSG:4326]"
+        )
+        self.dlg.label_71.setToolTip(
+            "Define processed magnetic data projection system [EPSG:4326]"
+        )
+        self.dlg.mQgsSpinBox_mesh_south.setToolTip(
+            "Define minimum Northing value for model grid (not taking into account the padding)"
+        )
+        self.dlg.mQgsSpinBox_mesh_east.setToolTip(
+            "Define minimum Easting value for model grid (not taking into account the padding)"
+        )
+        self.dlg.mQgsSpinBox_elev.setToolTip("Define constant surface elevation value")
+        self.dlg.mQgsSpinBox_mesh_west.setToolTip(
+            "Define maximum Easting value for model grid (not taking into account the padding)"
+        )
+        self.dlg.mQgsSpinBox_mesh_north.setToolTip(
+            "Define maximum Northing value for model grid (not taking into account the padding)"
+        )
+        self.dlg.mQgsSpinBox_mesh_size_x.setToolTip(
+            "Define model grid x cell dimension"
+        )
+        self.dlg.mQgsSpinBox_mesh_size_y.setToolTip(
+            "Define model grid x cell dimension"
+        )
+        self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
+            "Define uniform padding distance around model"
+        )
+        self.dlg.nx_label.setToolTip(
+            "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)"
+        )
+        self.dlg.ny_label.setToolTip(
+            "Number of model grid cells in the y direction (this will be calculated from the cell dimensions and model extents)"
+        )
+        self.dlg.nz_label.setToolTip(
+            "Number of model grid cells in the z direction (this will be calculated from the cell dimensions and model extents)"
+        )
+        self.dlg.memory_label.setToolTip(
+            "Estimate of the memory required in GB to run the inversion, based on: 8 * nx * ny * nz * ndata * compression"
+        )
+        self.dlg.mQgsSpinBox_major_iters.setToolTip(
+            "Number of major iterations of inversion to run, unless minimum residual value if data error is reached"
+        )
+        self.dlg.mQgsSpinBox_minor_iters.setToolTip(
+            "Number of minor iterations of inversion to run per major iteration"
+        )
+        self.dlg.mQgsSpinBox_model_save_iters.setToolTip(
+            "spacing between major iterations to save model outputs (0 means only save final model)"
+        )
+        self.dlg.lineEdit_output_directory_path_select.setToolTip(
+            "Select or create directory that will store all data, model grid and parfiles, then process data, dtm and model grid files"
+        )
+        self.dlg.pushButton_select_dtm_path.setToolTip(
+            "Load TIF format Digital Terrane Model"
+        )
+        self.dlg.pushButton_param_load_path.setToolTip(
+            "Optional: Load existing parfile as the basis for updating an experiment"
+        )
+        self.dlg.pushButton_assign_magn_fields.setToolTip(
+            "Assign x,y,data fields defined above"
+        )
+        self.dlg.pushButton_load_grav_data.setToolTip("Load gravity data as QGIS Layer")
+        self.dlg.pushButton_save_paramfile.setToolTip(
+            "Save out parameter file based on current dialog settings"
+        )
+        self.dlg.pushButton_load_magn_data.setToolTip(
+            "Load magnetic data as QGIS Layer"
+        )
+        self.dlg.pushButton_grav_data_path.setToolTip(
+            "Select a gravity dataset in csv, tif or ers format"
+        )
+        self.dlg.pushButton_magn_data_path.setToolTip(
+            "Select a magnetic dataset in csv, tif or ers format"
+        )
+        self.dlg.pushButton_assign_grav_fields.setToolTip(
+            "Assign x,y,data fields defined above"
+        )
+        self.dlg.radioButton_grav_inv.setToolTip(
+            "Define parameters for gravity inversion experiemnt"
+        )
+        self.dlg.radioButton_elev_const.setToolTip(
+            "Assume constant elevaiton for ground surface"
+        )
+        self.dlg.radioButton_elev_dtm.setToolTip(
+            "Define ground topography by loading a TIF format Digital Terrane Model"
+        )
+        self.dlg.radioButton_magn_inv.setToolTip(
+            "Define parameters for magnetic inversion experiemnt"
+        )
+        self.dlg.radioButton_joint_inv.setToolTip(
+            "Define parameters for joint gravity-magnetic inversion experiemnt"
+        )
+        self.dlg.radioButton_magn_ADMM_depth_based.setToolTip(
+            "Select depth-based ADMM constraints"
+        )
+        self.dlg.radioButton_magn_ADMM_dist_based.setToolTip(
+            "Select distance-based ADMM constraints"
+        )
+        self.dlg.radioButton_grav_depth_based_ADMM.setToolTip(
+            "Select depth-based ADMM constraints"
+        )
+        self.dlg.radioButton_grav_dist_based_ADMM.setToolTip(
+            "Select distance-based ADMM constraints"
+        )
+        self.dlg.spinBox_mesh_thick_number.setToolTip(
+            "Define number of different cell z sizes for model grid"
+        )
+        self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
+            "Number of distinct pairs of ADMM density upper and lower bounds"
+        )
+        self.dlg.spinBox_magn_ADMM_number_litho.setToolTip(
+            "Number of distinct pairs of ADMM magnetic susceptibility upper and lower bounds"
+        )
+        self.dlg.spinBox_mesh_layer_1.setToolTip(
+            "Depth to base of model with 1st cell z size"
+        )
+        self.dlg.spinBox_mesh_layer_2.setToolTip(
+            "Depth to base of model with 2nd cell z size"
+        )
+        self.dlg.spinBox_mesh_layer_3.setToolTip(
+            "Depth to base of model with 3rd cell z size"
+        )
+        self.dlg.spinBox_mesh_layer_4.setToolTip(
+            "Depth to base of model with 4th cell z size"
+        )
+        self.dlg.textEdit_experiment_description.setToolTip(
+            "Provide free-form metadata for experiment"
+        )
+        self.dlg.textEdit_grav_ADMM_bounds.setToolTip(
+            "Space separated pairs of upper and lower ADMM density bounds"
+        )
+        self.dlg.textEdit_min_residual.setToolTip(
+            "Residual data error threshold before inversion stops"
+        )
+        self.dlg.textEdit_5_magn_ADMM_bounds.setToolTip(
+            "Space separated pairs of upper and lower ADMM magnetic susceptibility bounds"
+        )
+
+        # ------------------------new tootips--------------------------------------------------
+        self.dlg.doubleSpinBox_magn_sensor_height.setToolTip(
+            "Height of mag sensor above DTM, assumes draped survey at const height"
+        )
+        self.dlg.doubleSpinBox_grav_sensor_height.setToolTip(
+            "Height of grav sensor above DTM, assumes draped survey at const height"
+        )
+        self.dlg.dateEdit.setToolTip(
+            "Date of Mag Survey, used for auto IGRF calculation"
+        )
+        self.dlg.lineEdit_ROI_path_select.setToolTip(
+            "Load a shapefile to define x,y limts of Mesh (converts max/min extents of shape into a rectangle)"
+        )
+        self.dlg.pushButton_calc_IGRF.setToolTip(
+            "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh"
+        )
+        self.dlg.doubleSpinBox_mag_dec.setToolTip(
+            "Manual overide of Magnetic Declination"
+        )
+        self.dlg.doubleSpinBox_mag_inc.setToolTip(
+            "Manual overide of Magnetic Inclination"
+        )
+        self.dlg.doubleSpinBox_mag_int.setToolTip(
+            "Manual overide of Magnetic Intensity"
+        )
+
+    def runx(self):
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference
@@ -3049,6 +3117,7 @@ class Tomofast_x:
         if self.first_start == True:
             self.first_start = False
             self.dlg = Tomofast_xDialog()
+
             self.define_tips()
             # self.dlg.setFixedSize(1131, 680)
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
@@ -3147,3 +3216,85 @@ class Tomofast_x:
             )
             self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
         result = self.dlg.exec_()
+
+    def initialise_variables(self):
+        self.global_experimentType = 1
+        self.modelGrid_grav_file = 0
+        self.global_outputFolderPath = 0
+        self.global_description = 0
+        self.modelGrid_size0 = 0
+        self.forward_data_grav_nData = 0
+        self.forward_data_grav_dataGridFile = 0
+        self.forward_data_grav_dataValuesFile = 0
+        self.modelGrid_magn_file = 0
+        self.forward_data_magn_nData = 0
+        self.forward_data_magn_dataGridFile = 0
+        self.forward_data_magn_dataValuesFile = 0
+        self.forward_depthWeighting_grav_type = 0
+        self.forward_depthWeighting_magn_type = 0
+        self.forward_depthWeighting_grav_power = 0
+        self.forward_depthWeighting_magn_power = 0
+        self.sensit_readFromFiles = 0
+        self.sensit_folderPath = 0
+        self.forward_matrixCompression_type = 0
+        self.forward_matrixCompression_rate = 0
+        self.inversion_priorModel_type = 0
+        self.inversion_priorModel_grav_value = 0
+        self.inversion_startingModel_type = 0
+        self.inversion_startingModel_grav_value = 0
+        self.inversion_nMajorIterations = 0
+        self.inversion_nMinorIterations = 0
+        self.inversion_writeModelEveryNiter = 0
+        self.inversion_minResidual = 1e-7
+        self.inversion_modelDamping_grav_weight = 0
+        self.inversion_modelDamping_grav_normPower = 0
+        self.inversion_modelDamping_magn_weight = 0
+        self.inversion_modelDamping_magn_normPower = 0
+        self.inversion_joint_grav_problemWeight = 0
+        self.inversion_joint_magn_problemWeight = 0
+        self.inversion_admm_grav_enableADMM = 0
+        self.inversion_admm_grav_nLithologies = 0
+        self.inversion_admm_grav_bounds = ""
+        self.inversion_admm_grav_weight = 0
+        self.inversion_admm_magn_enableADMM = 0
+        self.inversion_admm_magn_nLithologies = 0
+        self.inversion_admm_magn_bounds = ""
+        self.inversion_admm_magn_weight = 0
+        self.cell_x = 0
+        self.cell_y = 0
+        self.padding = 0
+        self.z_layers = 0
+        self.z_layer1_base = 0
+        self.z_layer1_size = 0
+        self.z_layer2_base = 0
+        self.z_layer2_size = 0
+        self.z_layer3_base = 0
+        self.z_layer3_size = 0
+        self.z_layer4_base = 0
+        self.z_layer4_size = 0
+        self.elevation = 0
+        self.filename_grav = 0
+        self.filename_magn = 0
+        self.grav_proj_in = 0
+        self.grav_proj_out = 0
+        self.magn_proj_in = 0
+        self.magn_proj_out = 0
+        self.dtmFixed = 0
+        self.global_elevType = 0
+        self.global_elevFilename = 0
+        self.modelGrid_size = [0, 0, 0]
+        self.global_elevConst = 0
+        self.global_grav_dataUnitsMultiplier = 0
+        self.global_magn_dataUnitsMultiplier = 0
+        self.global_grav_modelUnitsMultiplier = 0
+        self.global_magn_modelUnitsMultiplier = 0
+        self.meshBox = 0
+        self.grav_SurveyHeight = 0
+        self.magn_SurveyHeight = 0
+        self.magn_SurveyDay = 0
+        self.magn_SurveyMonth = 0
+        self.magn_SurveyYear = 0
+        self.forward_magneticField_declination = 0
+        self.forward_magneticField_inclination = 0
+        self.forward_magneticField_intensity = 0
+        self.dataType = "points"
