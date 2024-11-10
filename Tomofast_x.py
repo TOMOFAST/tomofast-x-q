@@ -128,6 +128,7 @@ class Tomofast_x:
         self.dlg = None
 
         self.initialise_variables()
+        
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
