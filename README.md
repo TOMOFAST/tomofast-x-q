@@ -25,9 +25,9 @@ I. For mag survey autofill (using centroid of mesh) or define Magnetic Field par
 J. Modify parameters and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]   
    
 **Run tomofast-x from command line using the just-generated files**   
-- data_magn.csv and/or data_grav.csv: observed geophysical response   
-- model_grid.txt: Model mesh   
-- paramfile.txt: parameter definition file   
+- **data_magn.csv and/or data_grav.csv**: observed geophysical response   
+- **model_grid.txt**: Model mesh   
+- **paramfile.txt**: parameter definition file   
 
 ## Credits    
 Plugin construction - Mark Jessell using QGIS Plugin Builder Plugin and code from Vitaliy Ogarko   
