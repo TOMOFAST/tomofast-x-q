@@ -21,7 +21,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>0</y>
       <width>621</width>
       <height>751</height>
      </rect>
@@ -556,7 +556,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>100</y>
+         <y>130</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -578,7 +578,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>70</y>
+         <y>100</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -643,7 +643,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>40</y>
+         <y>70</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -753,7 +753,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>40</y>
+         <y>70</y>
          <width>67</width>
          <height>16</height>
         </rect>
@@ -879,7 +879,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>100</y>
+         <y>130</y>
          <width>77</width>
          <height>16</height>
         </rect>
@@ -900,7 +900,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>74</y>
+         <y>104</y>
          <width>67</width>
          <height>16</height>
         </rect>
@@ -1278,7 +1278,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>394</x>
-         <y>20</y>
+         <y>50</y>
          <width>151</width>
          <height>16</height>
         </rect>
@@ -1472,6 +1472,143 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="nz_label">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>30</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="nx_label">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>30</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>30</y>
+         <width>16</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Z</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="ny_label">
+       <property name="geometry">
+        <rect>
+         <x>480</x>
+         <y>30</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>30</y>
+         <width>16</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>X</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_4">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>30</y>
+         <width>16</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Y</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>30</y>
+         <width>47</width>
+         <height>13</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string># Cells</string>
        </property>
       </widget>
      </widget>
@@ -1824,7 +1961,7 @@ font-size: 12px;</string>
        <rect>
         <x>10</x>
         <y>370</y>
-        <width>311</width>
+        <width>321</width>
         <height>61</height>
        </rect>
       </property>
@@ -1850,10 +1987,10 @@ font-size: 12px;</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>17</x>
          <y>30</y>
-         <width>108</width>
-         <height>18</height>
+         <width>181</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1886,19 +2023,6 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="text">
         <string>...</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radioButton_elev_dtm">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>30</y>
-         <width>87</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>From file</string>
        </property>
       </widget>
      </widget>
@@ -1971,140 +2095,93 @@ border-style: solid;border-width: 1px;border-color: black
        </item>
       </layout>
      </widget>
-     <widget class="QGroupBox" name="Model_grid_size">
+     <widget class="QGroupBox" name="groupBox_15">
       <property name="geometry">
        <rect>
-        <x>330</x>
+        <x>340</x>
         <y>370</y>
-        <width>271</width>
+        <width>261</width>
         <height>61</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <pointsize>10</pointsize>
+        <pointsize>9</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
       </property>
       <property name="title">
-       <string>Model Grid Size</string>
+       <string>Sensor Height</string>
       </property>
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="label_19">
        <property name="geometry">
         <rect>
-         <x>180</x>
+         <x>10</x>
          <y>30</y>
-         <width>16</width>
-         <height>16</height>
+         <width>31</width>
+         <height>20</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
        <property name="text">
-        <string>Z</string>
+        <string>Mag</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>30</y>
-         <width>16</width>
-         <height>16</height>
-        </rect>
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height_2">
+       <property name="enabled">
+        <bool>true</bool>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>X</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>100</x>
-         <y>30</y>
-         <width>16</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Y</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QLabel" name="nx_label">
        <property name="geometry">
         <rect>
          <x>50</x>
          <y>30</y>
-         <width>41</width>
-         <height>16</height>
+         <width>71</width>
+         <height>22</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
        </property>
-       <property name="text">
-        <string>0</string>
+       <property name="singleStep">
+        <double>50.000000000000000</double>
        </property>
       </widget>
-      <widget class="QLabel" name="ny_label">
+      <widget class="QLabel" name="label_20">
        <property name="geometry">
         <rect>
          <x>130</x>
          <y>30</y>
          <width>41</width>
-         <height>16</height>
+         <height>20</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
        <property name="text">
-        <string>0</string>
+        <string>Grav</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="nz_label">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height_2">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="geometry">
         <rect>
-         <x>210</x>
+         <x>180</x>
          <y>30</y>
-         <width>41</width>
-         <height>16</height>
+         <width>71</width>
+         <height>22</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
        </property>
-       <property name="text">
-        <string>0</string>
+       <property name="singleStep">
+        <double>50.000000000000000</double>
        </property>
       </widget>
      </widget>
@@ -2116,7 +2193,7 @@ border-style: solid;border-width: 1px;border-color: black
      <zorder>groupBox_10</zorder>
      <zorder>groupBox_8</zorder>
      <zorder>groupBox_11</zorder>
-     <zorder>Model_grid_size</zorder>
+     <zorder>groupBox_15</zorder>
     </widget>
     <widget class="QWidget" name="Fieldwork_preparation">
      <property name="styleSheet">
@@ -2463,7 +2540,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>570</y>
+        <y>540</y>
         <width>551</width>
         <height>81</height>
        </rect>
@@ -2561,7 +2638,7 @@ border-style: solid;border-width: 1px;border-color: black
         <x>10</x>
         <y>470</y>
         <width>559</width>
-        <height>101</height>
+        <height>61</height>
        </rect>
       </property>
       <property name="title">
@@ -2572,12 +2649,12 @@ border-style: solid;border-width: 1px;border-color: black
         <rect>
          <x>10</x>
          <y>30</y>
-         <width>181</width>
-         <height>16</height>
+         <width>101</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Height of mag sensor above ground</string>
+        <string>Mag sensor height</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2589,9 +2666,9 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>200</x>
+         <x>120</x>
          <y>30</y>
-         <width>121</width>
+         <width>41</width>
          <height>22</height>
         </rect>
        </property>
@@ -2605,14 +2682,14 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_18">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>60</y>
-         <width>181</width>
-         <height>16</height>
+         <x>210</x>
+         <y>30</y>
+         <width>101</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Height of grav sensor above ground</string>
+        <string>Grav sensor height</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2624,9 +2701,9 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>200</x>
-         <y>60</y>
-         <width>121</width>
+         <x>320</x>
+         <y>30</y>
+         <width>41</width>
          <height>22</height>
         </rect>
        </property>
@@ -2635,33 +2712,6 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="singleStep">
         <double>50.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_15">
-       <property name="geometry">
-        <rect>
-         <x>340</x>
-         <y>30</y>
-         <width>101</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Mag Survey 
-Day/Month/Year</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QDateEdit" name="dateEdit">
-       <property name="geometry">
-        <rect>
-         <x>460</x>
-         <y>40</y>
-         <width>91</width>
-         <height>22</height>
-        </rect>
        </property>
       </widget>
      </widget>
@@ -2686,7 +2736,7 @@ Day/Month/Year</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>540</y>
+        <y>560</y>
         <width>591</width>
         <height>121</height>
        </rect>
@@ -3100,7 +3150,7 @@ Day/Month/Year</string>
       <property name="geometry">
        <rect>
         <x>230</x>
-        <y>680</y>
+        <y>690</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -3496,9 +3546,9 @@ separated pairs)</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>430</y>
+        <y>440</y>
         <width>561</width>
-        <height>101</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="title">
@@ -3609,14 +3659,41 @@ separated pairs)</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>40</y>
+         <x>40</x>
+         <y>70</y>
          <width>221</width>
          <height>23</height>
         </rect>
        </property>
        <property name="text">
         <string>Calculate from Survey Parameters</string>
+       </property>
+      </widget>
+      <widget class="QDateEdit" name="dateEdit">
+       <property name="geometry">
+        <rect>
+         <x>170</x>
+         <y>30</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_15">
+       <property name="geometry">
+        <rect>
+         <x>50</x>
+         <y>20</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Mag Survey 
+Day/Month/Year</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </widget>
@@ -3717,71 +3794,6 @@ p, li { white-space: pre-wrap; }
       </item>
      </layout>
     </widget>
-   </widget>
-   <widget class="QgsSpinBox" name="mQgsSpinBox_elev">
-    <property name="geometry">
-     <rect>
-      <x>990</x>
-      <y>900</y>
-      <width>64</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>10000</number>
-    </property>
-    <property name="singleStep">
-     <number>50</number>
-    </property>
-    <property name="value">
-     <number>0</number>
-    </property>
-    <property name="displayIntegerBase">
-     <number>10</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_46">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>870</x>
-      <y>900</y>
-      <width>81</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font-family: Arial; 
-font-size: 13px;
-</string>
-    </property>
-    <property name="text">
-     <string>Elev (const)</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_elev_const">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>780</x>
-      <y>900</y>
-      <width>87</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Constant</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
    </widget>
   </widget>
  </widget>

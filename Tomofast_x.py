@@ -128,7 +128,6 @@ class Tomofast_x:
         self.dlg = None
 
         self.initialise_variables()
-        
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -283,7 +282,6 @@ class Tomofast_x:
 
             self.dlg.show()
             self.define_tips()
-            # self.dlg.setFixedSize(1131, 680)
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
                 QgsCoordinateReferenceSystem("EPSG:4326")
             )
@@ -296,12 +294,9 @@ class Tomofast_x:
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setCrs(
                 QgsCoordinateReferenceSystem("EPSG:4326")
             )
-            # self.dlg.lineEdit_ROI_path_select.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
             self.dlg.spinBox_mesh_layer_2.setEnabled(False)
-            # self.dlg.spinBox_4.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
-            # self.dlg.spinBox_5.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
             self.dlg.spinBox_mesh_layer_1.setEnabled(True)
@@ -330,7 +325,6 @@ class Tomofast_x:
             self.dlg.lineEdit_output_directory_path_select.clicked.connect(
                 self.select_ouput_directory
             )
-            # self.dlg.pushButton_11.clicked.connect(self.select_sensitivity_directory)
             self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
             self.dlg.pushButton_param_load_path.clicked.connect(
                 self.process_parameter_file
@@ -342,9 +336,6 @@ class Tomofast_x:
             self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
 
             self.dlg.spinBox_mesh_thick_number.valueChanged.connect(self.mesh_layers)
-
-            self.dlg.radioButton_elev_const.toggled.connect(self.dtm_type)
-            self.dlg.radioButton_elev_dtm.toggled.connect(self.dtm_type)
 
             # updating model grid size
             self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
@@ -465,6 +456,7 @@ class Tomofast_x:
         if self.dtm_filename != "" and os.path.exists(self.dtm_filename):
             self.load_dtm()
             self.global_elevFilename = self.dtm_filename
+            self.global_elevType = 2
 
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file_grav(self):
@@ -492,13 +484,13 @@ class Tomofast_x:
             self.dlg.comboBox_grav_field_y.setEnabled(True)
             self.dlg.comboBox_grav_field_data.setEnabled(True)
             self.dlg.pushButton_assign_grav_fields.setEnabled(True)
+            self.dlg.pushButton_select_dtm_path.setEnabled(False)
         else:
             self.dlg.groupBox_2.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
-            self.dlg.label_46.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
-            self.dlg.radioButton_elev_const.setEnabled(True)
+
             self.update_widgets()
 
     # process input magn data and update gui to allow next stage of data to be defined
@@ -532,9 +524,7 @@ class Tomofast_x:
             self.dlg.groupBox_2.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
-            self.dlg.label_46.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
-            self.dlg.radioButton_elev_const.setEnabled(True)
             self.dlg.lineEdit_ROI_path_select.setEnabled(True)
             self.dlg.lineEdit_ROI_path.setEnabled(True)
             self.update_widgets()
@@ -615,9 +605,7 @@ class Tomofast_x:
             self.dlg.groupBox_2.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
-            self.dlg.label_46.setEnabled(True)
-            self.dlg.pushButton_select_dtm_path.setEnabled(False)
-            self.dlg.radioButton_elev_const.setEnabled(True)
+            self.dlg.pushButton_select_dtm_path.setEnabled(True)
 
             # enable GroupBox 3
             self.dlg.groupBox_3.setEnabled(True)
@@ -635,7 +623,6 @@ class Tomofast_x:
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(True)
-            self.dlg.radioButton_elev_const.setEnabled(True)
 
             # enable GroupBox 3
             self.dlg.groupBox_3.setEnabled(True)
@@ -803,10 +790,10 @@ class Tomofast_x:
         temp.commitChanges()
 
         QgsProject.instance().addMapLayer(temp)
-        if self.dlg.radioButton_elev_dtm.isChecked():
+        if self.global_elevType == 2:
             self.sample_elevation()
-        else:
-            self.dtmFixed = self.dlg.mQgsSpinBox_elev.value()
+        # else:
+        #    self.dtmFixed = self.dlg.mQgsSpinBox_elev.value()
 
     # extract dtm values based on mesh locaitons
     def sample_elevation(self):
@@ -1027,10 +1014,10 @@ class Tomofast_x:
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
-        if self.dlg.radioButton_elev_const.isChecked():
+        """if self.dlg.radioButton_elev_const.isChecked():
             self.global_elevType = 1
         else:
-            self.global_elevType = 2
+            self.global_elevType = 2"""
 
         self.setupMesh()
 
@@ -1058,8 +1045,6 @@ class Tomofast_x:
                 self.convert_raster_data(self.filename_magn, self.magn_proj_out, 2)
                 self.convert_point_data(self.global_dataType)
 
-            # self.convert_point_data(self.global_dataType)
-
         self.load_mesh_vector()
         if self.global_elevType == 2:
             mean_elevation = self.data2tomofast.add_topography(
@@ -1068,8 +1053,6 @@ class Tomofast_x:
             )
         else:
             mean_elevation = 0
-
-        # self.tidy_layers()
 
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
@@ -1191,7 +1174,6 @@ class Tomofast_x:
             reprojDataName = "/reproj_data_magn.tif"
             reprojPoints = "/reproj_data_magn.csv"
 
-        # self.parse_parameters()
         self.setupMesh()
 
         # write out mesh
@@ -1719,16 +1701,16 @@ class Tomofast_x:
         self.params.write(
             "#global.elevType                     = {}\n".format(self.global_elevType)
         )
-        if self.dlg.radioButton_elev_const.isChecked():
+        """if self.dlg.radioButton_elev_const.isChecked():
             self.params.write(
                 "#global.elevConst               = {}\n".format(self.global_elevConst)
             )
-        else:
-            self.params.write(
-                "global.elevFilename                 = {}\n".format(
-                    self.global_elevFilename
-                )
+        else:"""
+        self.params.write(
+            "global.elevFilename                 = {}\n".format(
+                self.global_elevFilename
             )
+        )
 
         self.spacer("MODEL GRID parameters")
 
@@ -1886,7 +1868,6 @@ class Tomofast_x:
                 self.inversion_writeModelEveryNiter
             )
         )
-        # self.params.write("inversion.minResidual               = {}\n".format(self.inversion_minResidual))
 
         self.spacer("MODEL DAMPING (m - m_prior)")
         if self.global_experimentType == 1 or self.global_experimentType == 3:
@@ -2103,8 +2084,7 @@ class Tomofast_x:
         ]
         self.modelGrid_grav_file = self.global_outputFolderPath + "/model_grav_grid.txt"
         self.modelGrid_magn_file = self.global_outputFolderPath + "/model_magn_grid.txt"
-        # self.forward_data_grav_nData             = self.data2tomofast.data_size
-        # self.forward_data_magn_nData             = self.data2tomofast.data_size
+
         self.forward_data_grav_dataGridFile = (
             self.global_outputFolderPath + "/data_grav.csv"
         )
@@ -2133,8 +2113,6 @@ class Tomofast_x:
             self.sensit_readFromFiles = 1
         else:
             self.sensit_readFromFiles = 0
-
-        # self.sensit_folderPath                   = self.dlg.lineEdit_grav_ADMM_weight0.text()
 
         if self.dlg.checkBox_use_compression.isChecked():
             self.forward_matrixCompression_type = 1
@@ -2224,13 +2202,7 @@ class Tomofast_x:
         self.filename_grav = self.dlg.lineEdit_grav_data_path.text()
         self.filename_magn = self.dlg.lineEdit_magn_data_path.text()
 
-        self.global_elevConst = self.dlg.mQgsSpinBox_elev.value()
         self.global_elevFilename = self.dlg.lineEdit_dtm_path.text()
-
-        if self.dlg.radioButton_elev_const.isChecked():
-            self.global_elevType = 1
-        else:
-            self.global_elevType = 2
 
         self.meshBox = {
             "south": self.dlg.mQgsSpinBox_mesh_south.value(),
@@ -2276,13 +2248,13 @@ class Tomofast_x:
                 int,
                 "radio",
             ],
-            "global.elevType": [
+            """"global.elevType": [
                 self.global_elevType,
                 self.dlg.radioButton_elev_const,
                 self.dlg.radioButton_elev_dtm,
                 int,
                 "radio",
-            ],
+            ],"""
             "global.elevFilename": [
                 self.global_elevFilename,
                 self.dlg.lineEdit_dtm_path,
@@ -2720,7 +2692,6 @@ class Tomofast_x:
         if self.dataType == "raster":
             self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
             self.dlg.mQgsspinBox_grav_number_ADMM_litho.setEnabled(False)
-            self.dlg.mQgsSpinBox_elev.setEnabled(False)
             self.dlg.mQgsSpinBox_13.setEnabled(False)
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
@@ -2759,19 +2730,10 @@ class Tomofast_x:
 
     # update elevation type based on gui
     def dtm_type(self):
-        if self.dlg.radioButton_elev_const.isChecked():  # const
-            self.dlg.mQgsSpinBox_elev.setEnabled(True)
-            self.dlg.label_46.setEnabled(True)
-            self.dlg.lineEdit_grav_data_path.setEnabled(False)
-            self.dlg.pushButton_select_dtm_path.setEnabled(False)
-            self.global_elevType = 1
-        else:  # from file
-            self.dlg.mQgsSpinBox_elev.setEnabled(False)
-            self.dlg.label_46.setEnabled(False)
-            self.dlg.mQgsSpinBox_elev.setEnabled(False)
-            self.dlg.lineEdit_grav_data_path.setEnabled(True)
-            self.dlg.pushButton_select_dtm_path.setEnabled(True)
-            self.global_elevType = 2
+
+        self.dlg.lineEdit_grav_data_path.setEnabled(True)
+        self.dlg.pushButton_select_dtm_path.setEnabled(True)
+        self.global_elevType = 2
 
     # update inversion type based on gui
     def inversion_type(self):
@@ -2786,8 +2748,6 @@ class Tomofast_x:
             self.dlg.groupBox_16.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
-            # self.dlg.groupBox_24.setEnabled(True)
-            # self.dlg.groupBox_21.setEnabled(True)
             self.dlg.groupBox_6.setEnabled(True)
 
             self.dlg.groupBox_29.setEnabled(False)
@@ -2958,7 +2918,6 @@ class Tomofast_x:
         self.dlg.mQgsSpinBox_mesh_east.setToolTip(
             "Define minimum Easting value for model grid (not taking into account the padding)"
         )
-        self.dlg.mQgsSpinBox_elev.setToolTip("Define constant surface elevation value")
         self.dlg.mQgsSpinBox_mesh_west.setToolTip(
             "Define maximum Easting value for model grid (not taking into account the padding)"
         )
@@ -3026,12 +2985,12 @@ class Tomofast_x:
         self.dlg.radioButton_grav_inv.setToolTip(
             "Define parameters for gravity inversion experiemnt"
         )
-        self.dlg.radioButton_elev_const.setToolTip(
+        """self.dlg.radioButton_elev_const.setToolTip(
             "Assume constant elevaiton for ground surface"
-        )
-        self.dlg.radioButton_elev_dtm.setToolTip(
+        )"""
+        """self.dlg.radioButton_elev_dtm.setToolTip(
             "Define ground topography by loading a TIF format Digital Terrane Model"
-        )
+        )"""
         self.dlg.radioButton_magn_inv.setToolTip(
             "Define parameters for magnetic inversion experiemnt"
         )
@@ -3120,7 +3079,6 @@ class Tomofast_x:
             self.dlg = Tomofast_xDialog()
 
             self.define_tips()
-            # self.dlg.setFixedSize(1131, 680)
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
                 QgsCoordinateReferenceSystem("EPSG:4326")
             )
@@ -3133,12 +3091,9 @@ class Tomofast_x:
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setCrs(
                 QgsCoordinateReferenceSystem("EPSG:4326")
             )
-            # self.dlg.lineEdit_ROI_path_select.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
             self.dlg.spinBox_mesh_layer_2.setEnabled(False)
-            # self.dlg.spinBox_4.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
-            # self.dlg.spinBox_5.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
             self.dlg.spinBox_mesh_layer_1.setEnabled(True)
@@ -3167,7 +3122,6 @@ class Tomofast_x:
             self.dlg.lineEdit_output_directory_path_select.clicked.connect(
                 self.select_ouput_directory
             )
-            # self.dlg.pushButton_11.clicked.connect(self.select_sensitivity_directory)
             self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
             self.dlg.pushButton_param_load_path.clicked.connect(
                 self.process_parameter_file
@@ -3179,9 +3133,6 @@ class Tomofast_x:
             self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
 
             self.dlg.spinBox_mesh_thick_number.valueChanged.connect(self.mesh_layers)
-
-            self.dlg.radioButton_elev_const.toggled.connect(self.dtm_type)
-            self.dlg.radioButton_elev_dtm.toggled.connect(self.dtm_type)
 
             # updating model grid size
             self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
@@ -3281,7 +3232,7 @@ class Tomofast_x:
         self.magn_proj_in = 0
         self.magn_proj_out = 0
         self.dtmFixed = 0
-        self.global_elevType = 0
+        self.global_elevType = 1
         self.global_elevFilename = 0
         self.modelGrid_size = [0, 0, 0]
         self.global_elevConst = 0
