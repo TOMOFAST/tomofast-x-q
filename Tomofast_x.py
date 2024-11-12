@@ -129,6 +129,404 @@ class Tomofast_x:
 
         self.initialise_variables()
 
+    def define_parameters(self):
+
+        #   set up dict with form
+        #
+        #   key=parfile variable name
+        #   values=p[0] variable contents,
+        #          p[1] associated widget(s),
+        #          p[-2] data type,
+        #          p[-1] widget type
+
+        self.d_params = {
+            # GLOBAL
+            "global.outputFolderPath": [
+                self.global_outputFolderPath,
+                self.dlg.lineEdit_output_directory_path,
+                str,
+                "text",
+            ],
+            "global.description": [
+                self.global_description,
+                self.dlg.textEdit_experiment_description,
+                str,
+                "plainText",
+            ],
+            "global.experimentType": [
+                self.global_experimentType,
+                self.dlg.radioButton_grav_inv,
+                self.dlg.radioButton_magn_inv,
+                self.dlg.radioButton_joint_inv,
+                int,
+                "radio",
+            ],
+            """"global.elevType": [
+                self.global_elevType,
+                self.dlg.radioButton_elev_const,
+                self.dlg.radioButton_elev_dtm,
+                int,
+                "radio",
+            ],"""
+            "global.elevFilename": [
+                self.global_elevFilename,
+                self.dlg.lineEdit_dtm_path,
+                str,
+                "text",
+            ],
+            # DATA Parameters
+            "anomalies.grav.data.file": [
+                self.filename_grav,
+                self.dlg.lineEdit_grav_data_path,
+                str,
+                "text",
+            ],
+            "anomalies.magn.data.file": [
+                self.filename_magn,
+                self.dlg.lineEdit_magn_data_path,
+                str,
+                "text",
+            ],
+            "anomalies.grav.proj.in": [
+                self.grav_proj_in,
+                self.dlg.mQgsProjectionSelectionWidget_grav_in,
+                str,
+                "epsg",
+            ],
+            "anomalies.grav.proj.out": [
+                self.grav_proj_out,
+                self.dlg.mQgsProjectionSelectionWidget_grav_out,
+                str,
+                "epsg",
+            ],
+            "anomalies.magn.proj.in": [
+                self.magn_proj_in,
+                self.dlg.mQgsProjectionSelectionWidget_magn_in,
+                str,
+                "epsg",
+            ],
+            "anomalies.magn.proj.out": [
+                self.magn_proj_out,
+                self.dlg.mQgsProjectionSelectionWidget_magn_out,
+                str,
+                "epsg",
+            ],
+            "forward.data.grav.dataGridFile": [
+                self.forward_data_grav_dataGridFile,
+                "",
+                str,
+                "path",
+            ],
+            "forward.data.magn.dataGridFile": [
+                self.forward_data_magn_dataGridFile,
+                "",
+                str,
+                "path",
+            ],
+            "forward.data.grav.dataValuesFile": [
+                self.forward_data_grav_dataValuesFile,
+                "",
+                str,
+                "path",
+            ],
+            "forward.data.magn.dataValuesFile": [
+                self.forward_data_magn_dataValuesFile,
+                "",
+                str,
+                "path",
+            ],
+            "modelGrid.size": [
+                self.modelGrid_size,
+                self.dlg.nx_label,
+                self.dlg.ny_label,
+                self.dlg.nz_label,
+                str,
+                "size",
+            ],
+            "forward.data.grav.nData": [self.forward_data_grav_nData, "", int, "ndata"],
+            "forward.data.magn.nData": [self.forward_data_magn_nData, "", int, "ndata"],
+            # MODEL GRID parameters
+            "anomalies.grav.data_file": [
+                self.modelGrid_grav_file,
+                self.dlg.lineEdit_grav_data_path,
+                str,
+                "text",
+            ],
+            "anomalies.magn.data_file": [
+                self.modelGrid_magn_file,
+                self.dlg.lineEdit_magn_data_path,
+                str,
+                "text",
+            ],
+            # DEPTH WEIGHTING
+            "forward.depthWeighting.grav.type": [
+                self.forward_depthWeighting_grav_type,
+                self.dlg.checkBox_grav_depth_weighting,
+                int,
+                "check",
+            ],
+            "forward.depthWeighting.magn.type": [
+                self.forward_depthWeighting_magn_type,
+                self.dlg.checkBox_magn_depth_weighting,
+                int,
+                "check",
+            ],
+            "forward.depthWeighting.grav.power": [
+                self.forward_depthWeighting_grav_power,
+                self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power,
+                float,
+                "value",
+            ],
+            "forward.depthWeighting.magn.power": [
+                self.forward_depthWeighting_magn_power,
+                self.dlg.mQgsDoubleSpinBox,
+                float,
+                "value",
+            ],
+            # SENSITIVITY KERNEL
+            "sensit.readFromFiles": [
+                self.sensit_readFromFiles,
+                self.dlg.checkBox_read_sens_matrix,
+                int,
+                "check",
+            ],
+            # MATRIX COMPRESSION
+            "forward.matrixCompression.type": [
+                self.forward_matrixCompression_type,
+                self.dlg.checkBox_use_compression,
+                int,
+                "check",
+            ],
+            "forward.matrixCompression.rate": [
+                self.forward_matrixCompression_rate,
+                self.dlg.mQgsDoubleSpinBox_compression_ratio,
+                float,
+                "value",
+            ],
+            # INVERSION parameters
+            "inversion.nMajorIterations": [
+                self.inversion_nMajorIterations,
+                self.dlg.mQgsSpinBox_major_iters,
+                int,
+                "value",
+            ],
+            "inversion.nMinorIterations": [
+                self.inversion_nMinorIterations,
+                self.dlg.mQgsSpinBox_minor_iters,
+                int,
+                "value",
+            ],
+            "inversion.writeModelEveryNiter": [
+                self.inversion_writeModelEveryNiter,
+                self.dlg.mQgsSpinBox_model_save_iters,
+                int,
+                "value",
+            ],
+            # "inversion.minResidual" : [self.inversion_minResidual,self.dlg.textEdit_min_residual,str,'plainText'],
+            # MODEL DAMPING (m - m_prior)
+            "inversion.modelDamping.grav.weight": [
+                self.inversion_modelDamping_grav_weight,
+                self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
+                float,
+                "value",
+            ],
+            "inversion.modelDamping.grav.normPower": [
+                self.inversion_modelDamping_grav_normPower,
+                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
+                float,
+                "value",
+            ],
+            "inversion.modelDamping.magn.weight": [
+                self.inversion_modelDamping_magn_weight,
+                self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
+                float,
+                "value",
+            ],
+            "inversion.modelDamping.magn.normPower": [
+                self.inversion_modelDamping_magn_normPower,
+                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
+                float,
+                "value",
+            ],
+            # JOINT INVERSION parameters
+            "inversion.joint.grav.problemWeight": [
+                self.inversion_joint_grav_problemWeight,
+                self.dlg.mQgsDoubleSpinBox_grav_weight,
+                float,
+                "value",
+            ],
+            "inversion.joint.magn.problemWeight": [
+                self.inversion_joint_magn_problemWeight,
+                self.dlg.mQgsDoubleSpinBox_magn_weight,
+                float,
+                "value",
+            ],
+            # ADMM constraints
+            "inversion.admm.grav.enableADMM": [
+                self.inversion_admm_grav_enableADMM,
+                self.dlg.radioButton_grav_depth_based_ADMM,
+                self.dlg.radioButton_grav_dist_based_ADMM,
+                int,
+                "radio",
+            ],
+            "inversion.admm.grav.nLithologies": [
+                self.inversion_admm_grav_nLithologies,
+                self.dlg.spinBox_grav_number_ADMM_litho,
+                int,
+                "value",
+            ],
+            "inversion.admm.grav.bounds": [
+                self.inversion_admm_grav_bounds,
+                self.dlg.textEdit_grav_ADMM_bounds,
+                str,
+                "plainText",
+            ],
+            "inversion.admm.grav.weight": [
+                self.inversion_admm_grav_weight,
+                self.dlg.lineEdit_grav_ADMM_weight,
+                str,
+                "text",
+            ],
+            "inversion.admm.magn.enableADMM": [
+                self.inversion_admm_magn_enableADMM,
+                self.dlg.radioButton_magn_ADMM_dist_based,
+                self.dlg.radioButton_magn_ADMM_depth_based,
+                int,
+                "radio",
+            ],
+            "inversion.admm.magn.nLithologies": [
+                self.inversion_admm_magn_nLithologies,
+                self.dlg.spinBox_magn_ADMM_number_litho,
+                int,
+                "value",
+            ],
+            "inversion.admm.magn.bounds": [
+                self.inversion_admm_magn_bounds,
+                self.dlg.textEdit_5_magn_ADMM_bounds,
+                str,
+                "plainText",
+            ],
+            "inversion.admm.magn.weight": [
+                self.inversion_admm_magn_weight,
+                self.dlg.lineEdit_magn_ADMM_weight,
+                str,
+                "text",
+            ],
+            # MULTIPLIERS
+            "global.grav.dataUnitsMultiplier": [
+                self.global_grav_dataUnitsMultiplier,
+                self.dlg.mQgsDoubleSpinBox_grav_data_multiplier,
+                float,
+                "value",
+            ],
+            "global.grav.modelUnitsMultiplier": [
+                self.global_grav_modelUnitsMultiplier,
+                self.dlg.mQgsDoubleSpinBox_grav_model_multiplier,
+                float,
+                "value",
+            ],
+            "global.magn.dataUnitsMultiplier": [
+                self.global_magn_dataUnitsMultiplier,
+                self.dlg.mQgsDoubleSpinBox_magn_data_multiplier,
+                float,
+                "value",
+            ],
+            "global.grav.sensor_height": [
+                self.global_grav_sensor_height,
+                self.dlg.doubleSpinBox_grav_sensor_height,
+                float,
+                "value",
+            ],
+            "global.magn.sensor_height": [
+                self.global_magn_sensor_height,
+                self.dlg.doubleSpinBox_magn_sensor_height,
+                float,
+                "value",
+            ],
+            # MESH
+            "mesh.cellx": [self.cell_x, self.dlg.mQgsSpinBox_mesh_size_x, int, "value"],
+            "mesh.celly": [self.cell_y, self.dlg.mQgsSpinBox_mesh_size_y, int, "value"],
+            "mesh.padding": [
+                self.padding,
+                self.dlg.mQgsSpinBox_mesh_padding,
+                int,
+                "value",
+            ],
+            "mesh.z.layers": [
+                self.z_layers,
+                self.dlg.spinBox_mesh_thick_number,
+                int,
+                "value",
+            ],
+            "mesh.z.layer1.base": [
+                self.z_layer1_base,
+                self.dlg.spinBox_mesh_layer_1,
+                int,
+                "value",
+            ],
+            "mesh.z.layer1.size": [
+                self.z_layer1_size,
+                self.dlg.mQgsDoubleSpinBox_mesh_zsize_1,
+                float,
+                "value",
+            ],
+            "mesh.z.layer2.base": [
+                self.z_layer2_base,
+                self.dlg.spinBox_mesh_layer_2,
+                int,
+                "value",
+            ],
+            "mesh.z.layer2.size": [
+                self.z_layer2_size,
+                self.dlg.mQgsDoubleSpinBox_mesh_zsize_2,
+                float,
+                "value",
+            ],
+            "mesh.z.layer3.base": [
+                self.z_layer3_base,
+                self.dlg.spinBox_mesh_layer_3,
+                int,
+                "value",
+            ],
+            "mesh.z.layer3.size": [
+                self.z_layer3_size,
+                self.dlg.mQgsDoubleSpinBox_mesh_zsize_3,
+                float,
+                "value",
+            ],
+            "mesh.z.layer4.base": [
+                self.z_layer4_base,
+                self.dlg.spinBox_mesh_layer_4,
+                int,
+                "value",
+            ],
+            "mesh.z.layer4.size": [
+                self.z_layer4_size,
+                self.dlg.mQgsDoubleSpinBox_mesh_zsize_4,
+                float,
+                "value",
+            ],
+            # Mag Field
+            "forward.magneticField.declination": [
+                self.forward_magneticField_declination,
+                self.dlg.doubleSpinBox_mag_dec,
+                float,
+                "value",
+            ],
+            "forward.magneticField.inclination": [
+                self.forward_magneticField_inclination,
+                self.dlg.doubleSpinBox_mag_inc,
+                float,
+                "value",
+            ],
+            "forward.magneticField.intensity": [
+                self.forward_magneticField_intensity,
+                self.dlg.doubleSpinBox_mag_int,
+                float,
+                "value",
+            ],
+        }
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -301,6 +699,7 @@ class Tomofast_x:
             self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
             self.dlg.spinBox_mesh_layer_1.setEnabled(True)
             self.dlg.radioButton_magn_inv.setChecked(False)
+            self.dlg.pushButton_reset.setEnabled(True)
 
             self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
             self.dlg.pushButton_load_grav_data.clicked.connect(
@@ -370,6 +769,11 @@ class Tomofast_x:
                 self.update_memory_size
             )
             self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
+
+            self.dlg.pushButton_reset.clicked.connect(self.reset_params)
+
+            self.define_parameters()
+
         # result = self.dlg.exec_()
 
     # load and parse existing paramfiel and set gui widgets accordingly
@@ -792,8 +1196,6 @@ class Tomofast_x:
         QgsProject.instance().addMapLayer(temp)
         if self.global_elevType == 2:
             self.sample_elevation()
-        # else:
-        #    self.dtmFixed = self.dlg.mQgsSpinBox_elev.value()
 
     # extract dtm values based on mesh locaitons
     def sample_elevation(self):
@@ -1330,7 +1732,7 @@ class Tomofast_x:
                 )
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:  # const elev
-                print(self.global_grav_sensor_height)
+
                 self.data2tomofast.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, 0
                 )
@@ -1649,12 +2051,12 @@ class Tomofast_x:
 
     # write out section titles
     def spacer(self, title):
-        self.params.write("\n")
-        self.params.write(
+        self.d_params.write("\n")
+        self.d_params.write(
             "===================================================================================\n"
         )
-        self.params.write(title + "\n")
-        self.params.write(
+        self.d_params.write(title + "\n")
+        self.d_params.write(
             "===================================================================================\n"
         )
 
@@ -1662,65 +2064,65 @@ class Tomofast_x:
     def save_parameter_file(self):
         self.parse_parameters()
 
-        self.params = open(self.global_outputFolderPath + "/paramfile.txt", "w")
+        self.f_params = open(self.global_outputFolderPath + "/paramfile.txt", "w")
 
         self.spacer("GLOBAL")
-        self.params.write(
+        self.f_params.write(
             "global.outputFolderPath             = {}\n".format(
                 self.output_directory + "/OUTPUT"
             )
         )
         if not self.global_description:
             self.global_description = "Inversion Experiment"
-        self.params.write(
+        self.f_params.write(
             "global.description                  = {}\n".format(self.global_description)
         )
-        self.params.write(
+        self.f_params.write(
             "#global.experimentType               = {}\n".format(
                 self.global_experimentType
             )
         )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "global.grav.dataUnitsMultiplier     = {}\n".format(
                     "1.d" + str(int(self.global_grav_dataUnitsMultiplier))
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "global.grav.modelUnitsMultiplier    = {}\n".format(
                     self.global_grav_modelUnitsMultiplier
                 )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "global.magn.dataUnitsMultiplier     = {}\n".format(
                     "1.d" + str(int(self.global_magn_dataUnitsMultiplier))
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "global.magn.modelUnitsMultiplier    = {}\n".format(
                     self.global_magn_modelUnitsMultiplier
                 )
             )
 
         self.spacer("ELEVATION parameters")
-        self.params.write(
+        self.f_params.write(
             "#global.elevType                     = {}\n".format(self.global_elevType)
         )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
 
-            self.params.write(
-                "#global.grav_sensor_height                 = {}\n".format(
+            self.f_params.write(
+                "#global.grav.sensor_height                 = {}\n".format(
                     self.global_grav_sensor_height  # .item()
                 )
             )
         if self.global_experimentType == 2 or self.global_experimentType == 3:
 
-            self.params.write(
-                "#global.magn_sensor_height                 = {}\n".format(
+            self.f_params.write(
+                "#global.magn.sensor_height                 = {}\n".format(
                     self.global_magn_sensor_height  # .item()
                 )
             )
@@ -1728,19 +2130,19 @@ class Tomofast_x:
         self.spacer("MODEL GRID parameters")
 
         # nx ny nz
-        self.params.write(
+        self.f_params.write(
             "modelGrid.size                      = {} {} {}\n".format(
                 self.modelGrid_size[0], self.modelGrid_size[1], self.modelGrid_size[2]
             )
         )
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "modelGrid.grav.file                 = {}\n".format(
                     self.output_directory + "/model_grid.txt"
                 )
             )
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "modelGrid.magn.file                 = {}\n".format(
                     self.output_directory + "/model_grid.txt"
                 )
@@ -1749,68 +2151,68 @@ class Tomofast_x:
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.spacer("MAGNETIC FIELD constants")
 
-            self.params.write(
+            self.f_params.write(
                 "forward.magneticField.inclination                 = {}\n".format(
                     self.forward_magneticField_inclination  # .item()
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "forward.magneticField.declination                 = {}\n".format(
                     self.forward_magneticField_declination  # .item()
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "forward.magneticField.intensity_nT                = {}\n".format(
                     self.forward_magneticField_intensity  # .item()
                 )
             )
 
         # if(self.global_experimentType==2 or self.global_experimentType==3):
-        #    self.params.write("modelGrid.magn.file                 = {}\n".format(self.output_directory+"/model_magn_grid.txt"))
+        #    self.f_params.write("modelGrid.magn.file                 = {}\n".format(self.output_directory+"/model_magn_grid.txt"))
 
         self.spacer("DATA parameters")
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "forward.data.grav.nData             = {}\n".format(
                     self.forward_data_grav_nData
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "forward.data.grav.dataGridFile      = {}\n".format(
                     self.output_directory + "/data_grav.csv"
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "forward.data.grav.dataValuesFile    = {}\n".format(
                     self.output_directory + "/data_grav.csv"
                 )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "forward.data.magn.nData             = {}\n".format(
                     self.forward_data_magn_nData
                 )
             )
             if self.global_elevType == 1:
-                self.params.write(
+                self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
                         self.output_directory + "/data_magn.csv"
                     )
                 )
-                self.params.write(
+                self.f_params.write(
                     "forward.data.magn.dataValuesFile    = {}\n".format(
                         self.output_directory + "/data_magn.csv"
                     )
                 )
             else:
-                self.params.write(
+                self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
                         self.output_directory + "/data_magn_topo.csv"
                     )
                 )
-                self.params.write(
+                self.f_params.write(
                     "forward.data.magn.dataValuesFile    = {}\n".format(
                         self.output_directory + "/data_magn_topo.csv"
                     )
@@ -1818,20 +2220,20 @@ class Tomofast_x:
 
         self.spacer("DEPTH WEIGHTING")
 
-        self.params.write(
+        self.f_params.write(
             "forward.depthWeighting.type         = {}\n".format(
                 self.forward_depthWeighting_type
             )
         )
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "forward.depthWeighting.grav.power   = {}\n".format(
                     self.forward_depthWeighting_grav_power
                 )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "forward.depthWeighting.magn.power   = {}\n".format(
                     self.forward_depthWeighting_magn_power
                 )
@@ -1839,12 +2241,12 @@ class Tomofast_x:
 
         self.spacer("SENSITIVITY KERNEL")
 
-        self.params.write(
+        self.f_params.write(
             "sensit.readFromFiles                = {}\n".format(
                 self.sensit_readFromFiles
             )
         )
-        self.params.write(
+        self.f_params.write(
             "sensit.folderPath                   = {}\n".format(
                 self.output_directory + "/OUTPUT/SENSIT/"
             )
@@ -1853,12 +2255,12 @@ class Tomofast_x:
         self.spacer("MATRIX COMPRESSION")
 
         # 0-none, 1-wavelet compression.
-        self.params.write(
+        self.f_params.write(
             "forward.matrixCompression.type      = {}\n".format(
                 self.forward_matrixCompression_type
             )
         )
-        self.params.write(
+        self.f_params.write(
             "forward.matrixCompression.rate      = {}\n".format(
                 self.forward_matrixCompression_rate
             )
@@ -1866,17 +2268,17 @@ class Tomofast_x:
 
         self.spacer("INVERSION parameters")
 
-        self.params.write(
+        self.f_params.write(
             "inversion.nMajorIterations          = {}\n".format(
                 self.inversion_nMajorIterations
             )
         )
-        self.params.write(
+        self.f_params.write(
             "inversion.nMinorIterations          = {}\n".format(
                 self.inversion_nMinorIterations
             )
         )
-        self.params.write(
+        self.f_params.write(
             "inversion.writeModelEveryNiter      = {}\n".format(
                 self.inversion_writeModelEveryNiter
             )
@@ -1884,24 +2286,24 @@ class Tomofast_x:
 
         self.spacer("MODEL DAMPING (m - m_prior)")
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "inversion.modelDamping.grav.weight  = {}\n".format(
                     self.inversion_modelDamping_grav_weight
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.modelDamping.normPower    = {}\n".format(
                     self.inversion_modelDamping_grav_normPower
                 )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "inversion.modelDamping.magn.weight  = {}\n".format(
                     self.inversion_modelDamping_magn_weight
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.modelDamping.normPower    = {}\n".format(
                     self.inversion_modelDamping_magn_normPower
                 )
@@ -1909,12 +2311,12 @@ class Tomofast_x:
 
         self.spacer("JOINT INVERSION parameters")
 
-        self.params.write(
+        self.f_params.write(
             "inversion.joint.grav.problemWeight  = {}\n".format(
                 self.inversion_joint_grav_problemWeight
             )
         )
-        self.params.write(
+        self.f_params.write(
             "inversion.joint.magn.problemWeight  = {}\n".format(
                 self.inversion_joint_magn_problemWeight
             )
@@ -1923,44 +2325,44 @@ class Tomofast_x:
         self.spacer("ADMM constraints")
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.enableADMM           = {}\n".format(
                     self.inversion_admm_grav_enableADMM
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.nLithologies         = {}\n".format(
                     self.inversion_admm_grav_nLithologies
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.grav.bounds          = {}\n".format(
                     self.inversion_admm_grav_bounds
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.grav.weight          = {}\n".format(
                     self.inversion_admm_grav_weight
                 )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.enableADMM           = {}\n".format(
                     self.inversion_admm_magn_enableADMM
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.nLithologies         = {}\n".format(
                     self.inversion_admm_magn_nLithologies
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.magn.bounds          = {}\n".format(
                     self.inversion_admm_magn_bounds
                 )
             )
-            self.params.write(
+            self.f_params.write(
                 "inversion.admm.magn.weight          = {}\n".format(
                     self.inversion_admm_magn_weight
                 )
@@ -1968,74 +2370,71 @@ class Tomofast_x:
 
         self.spacer("MESH")
 
-        self.params.write(
+        self.f_params.write(
             "#mesh.cellx                          = {}\n".format(self.cell_x)
         )
-        self.params.write(
+        self.f_params.write(
             "#mesh.celly                          = {}\n".format(self.cell_y)
         )
-        self.params.write(
+        self.f_params.write(
             "#mesh.padding                        = {}\n".format(self.padding)
         )
-        self.params.write(
+        self.f_params.write(
             "#mesh.z.layers                       = {}\n".format(self.z_layers)
         )
-        self.params.write(
+        self.f_params.write(
             "#mesh.z.layer1.base                  = {}\n".format(self.z_layer1_base)
         )
-        self.params.write(
+        self.f_params.write(
             "#mesh.z.layer1.size                  = {}\n".format(self.z_layer1_size)
         )
         if self.z_layers > 1:
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer2.base                  = {}\n".format(self.z_layer2_base)
             )
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer2.size                  = {}\n".format(self.z_layer2_size)
             )
         if self.z_layers > 2:
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer3.base                  = {}\n".format(self.z_layer3_base)
             )
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer3.size                  = {}\n".format(self.z_layer3_size)
             )
         if self.z_layers > 3:
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer4.base                  = {}\n".format(self.z_layer4_base)
             )
-            self.params.write(
+            self.f_params.write(
                 "#mesh.z.layer4.size                  = {}\n".format(self.z_layer4_size)
             )
-        # self.params.write(
-        #    "#mesh.global.elevConst                = {}\n".format(self.global_elevConst)
-        # )
 
         self.spacer("ANOMALIES")
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.grav.data.file            = {}\n".format(self.filename_grav)
             )
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.grav.proj.in              = {}\n".format(self.grav_proj_in)
             )
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.grav.proj.out             = {}\n".format(self.grav_proj_out)
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.magn.data_file            = {}\n".format(self.filename_magn)
             )
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.magn.proj.in              = {}\n".format(self.magn_proj_in)
             )
-            self.params.write(
+            self.f_params.write(
                 "#anomalies.magn.proj.out             = {}\n".format(self.magn_proj_out)
             )
 
-        self.params.close()
+        self.f_params.close()
         self.iface.messageBar().pushMessage(
             "parfile.txt saved to  {}".format(self.global_outputFolderPath),
             "OK ",
@@ -2246,400 +2645,6 @@ class Tomofast_x:
         #          p[-2] data type,
         #          p[-1] widget type
 
-        params = {
-            # GLOBAL
-            "global.outputFolderPath": [
-                self.global_outputFolderPath,
-                self.dlg.lineEdit_output_directory_path,
-                str,
-                "text",
-            ],
-            "global.description": [
-                self.global_description,
-                self.dlg.textEdit_experiment_description,
-                str,
-                "plainText",
-            ],
-            "global.experimentType": [
-                self.global_experimentType,
-                self.dlg.radioButton_grav_inv,
-                self.dlg.radioButton_magn_inv,
-                self.dlg.radioButton_joint_inv,
-                int,
-                "radio",
-            ],
-            """"global.elevType": [
-                self.global_elevType,
-                self.dlg.radioButton_elev_const,
-                self.dlg.radioButton_elev_dtm,
-                int,
-                "radio",
-            ],"""
-            "global.elevFilename": [
-                self.global_elevFilename,
-                self.dlg.lineEdit_dtm_path,
-                str,
-                "text",
-            ],
-            "global.elevConst": [
-                self.global_elevConst,
-                self.dlg.lineEdit_dtm_path,
-                str,
-                "text",
-            ],
-            # DATA Parameters
-            "anomalies.grav.data.file": [
-                self.filename_grav,
-                self.dlg.lineEdit_grav_data_path,
-                str,
-                "text",
-            ],
-            "anomalies.magn.data.file": [
-                self.filename_magn,
-                self.dlg.lineEdit_magn_data_path,
-                str,
-                "text",
-            ],
-            "anomalies.grav.proj.in": [
-                self.grav_proj_in,
-                self.dlg.mQgsProjectionSelectionWidget_grav_in,
-                str,
-                "epsg",
-            ],
-            "anomalies.grav.proj.out": [
-                self.grav_proj_out,
-                self.dlg.mQgsProjectionSelectionWidget_grav_out,
-                str,
-                "epsg",
-            ],
-            "anomalies.magn.proj.in": [
-                self.magn_proj_in,
-                self.dlg.mQgsProjectionSelectionWidget_magn_in,
-                str,
-                "epsg",
-            ],
-            "anomalies.magn.proj.out": [
-                self.magn_proj_out,
-                self.dlg.mQgsProjectionSelectionWidget_magn_out,
-                str,
-                "epsg",
-            ],
-            "forward.data.grav.dataGridFile": [
-                self.forward_data_grav_dataGridFile,
-                "",
-                str,
-                "path",
-            ],
-            "forward.data.magn.dataGridFile": [
-                self.forward_data_magn_dataGridFile,
-                "",
-                str,
-                "path",
-            ],
-            "forward.data.grav.dataValuesFile": [
-                self.forward_data_grav_dataValuesFile,
-                "",
-                str,
-                "path",
-            ],
-            "forward.data.magn.dataValuesFile": [
-                self.forward_data_magn_dataValuesFile,
-                "",
-                str,
-                "path",
-            ],
-            "modelGrid.size": [
-                self.modelGrid_size,
-                self.dlg.nx_label,
-                self.dlg.ny_label,
-                self.dlg.nz_label,
-                str,
-                "size",
-            ],
-            "forward.data.grav.nData": [self.forward_data_grav_nData, "", int, "ndata"],
-            "forward.data.magn.nData": [self.forward_data_magn_nData, "", int, "ndata"],
-            # MODEL GRID parameters
-            "anomalies.grav.data_file": [
-                self.modelGrid_grav_file,
-                self.dlg.lineEdit_grav_data_path,
-                str,
-                "text",
-            ],
-            "anomalies.magn.data_file": [
-                self.modelGrid_magn_file,
-                self.dlg.lineEdit_magn_data_path,
-                str,
-                "text",
-            ],
-            # DEPTH WEIGHTING
-            "forward.depthWeighting.grav.type": [
-                self.forward_depthWeighting_grav_type,
-                self.dlg.checkBox_grav_depth_weighting,
-                int,
-                "check",
-            ],
-            "forward.depthWeighting.magn.type": [
-                self.forward_depthWeighting_magn_type,
-                self.dlg.checkBox_magn_depth_weighting,
-                int,
-                "check",
-            ],
-            "forward.depthWeighting.grav.power": [
-                self.forward_depthWeighting_grav_power,
-                self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power,
-                float,
-                "value",
-            ],
-            "forward.depthWeighting.magn.power": [
-                self.forward_depthWeighting_magn_power,
-                self.dlg.mQgsDoubleSpinBox,
-                float,
-                "value",
-            ],
-            # SENSITIVITY KERNEL
-            "sensit.readFromFiles": [
-                self.sensit_readFromFiles,
-                self.dlg.checkBox_read_sens_matrix,
-                int,
-                "check",
-            ],
-            # "sensit.folderPath" : [self.sensit_folderPath,self.dlg.lineEdit_grav_ADMM_weight0,str,'text'],
-            # MATRIX COMPRESSION
-            "forward.matrixCompression.type": [
-                self.forward_matrixCompression_type,
-                self.dlg.checkBox_use_compression,
-                int,
-                "check",
-            ],
-            "forward.matrixCompression.rate": [
-                self.forward_matrixCompression_rate,
-                self.dlg.mQgsDoubleSpinBox_compression_ratio,
-                float,
-                "value",
-            ],
-            # INVERSION parameters
-            "inversion.nMajorIterations": [
-                self.inversion_nMajorIterations,
-                self.dlg.mQgsSpinBox_major_iters,
-                int,
-                "value",
-            ],
-            "inversion.nMinorIterations": [
-                self.inversion_nMinorIterations,
-                self.dlg.mQgsSpinBox_minor_iters,
-                int,
-                "value",
-            ],
-            "inversion.writeModelEveryNiter": [
-                self.inversion_writeModelEveryNiter,
-                self.dlg.mQgsSpinBox_model_save_iters,
-                int,
-                "value",
-            ],
-            # "inversion.minResidual" : [self.inversion_minResidual,self.dlg.textEdit_min_residual,str,'plainText'],
-            # MODEL DAMPING (m - m_prior)
-            "inversion.modelDamping.grav.weight": [
-                self.inversion_modelDamping_grav_weight,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
-                float,
-                "value",
-            ],
-            "inversion.modelDamping.grav.normPower": [
-                self.inversion_modelDamping_grav_normPower,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
-                float,
-                "value",
-            ],
-            "inversion.modelDamping.magn.weight": [
-                self.inversion_modelDamping_magn_weight,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
-                float,
-                "value",
-            ],
-            "inversion.modelDamping.magn.normPower": [
-                self.inversion_modelDamping_magn_normPower,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
-                float,
-                "value",
-            ],
-            # JOINT INVERSION parameters
-            "inversion.joint.grav.problemWeight": [
-                self.inversion_joint_grav_problemWeight,
-                self.dlg.mQgsDoubleSpinBox_grav_weight,
-                float,
-                "value",
-            ],
-            "inversion.joint.magn.problemWeight": [
-                self.inversion_joint_magn_problemWeight,
-                self.dlg.mQgsDoubleSpinBox_magn_weight,
-                float,
-                "value",
-            ],
-            # ADMM constraints
-            "inversion.admm.grav.enableADMM": [
-                self.inversion_admm_grav_enableADMM,
-                self.dlg.radioButton_grav_depth_based_ADMM,
-                self.dlg.radioButton_grav_dist_based_ADMM,
-                int,
-                "radio",
-            ],
-            "inversion.admm.grav.nLithologies": [
-                self.inversion_admm_grav_nLithologies,
-                self.dlg.spinBox_grav_number_ADMM_litho,
-                int,
-                "value",
-            ],
-            "inversion.admm.grav.bounds": [
-                self.inversion_admm_grav_bounds,
-                self.dlg.textEdit_grav_ADMM_bounds,
-                str,
-                "plainText",
-            ],
-            "inversion.admm.grav.weight": [
-                self.inversion_admm_grav_weight,
-                self.dlg.lineEdit_grav_ADMM_weight,
-                str,
-                "text",
-            ],
-            "inversion.admm.magn.enableADMM": [
-                self.inversion_admm_magn_enableADMM,
-                self.dlg.radioButton_magn_ADMM_dist_based,
-                self.dlg.radioButton_magn_ADMM_depth_based,
-                int,
-                "radio",
-            ],
-            "inversion.admm.magn.nLithologies": [
-                self.inversion_admm_magn_nLithologies,
-                self.dlg.spinBox_magn_ADMM_number_litho,
-                int,
-                "value",
-            ],
-            "inversion.admm.magn.bounds": [
-                self.inversion_admm_magn_bounds,
-                self.dlg.textEdit_5_magn_ADMM_bounds,
-                str,
-                "plainText",
-            ],
-            "inversion.admm.magn.weight": [
-                self.inversion_admm_magn_weight,
-                self.dlg.lineEdit_magn_ADMM_weight,
-                str,
-                "text",
-            ],
-            # MULTIPLIERS
-            "global.grav.dataUnitsMultiplier": [
-                self.global_grav_dataUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_grav_data_multiplier,
-                float,
-                "value",
-            ],
-            "global.grav.modelUnitsMultiplier": [
-                self.global_grav_modelUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_grav_model_multiplier,
-                float,
-                "value",
-            ],
-            "global.magn.dataUnitsMultiplier": [
-                self.global_magn_dataUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_magn_data_multiplier,
-                float,
-                "value",
-            ],
-            "global.grav_sensor_height": [
-                self.global_grav_sensor_height,
-                self.dlg.doubleSpinBox_grav_sensor_height,
-                float,
-                "value",
-            ],
-            "global.magn_sensor_height": [
-                self.global_magn_sensor_height,
-                self.dlg.doubleSpinBox_magn_sensor_height,
-                float,
-                "value",
-            ],
-            # MESH
-            "mesh.cellx": [self.cell_x, self.dlg.mQgsSpinBox_mesh_size_x, int, "value"],
-            "mesh.celly": [self.cell_y, self.dlg.mQgsSpinBox_mesh_size_y, int, "value"],
-            "mesh.padding": [
-                self.padding,
-                self.dlg.mQgsSpinBox_mesh_padding,
-                int,
-                "value",
-            ],
-            "mesh.z.layers": [
-                self.z_layers,
-                self.dlg.spinBox_mesh_thick_number,
-                int,
-                "value",
-            ],
-            "mesh.z.layer1.base": [
-                self.z_layer1_base,
-                self.dlg.spinBox_mesh_layer_1,
-                int,
-                "value",
-            ],
-            "mesh.z.layer1.size": [
-                self.z_layer1_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_1,
-                float,
-                "value",
-            ],
-            "mesh.z.layer2.base": [
-                self.z_layer2_base,
-                self.dlg.spinBox_mesh_layer_2,
-                int,
-                "value",
-            ],
-            "mesh.z.layer2.size": [
-                self.z_layer2_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_2,
-                float,
-                "value",
-            ],
-            "mesh.z.layer3.base": [
-                self.z_layer3_base,
-                self.dlg.spinBox_mesh_layer_3,
-                int,
-                "value",
-            ],
-            "mesh.z.layer3.size": [
-                self.z_layer3_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_3,
-                float,
-                "value",
-            ],
-            "mesh.z.layer4.base": [
-                self.z_layer4_base,
-                self.dlg.spinBox_mesh_layer_4,
-                int,
-                "value",
-            ],
-            "mesh.z.layer4.size": [
-                self.z_layer4_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_4,
-                float,
-                "value",
-            ],
-            # Mag Field
-            "forward.magneticField.declination": [
-                self.forward_magneticField_declination,
-                self.dlg.doubleSpinBox_mag_dec,
-                float,
-                "value",
-            ],
-            "forward.magneticField.inclination": [
-                self.forward_magneticField_inclination,
-                self.dlg.doubleSpinBox_mag_inc,
-                float,
-                "value",
-            ],
-            "forward.magneticField.intensity": [
-                self.forward_magneticField_intensity,
-                self.dlg.doubleSpinBox_mag_int,
-                float,
-                "value",
-            ],
-        }
         # parse parfile file and copy valid parameters to associated variables
         if os.path.exists(self.parfilename) and self.parfilename:
             parfile = open(self.parfilename, "r")
@@ -2650,27 +2655,33 @@ class Tomofast_x:
                     pls[0].strip().replace("#", "")
                 )  # replace() removes leading # to signify qgis parameter only
 
-                if pkey in params.keys():  # if parameter found in dict
+                if pkey in self.d_params.keys():  # if parameter found in dict
 
                     if len(pls) == 2:
                         pval = pls[1].strip()
 
                         if (
-                            params[pkey][-2] == float
+                            self.d_params[pkey][-2] == float
                         ):  # check for fortran 2d5.0 format floats
                             if "d" in pval:
                                 pval = pval.replace("d", "e")
 
                         # assign value to parameter
-                        if params[pkey][-1] == "size":
-                            params[pkey][0][0] = params[pkey][-2](pval.split(" ")[0])
-                            params[pkey][0][1] = params[pkey][-2](pval.split(" ")[1])
-                            params[pkey][0][2] = params[pkey][-2](pval.split(" ")[2])
+                        if self.d_params[pkey][-1] == "size":
+                            self.d_params[pkey][0][0] = self.d_params[pkey][-2](
+                                pval.split(" ")[0]
+                            )
+                            self.d_params[pkey][0][1] = self.d_params[pkey][-2](
+                                pval.split(" ")[1]
+                            )
+                            self.d_params[pkey][0][2] = self.d_params[pkey][-2](
+                                pval.split(" ")[2]
+                            )
 
                         else:
-                            params[pkey][0] = params[pkey][-2](pval)
+                            self.d_params[pkey][0] = self.d_params[pkey][-2](pval)
 
-                        p = params[pkey]
+                        p = self.d_params[pkey]
                         if p[0] != "":
                             if p[-1] == "value":
 
@@ -2704,6 +2715,56 @@ class Tomofast_x:
 
             parfile.close()
 
+    # reset params to deafults and update gui
+    def reset_params(self):
+
+        #   set up dict with form
+        #
+        #   key=parfile variable name
+        #   values=p[0] variable contents,
+        #          p[1] associated widget(s),
+        #          p[-2] data type,
+        #          p[-1] widget type
+
+        # parse parfile file and copy valid parameters to associated variables
+        print(self.global_grav_sensor_height)
+        print(self.grav_proj_out)
+        self.initialise_variables()
+        print(self.global_grav_sensor_height)
+        print(self.grav_proj_out)
+
+        for pkey in self.d_params:
+
+            p = self.d_params[pkey]
+            # print(pkey, p)
+
+            if p[-1] == "value":
+                p[1].setValue(p[-2](p[0]))
+            elif p[-1] == "plainText":
+                p[1].setText(p[-2](p[0]))
+            elif p[-1] == "text":
+                p[1].setText(p[-2](p[0]))
+            elif p[-1] == "epsg":
+                p[1].setCrs(QgsCoordinateReferenceSystem(p[-2](p[0])))
+                # print(p[-2](p[0]))
+            elif p[-1] == "check":
+                if p[0] == True:
+                    p[1].setChecked(True)
+                else:
+                    p[1].setChecked(False)
+            elif p[-1] == "radio":
+                for button in range(1, len(p) - 2):
+                    p[button].setChecked(False)
+                    if int(p[0]) == button:
+                        p[button].setChecked(True)
+
+            elif p[-1] == "path":
+                p[1] = p[0]
+            elif p[-1] == "size":
+                p[1].setText(p[-2](p[0][0]))
+                p[2].setText(p[-2](p[0][1]))
+                p[3].setText(p[-2](p[0][2]))
+
     # update gui
     def enable_boxes(self):
 
@@ -2713,7 +2774,6 @@ class Tomofast_x:
         self.dlg.groupBox_4.setEnabled(True)
         self.dlg.groupBox_28.setEnabled(True)
         self.dlg.groupBox_19.setEnabled(True)
-        self.dlg.Model_grid_size.setEnabled(True)
         self.dlg.groupBox_25.setEnabled(True)
         if self.dataType == "raster":
             self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
@@ -3095,187 +3155,85 @@ class Tomofast_x:
             "Manual overide of Magnetic Intensity"
         )
 
-    def runx(self):
-        """Run method that performs all the real work"""
-
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = Tomofast_xDialog()
-
-            self.define_tips()
-            self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
-                QgsCoordinateReferenceSystem("EPSG:4326")
-            )
-            self.dlg.mQgsProjectionSelectionWidget_grav_out.setCrs(
-                QgsCoordinateReferenceSystem("EPSG:4326")
-            )
-            self.dlg.mQgsProjectionSelectionWidget_magn_in.setCrs(
-                QgsCoordinateReferenceSystem("EPSG:4326")
-            )
-            self.dlg.mQgsProjectionSelectionWidget_magn_out.setCrs(
-                QgsCoordinateReferenceSystem("EPSG:4326")
-            )
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
-            self.dlg.spinBox_mesh_layer_2.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
-            self.dlg.spinBox_mesh_layer_1.setEnabled(True)
-            self.dlg.radioButton_magn_inv.setChecked(False)
-
-            self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
-            self.dlg.pushButton_load_grav_data.clicked.connect(
-                self.confirm_data_file_grav
-            )
-            self.dlg.pushButton_load_magn_data.clicked.connect(
-                self.confirm_data_file_mag
-            )
-            self.dlg.pushButton_save_paramfile.clicked.connect(self.save_parameter_file)
-            self.dlg.pushButton_grav_data_path.clicked.connect(
-                self.select_grav_data_file
-            )
-            self.dlg.pushButton_magn_data_path.clicked.connect(
-                self.select_magn_data_file
-            )
-            self.dlg.pushButton_assign_grav_fields.clicked.connect(
-                self.process_data_fields_grav
-            )
-            self.dlg.pushButton_assign_magn_fields.clicked.connect(
-                self.process_data_fields_magn
-            )
-            self.dlg.lineEdit_output_directory_path_select.clicked.connect(
-                self.select_ouput_directory
-            )
-            self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
-            self.dlg.pushButton_param_load_path.clicked.connect(
-                self.process_parameter_file
-            )
-            self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
-
-            self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type)
-            self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type)
-            self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
-
-            self.dlg.spinBox_mesh_thick_number.valueChanged.connect(self.mesh_layers)
-
-            # updating model grid size
-            self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_north.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_east.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_west.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.spinBox_mesh_layer_1.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.lineEdit_ROI_path_select.clicked.connect(
-                self.update_model_grid_size
-            )
-
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
-                self.update_memory_size
-            )
-            self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
-
-        result = self.dlg.exec_()
-
     def initialise_variables(self):
         self.global_experimentType = 1
-        self.modelGrid_grav_file = 0
-        self.global_outputFolderPath = 0
+        self.modelGrid_grav_file = ""
+        self.global_outputFolderPath = ""
         self.global_description = ""
-        self.modelGrid_size0 = 0
         self.forward_data_grav_nData = 0
-        self.forward_data_grav_dataGridFile = 0
-        self.forward_data_grav_dataValuesFile = 0
-        self.modelGrid_magn_file = 0
+        self.forward_data_grav_dataGridFile = ""
+        self.forward_data_grav_dataValuesFile = ""
+        self.modelGrid_magn_file = ""
         self.forward_data_magn_nData = 0
-        self.forward_data_magn_dataGridFile = 0
-        self.forward_data_magn_dataValuesFile = 0
-        self.forward_depthWeighting_grav_type = 0
-        self.forward_depthWeighting_magn_type = 0
-        self.forward_depthWeighting_grav_power = 0
-        self.forward_depthWeighting_magn_power = 0
+        self.forward_data_magn_dataGridFile = ""
+        self.forward_data_magn_dataValuesFile = ""
+        self.forward_depthWeighting_grav_type = 1
+        self.forward_depthWeighting_magn_type = 1
+        self.forward_depthWeighting_grav_power = 2
+        self.forward_depthWeighting_magn_power = 3
         self.sensit_readFromFiles = 0
-        self.sensit_folderPath = 0
-        self.forward_matrixCompression_type = 0
-        self.forward_matrixCompression_rate = 0
+        self.forward_matrixCompression_type = 1
+        self.forward_matrixCompression_rate = 0.1
         self.inversion_priorModel_type = 0
         self.inversion_priorModel_grav_value = 0
         self.inversion_startingModel_type = 0
         self.inversion_startingModel_grav_value = 0
-        self.inversion_nMajorIterations = 0
-        self.inversion_nMinorIterations = 0
+        self.inversion_nMajorIterations = 3
+        self.inversion_nMinorIterations = 100
         self.inversion_writeModelEveryNiter = 0
-        self.inversion_minResidual = 1e-7
+        self.inversion_minResidual = 1e-13
         self.inversion_modelDamping_grav_weight = 0
-        self.inversion_modelDamping_grav_normPower = 0
+        self.inversion_modelDamping_grav_normPower = 2
         self.inversion_modelDamping_magn_weight = 0
-        self.inversion_modelDamping_magn_normPower = 0
-        self.inversion_joint_grav_problemWeight = 0
+        self.inversion_modelDamping_magn_normPower = 2
+        self.inversion_joint_grav_problemWeight = 1
         self.inversion_joint_magn_problemWeight = 0
         self.inversion_admm_grav_enableADMM = 0
-        self.inversion_admm_grav_nLithologies = 0
+        self.inversion_admm_grav_nLithologies = 1
         self.inversion_admm_grav_bounds = ""
         self.inversion_admm_grav_weight = 0
         self.inversion_admm_magn_enableADMM = 0
-        self.inversion_admm_magn_nLithologies = 0
+        self.inversion_admm_magn_nLithologies = 1
         self.inversion_admm_magn_bounds = ""
         self.inversion_admm_magn_weight = 0
-        self.cell_x = 0
-        self.cell_y = 0
-        self.padding = 0
-        self.z_layers = 0
-        self.z_layer1_base = 0
-        self.z_layer1_size = 0
-        self.z_layer2_base = 0
-        self.z_layer2_size = 0
-        self.z_layer3_base = 0
-        self.z_layer3_size = 0
-        self.z_layer4_base = 0
-        self.z_layer4_size = 0
-        self.elevation = 0
-        self.filename_grav = 0
-        self.filename_magn = 0
-        self.grav_proj_in = 0
-        self.grav_proj_out = 0
-        self.magn_proj_in = 0
-        self.magn_proj_out = 0
-        self.dtmFixed = 0
+        self.cell_x = 2000
+        self.cell_y = 2000
+        self.padding = 10000
+        self.z_layers = 1
+        self.z_layer1_base = 20
+        self.z_layer1_size = 200
+        self.z_layer2_base = 34
+        self.z_layer2_size = 200
+        self.z_layer3_base = 42
+        self.z_layer3_size = 1000
+        self.z_layer4_base = 45
+        self.z_layer4_size = 1000
+        self.filename_grav = ""
+        self.filename_magn = ""
+        self.grav_proj_in = "EPSG:4326"
+        self.grav_proj_out = "EPSG:4326"
+        self.magn_proj_in = "EPSG:4326"
+        self.magn_proj_out = "EPSG:4326"
         self.global_elevType = 1
-        self.global_elevFilename = 0
+        self.global_elevFilename = ""
         self.modelGrid_size = [0, 0, 0]
-        self.global_elevConst = 0
-        self.global_grav_dataUnitsMultiplier = 0
-        self.global_magn_dataUnitsMultiplier = 0
-        self.global_grav_modelUnitsMultiplier = 0
-        self.global_magn_modelUnitsMultiplier = 0
-        self.meshBox = 0
-        self.grav_SurveyHeight = 0
-        self.magn_SurveyHeight = 0
-        self.magn_SurveyDay = 0
-        self.magn_SurveyMonth = 0
-        self.magn_SurveyYear = 0
+        self.global_grav_dataUnitsMultiplier = -6
+        self.global_magn_dataUnitsMultiplier = 1
+        self.global_grav_modelUnitsMultiplier = 1
+        self.global_magn_modelUnitsMultiplier = 1
+        self.meshBox = {
+            "south": 6730000,
+            "west": 430000,
+            "north": 6790000,
+            "east": 482000,
+        }
+
+        self.magn_SurveyDay = 1
+        self.magn_SurveyMonth = 1
+        self.magn_SurveyYear = 2000
         self.forward_magneticField_declination = 0
-        self.forward_magneticField_inclination = 0
-        self.forward_magneticField_intensity = 0
+        self.forward_magneticField_inclination = -45
+        self.forward_magneticField_intensity = 65000
         self.dataType = "points"
         self.global_grav_sensor_height = 0
         self.global_magn_sensor_height = 0
