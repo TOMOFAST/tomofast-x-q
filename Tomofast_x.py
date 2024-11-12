@@ -1159,6 +1159,13 @@ class Tomofast_x:
             "east": self.dlg.mQgsSpinBox_mesh_east.value(),
         }
 
+        self.global_grav_sensor_height = (
+            self.dlg.doubleSpinBox_grav_sensor_height.value()
+        )
+        self.global_magn_sensor_height = (
+            self.dlg.doubleSpinBox_magn_sensor_height.value()
+        )
+
     # convert raster data into points based on mesh locations
     def convert_raster_data(self, filename, proj_out, dataType):
 
@@ -1323,13 +1330,14 @@ class Tomofast_x:
                 )
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:  # const elev
+                print(self.global_grav_sensor_height)
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, 0
+                    self.global_grav_sensor_height, self.global_elevType, 0
                 )
             else:  # dtm
                 self.add_dtm(1)
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, self.data_df
+                    self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
@@ -1357,12 +1365,12 @@ class Tomofast_x:
                 self.datacol_magn = "data1"
             if self.global_elevType == 1:
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, 0
+                    self.global_magn_sensor_height, self.global_elevType, 0
                 )
             else:
                 self.add_dtm(2)
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, self.data_df
+                    self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
@@ -1389,12 +1397,12 @@ class Tomofast_x:
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:  # const elev
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, 0
+                    self.global_grav_sensor_height, self.global_elevType, 0
                 )
             else:  # dtm
                 self.add_dtm(1)
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, self.data_df
+                    self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
@@ -1421,12 +1429,12 @@ class Tomofast_x:
                 self.datacol_magn = "data1"
             if self.global_elevType == 1:
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, 0
+                    self.global_magn_sensor_height, self.global_elevType, 0
                 )
             else:
                 self.add_dtm(1)
                 self.data2tomofast.add_elevation(
-                    self.global_elevConst, self.global_elevType, self.data_df
+                    self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
@@ -1701,16 +1709,21 @@ class Tomofast_x:
         self.params.write(
             "#global.elevType                     = {}\n".format(self.global_elevType)
         )
-        """if self.dlg.radioButton_elev_const.isChecked():
+
+        if self.global_experimentType == 1 or self.global_experimentType == 3:
+
             self.params.write(
-                "#global.elevConst               = {}\n".format(self.global_elevConst)
+                "#global.grav_sensor_height                 = {}\n".format(
+                    self.global_grav_sensor_height  # .item()
+                )
             )
-        else:"""
-        self.params.write(
-            "global.elevFilename                 = {}\n".format(
-                self.global_elevFilename
+        if self.global_experimentType == 2 or self.global_experimentType == 3:
+
+            self.params.write(
+                "#global.magn_sensor_height                 = {}\n".format(
+                    self.global_magn_sensor_height  # .item()
+                )
             )
-        )
 
         self.spacer("MODEL GRID parameters")
 
@@ -1994,9 +2007,9 @@ class Tomofast_x:
             self.params.write(
                 "#mesh.z.layer4.size                  = {}\n".format(self.z_layer4_size)
             )
-        self.params.write(
-            "#mesh.global.elevConst                = {}\n".format(self.global_elevConst)
-        )
+        # self.params.write(
+        #    "#mesh.global.elevConst                = {}\n".format(self.global_elevConst)
+        # )
 
         self.spacer("ANOMALIES")
 
@@ -2214,6 +2227,13 @@ class Tomofast_x:
         self.forward_magneticField_declination = self.dlg.doubleSpinBox_mag_dec.value()
         self.forward_magneticField_inclination = self.dlg.doubleSpinBox_mag_inc.value()
         self.forward_magneticField_intensity = self.dlg.doubleSpinBox_mag_int.value()
+
+        self.global_grav_sensor_height = (
+            self.dlg.doubleSpinBox_grav_sensor_height.value()
+        )
+        self.global_magn_sensor_height = (
+            self.dlg.doubleSpinBox_magn_sensor_height.value()
+        )
 
     # load and parse existing parfile updating gui and storing parameters
     def load_parfile(self):
@@ -2525,9 +2545,15 @@ class Tomofast_x:
                 float,
                 "value",
             ],
-            "global.magn.modelUnitsMultiplier": [
-                self.global_magn_modelUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_magn_model_multiplier,
+            "global.grav_sensor_height": [
+                self.global_grav_sensor_height,
+                self.dlg.doubleSpinBox_grav_sensor_height,
+                float,
+                "value",
+            ],
+            "global.magn_sensor_height": [
+                self.global_magn_sensor_height,
+                self.dlg.doubleSpinBox_magn_sensor_height,
                 float,
                 "value",
             ],
@@ -3167,13 +3193,14 @@ class Tomofast_x:
                 self.update_memory_size
             )
             self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
+
         result = self.dlg.exec_()
 
     def initialise_variables(self):
         self.global_experimentType = 1
         self.modelGrid_grav_file = 0
         self.global_outputFolderPath = 0
-        self.global_description = 0
+        self.global_description = ""
         self.modelGrid_size0 = 0
         self.forward_data_grav_nData = 0
         self.forward_data_grav_dataGridFile = 0
@@ -3250,3 +3277,5 @@ class Tomofast_x:
         self.forward_magneticField_inclination = 0
         self.forward_magneticField_intensity = 0
         self.dataType = "points"
+        self.global_grav_sensor_height = 0
+        self.global_magn_sensor_height = 0

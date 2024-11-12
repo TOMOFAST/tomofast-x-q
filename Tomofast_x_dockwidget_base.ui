@@ -2117,7 +2117,7 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_19">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>120</x>
          <y>30</y>
          <width>31</width>
          <height>20</height>
@@ -2130,13 +2130,13 @@ border-style: solid;border-width: 1px;border-color: black
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height_2">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>160</x>
          <y>30</y>
          <width>71</width>
          <height>22</height>
@@ -2152,7 +2152,7 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_20">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>0</x>
          <y>30</y>
          <width>41</width>
          <height>20</height>
@@ -2165,13 +2165,13 @@ border-style: solid;border-width: 1px;border-color: black
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height_2">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>180</x>
+         <x>50</x>
          <y>30</y>
          <width>71</width>
          <height>22</height>
@@ -2423,8 +2423,8 @@ border-style: solid;border-width: 1px;border-color: black
      <widget class="QLabel" name="label_11">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>660</y>
+        <x>80</x>
+        <y>580</y>
         <width>371</width>
         <height>21</height>
        </rect>
@@ -2540,7 +2540,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>540</y>
+        <y>470</y>
         <width>551</width>
         <height>81</height>
        </rect>
@@ -2629,89 +2629,6 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="text">
         <string>0</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_13">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>470</y>
-        <width>559</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Survey Parameters</string>
-      </property>
-      <widget class="QLabel" name="label_16">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>30</y>
-         <width>101</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Mag sensor height</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>120</x>
-         <y>30</y>
-         <width>41</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10000.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>50.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_18">
-       <property name="geometry">
-        <rect>
-         <x>210</x>
-         <y>30</y>
-         <width>101</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Grav sensor height</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>320</x>
-         <y>30</y>
-         <width>41</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <double>10000.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>50.000000000000000</double>
        </property>
       </widget>
      </widget>

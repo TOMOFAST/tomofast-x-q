@@ -73,7 +73,9 @@ class Data2Tomofast:
                 return np.nan
 
             # Apply the function to the column to convert all values to their negative
-            self.df["POINT_Z"] = -df_elev["POINT_Z"].apply(get_numeric_value)
+            self.df["POINT_Z"] = (
+                -df_elev["POINT_Z"].apply(get_numeric_value) - elevation
+            )
 
     # =================================================================================
     def write_data_tomofast(self, data_column, out_file, eType):
