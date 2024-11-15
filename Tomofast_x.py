@@ -1063,7 +1063,7 @@ class Tomofast_x:
             result.setCrs(crs)
             result.renderer().symbol().setSize(0.25)
             QgsProject.instance().addMapLayer(result)
-            self.colour_points(result, datacol_grav, "Spectral")
+            self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
@@ -1100,7 +1100,7 @@ class Tomofast_x:
             result.setCrs(crs)
             result.renderer().symbol().setSize(0.25)
             QgsProject.instance().addMapLayer(result)
-            self.colour_points(result, datacol_magn, "Spectral")
+            self.colour_points(result, datacol_magn, "Spectral", True)
             result.triggerRepaint()
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
@@ -1218,7 +1218,7 @@ class Tomofast_x:
         self.rename_dp_field(elev, "2", "y")
         self.rename_dp_field(elev, "elevation1", "elevation")
 
-        self.colour_points(elev, "elevation", "Greys")
+        self.colour_points(elev, "elevation", "Greys", True)
 
         # Start an edit session
         elev.startEditing()
@@ -1416,10 +1416,6 @@ class Tomofast_x:
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
-        """if self.dlg.radioButton_elev_const.isChecked():
-            self.global_elevType = 1
-        else:
-            self.global_elevType = 2"""
 
         self.setupMesh()
 
@@ -1456,6 +1452,8 @@ class Tomofast_x:
         else:
             mean_elevation = 0
 
+        self.tidy_layers()
+
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
         # reset project CRS
@@ -1471,15 +1469,15 @@ class Tomofast_x:
         # close temp layers
         if self.global_dataType == "points":
             if self.global_elevType == 1:
-                layers = ["model_grid"]
+                layers = []
             else:
-                layers = ["model_grid", "elevation_grid"]
+                layers = ["elevation_grid"]
 
         else:
             if self.global_elevType == 1:
-                layers = ["Extracted Data", "model_grid", "data"]
+                layers = ["Extracted Data", "data"]
             else:
-                layers = ["Extracted Data", "model_grid", "elevation_grid", "data"]
+                layers = ["Extracted Data", "elevation_grid", "data"]
 
         for layer in layers:
             layer = QgsProject.instance().mapLayersByName(layer)[0]
@@ -1505,22 +1503,62 @@ class Tomofast_x:
             fileName2 = self.global_outputFolderPath + "/data_magn.csv"
             dataName2 = "magn_data"
 
-        layer = QgsVectorLayer(
-            "file:///"
-            + fileName1
-            + "?crs={}&xField={}&yField={}".format(proj1, xcol, ycol),
-            dataName1,
-            "delimitedtext",
-        )
+        temp_file_path1 = self.global_outputFolderPath + "/data_temp_grav.csv"
+        # Read the file manually, skipping the first line, and saving it as temporary CSV
+        with open(fileName1, "r") as f:
+            lines = f.readlines()[1:]  # Skip the first line
+
+        # temp_file_path = "/path/to/temp_file.csv"
+        with open(temp_file_path1, "w") as temp_file:
+
+            temp_file.writelines(f"x y height {dataName1}\n")
+            temp_file.writelines(lines)
+            temp_file.flush()
+            temp_file.close()
+
+        # Define the URI to load the CSV with specified geometry fields and no header
+        # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+        uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
+
+        # Load the layer as a point layer
+        layer = QgsVectorLayer(uri, dataName1, "delimitedtext")
+
+        if layer.isValid():
+            QgsProject.instance().addMapLayer(layer)
+            layer.renderer().symbol().setSize(0.125)
+            self.colour_points(layer, dataName1, "Rocket", False)
+            layer.triggerRepaint()
+
+        else:
+            print("Failed to load layer.")
 
         if self.global_experimentType == 3:
-            layer = QgsVectorLayer(
-                "file:///"
-                + fileName2
-                + "?crs={}&xField={}&yField={}".format(proj1, xcol, ycol),
-                dataName2,
-                "delimitedtext",
-            )
+            temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
+
+            # Read the file manually, skipping the first line, and saving it as temporary CSV
+            with open(fileName2, "r") as f:
+                lines = f.readlines()[1:]  # Skip the first line
+
+                # temp_file_path2 = "/path/to/temp_file2.csv"
+                with open(temp_file_path2, "w") as temp_file:
+                    temp_file.writelines(f"x y height {dataName2}\n")
+                    temp_file.writelines(lines)
+                    temp_file.flush()
+                    temp_file.close()
+                # Define the URI to load the CSV with specified geometry fields and no header
+                uri = f"file:///{temp_file_path2}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+
+                # Load the layer as a point layer
+                layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
+
+                if layer.isValid():
+                    QgsProject.instance().addMapLayer(layer)
+                    layer.renderer().symbol().setSize(0.125)
+                    self.colour_points(layer, dataName2, "Mako", False)
+                    layer.triggerRepaint()
+
+                else:
+                    print("Failed to load layer.")
 
         self.iface.mapCanvas().refresh()
 
@@ -1585,13 +1623,20 @@ class Tomofast_x:
 
         self.setupMesh()
 
+        meshBoxOffset = {
+            "south": int(self.meshBox["south"] + (self.cell_y / 2)),
+            "west": int(self.meshBox["west"] + (self.cell_x / 2)),
+            "north": int(self.meshBox["north"] + (self.cell_y / 2)),
+            "east": int(self.meshBox["east"] + (self.cell_x / 2)),
+        }
+
         # write out mesh
         self.data2tomofast.write_model_grid(
             self.padding,
             self.cell_x,
             self.cell_y,
             self.dz,
-            self.meshBox,
+            meshBoxOffset,
             self.global_dataType,
             self.global_outputFolderPath,
         )
@@ -2051,12 +2096,12 @@ class Tomofast_x:
 
     # write out section titles
     def spacer(self, title):
-        self.d_params.write("\n")
-        self.d_params.write(
+        self.f_params.write("\n")
+        self.f_params.write(
             "===================================================================================\n"
         )
-        self.d_params.write(title + "\n")
-        self.d_params.write(
+        self.f_params.write(title + "\n")
+        self.f_params.write(
             "===================================================================================\n"
         )
 
@@ -2335,11 +2380,16 @@ class Tomofast_x:
                     self.inversion_admm_grav_nLithologies
                 )
             )
-            self.f_params.write(
-                "inversion.admm.grav.bounds          = {}\n".format(
-                    self.inversion_admm_grav_bounds
+            if self.inversion_admm_grav_bounds == "":
+                self.f_params.write(
+                    "inversion.admm.grav.bounds          = {}\n".format("-1d-10 1d10")
                 )
-            )
+            else:
+                self.f_params.write(
+                    "inversion.admm.grav.bounds          = {}\n".format(
+                        self.inversion_admm_grav_bounds
+                    )
+                )
             self.f_params.write(
                 "inversion.admm.grav.weight          = {}\n".format(
                     self.inversion_admm_grav_weight
@@ -2357,11 +2407,16 @@ class Tomofast_x:
                     self.inversion_admm_magn_nLithologies
                 )
             )
-            self.f_params.write(
-                "inversion.admm.magn.bounds          = {}\n".format(
-                    self.inversion_admm_magn_bounds
+            if self.inversion_admm_magn_bounds == "":
+                self.f_params.write(
+                    "inversion.admm.magn.bounds          = {}\n".format("-1d-10 1d10")
                 )
-            )
+            else:
+                self.f_params.write(
+                    "inversion.admm.magn.bounds          = {}\n".format(
+                        self.inversion_admm_magn_bounds
+                    )
+                )
             self.f_params.write(
                 "inversion.admm.magn.weight          = {}\n".format(
                     self.inversion_admm_magn_weight
@@ -2443,7 +2498,7 @@ class Tomofast_x:
         )
 
     # display pints layer with colours
-    def colour_points(self, layer, value_field, ramp_name):
+    def colour_points(self, layer, value_field, ramp_name, invert):
         # layer_name = 'Your_layer_name'
         # ramp_name = 'Spectral'
         # value_field = 'Your_field_name'
@@ -2468,7 +2523,8 @@ class Tomofast_x:
 
         default_style = QgsStyle().defaultStyle()
         color_ramp = default_style.colorRamp(ramp_name)
-        color_ramp.invert()
+        if invert:
+            color_ramp.invert()
         renderer = QgsGraduatedSymbolRenderer()
         renderer.setClassAttribute(value_field)
         renderer.setClassificationMethod(classification_method)
@@ -2727,16 +2783,12 @@ class Tomofast_x:
         #          p[-1] widget type
 
         # parse parfile file and copy valid parameters to associated variables
-        print(self.global_grav_sensor_height)
-        print(self.grav_proj_out)
+
         self.initialise_variables()
-        print(self.global_grav_sensor_height)
-        print(self.grav_proj_out)
 
         for pkey in self.d_params:
 
             p = self.d_params[pkey]
-            # print(pkey, p)
 
             if p[-1] == "value":
                 p[1].setValue(p[-2](p[0]))
@@ -2746,7 +2798,6 @@ class Tomofast_x:
                 p[1].setText(p[-2](p[0]))
             elif p[-1] == "epsg":
                 p[1].setCrs(QgsCoordinateReferenceSystem(p[-2](p[0])))
-                # print(p[-2](p[0]))
             elif p[-1] == "check":
                 if p[0] == True:
                     p[1].setChecked(True)
@@ -2764,6 +2815,11 @@ class Tomofast_x:
                 p[1].setText(p[-2](p[0][0]))
                 p[2].setText(p[-2](p[0][1]))
                 p[3].setText(p[-2](p[0][2]))
+        self.enable_boxes()
+        self.dlg.lineEdit_param_load_path.clear()
+        self.dlg.groupBox_2.setEnabled(False)
+        self.dlg.groupBox_3.setEnabled(False)
+        self.dlg.groupBox_9.setEnabled(False)
 
     # update gui
     def enable_boxes(self):

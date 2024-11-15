@@ -44,8 +44,8 @@
 }
 
 QTabBar::tab {
-    min-width: 150px; 
-    min-height: 30px;
+    min-width: 152px; 
+    min-height: 23px;
 	background-color: rgb(220, 220, 220,255);
   	border-radius: 2px;	
 	border: 1px solid #000000; 
