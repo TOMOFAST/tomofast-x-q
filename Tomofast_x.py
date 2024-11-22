@@ -105,7 +105,7 @@ class Tomofast_x:
         self.plugin_dir = os.path.dirname(__file__)
 
         # initialize locale
-        locale = QSettings().value("locale/userLocale")[0:2]
+        locale = str(QSettings().value('locale/userLocale'))[0:2]
         locale_path = os.path.join(
             self.plugin_dir, "i18n", "Tomofast_x_{}.qm".format(locale)
         )
@@ -772,9 +772,70 @@ class Tomofast_x:
 
             self.dlg.pushButton_reset.clicked.connect(self.reset_params)
 
+            self.dlg.pushButton_select_tomoPath.clicked.connect(self.select_tomo_Path)
+            self.dlg.pushButton_2_select_parfilePath.clicked.connect(
+                self.select_paramfile_path
+            )
+            self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
+
             self.define_parameters()
 
         # result = self.dlg.exec_()
+
+    def run_inversion(self):
+        import subprocess
+
+        # Path to your WSL executable
+        wsl_command = self.tomo_Path + " -j " + self.paramfile_Path + "> debug.txt&"
+        print(wsl_command)
+
+        try:
+            # Open a subprocess to execute the command
+            process = subprocess.Popen(
+                wsl_command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            # Read the stdout and stderr streams
+            stdout, stderr = process.communicate()
+
+            if process.returncode == 0:
+                print("Command executed successfully!")
+                print("Standard Output (stdout):")
+                print(stdout)
+            else:
+                print("Command failed.")
+                print("Error Output (stderr):")
+                print(stderr)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def select_tomo_Path(self):
+
+        self.tomo_Path, _filter = QFileDialog.getOpenFileName(
+            None,
+            "Select tomofast executable",
+            ".",
+            # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
+            "All (*.*)",
+        )
+        if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+            self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+
+    def select_paramfile_path(self):
+
+        self.paramfile_Path, _filter = QFileDialog.getOpenFileName(
+            None,
+            "Select tomofast paramfile",
+            ".",
+            # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
+            "All (*.*)",
+        )
+        if os.path.exists(self.paramfile_Path) and self.paramfile_Path != "":
+            self.dlg.lineEdit_2_parfilePath.setText(self.paramfile_Path)
 
     # load and parse existing paramfiel and set gui widgets accordingly
     def process_parameter_file(self):
@@ -947,7 +1008,7 @@ class Tomofast_x:
             self.filename_magn, self.xcol_magn, self.ycol_magn, self.datacol_magn
         )
 
-    # estomate mag field from centroid of data, date and sensor height
+    # estimate mag field from centroid of data, date and sensor height
     def update_mag_field(self):
 
         # retrieve parameters
