@@ -77,7 +77,10 @@ import os
 from pyproj import Transformer
 from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
-
+import subprocess
+import shlex
+import platform
+import sys
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -105,7 +108,7 @@ class Tomofast_x:
         self.plugin_dir = os.path.dirname(__file__)
 
         # initialize locale
-        locale = str(QSettings().value('locale/userLocale'))[0:2]
+        locale = str(QSettings().value("locale/userLocale"))[0:2]
         locale_path = os.path.join(
             self.plugin_dir, "i18n", "Tomofast_x_{}.qm".format(locale)
         )
@@ -779,37 +782,115 @@ class Tomofast_x:
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
 
             self.define_parameters()
+            if os.path.exists(
+                os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt"
+            ):
+                with open(
+                    os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt", "r"
+                ) as tpfile:
+                    first_line = tpfile.readline()
+                    self.tomo_Path = first_line
+                    self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+
+            self.dlg.version_label.setText("v " + self.show_version())
 
         # result = self.dlg.exec_()
 
+    def replace_text_in_file(self, file_path, old_text, new_text):
+        """
+        Replace all occurrences of a specific text in a file with new text.
+
+        Parameters:
+            file_path (str): Path to the file.
+            old_text (str): Text to be replaced.
+            new_text (str): Replacement text.
+
+        Returns:
+            None
+        """
+        try:
+            # Open the file for reading
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+
+            # Replace all occurrences of old_text with new_text
+            updated_content = content.replace(old_text, new_text)
+
+            # Open the file for writing and save the updated content
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(updated_content)
+
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    # Example usage
+    file_path = "example.txt"  # Replace with your file path
+    old_text = "old_text"  # Text to be replaced
+    new_text = "new_text"  # Replacement text
+
     def run_inversion(self):
-        import subprocess
 
-        # Path to your WSL executable
-        wsl_command = self.tomo_Path + " -j " + self.paramfile_Path + "> debug.txt&"
-        print(wsl_command)
+        if platform.system() == "Windows":
+            distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
+            wsl_path = "//wsl.localhost/" + distro
+            wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
+            wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
+            pre_command = self.dlg.lineEdit_pre_command.text()
+        else:
+            pre_command = ""
 
+        noProc = self.dlg.mQgsSpinBox_noProc.value()
+        # Path to your executable
+        if noProc == 1:
+            command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
+        else:
+            command = (
+                pre_command
+                + " mpirun -np "
+                + str(noProc)
+                + " "
+                + wsl_tomo_path
+                + " -j "
+                + wsl_param_path
+            )
+
+        args = shlex.split(command)
+
+        # set system/version dependent "start_new_session" analogs
+        kwargs = {}
+        if platform.system() == "Windows":
+            # from msdn [1]
+            CREATE_NEW_PROCESS_GROUP = 0x00000200  # note: could get it from subprocess
+            DETACHED_PROCESS = 0x00000008  # 0x8 | 0x200 == 0x208
+            kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+        elif sys.version_info < (3, 2):  # assume posix
+            kwargs.update(preexec_fn=os.setsid)
+        else:  # Python 3.2+ and Unix
+            kwargs.update(start_new_session=True)
+
+        self.replace_text_in_file(self.paramfile_Path, "=  C:/", "=  /mnt/c/")
         try:
             # Open a subprocess to execute the command
             process = subprocess.Popen(
-                wsl_command,
-                shell=True,
+                args,
+                shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
+                stdin=subprocess.PIPE,  # Redirect standard input (optional)
+                close_fds=True,
+                **kwargs,
             )
 
-            # Read the stdout and stderr streams
-            stdout, stderr = process.communicate()
+            # Print the process ID for tracking
+            self.iface.messageBar().pushMessage(
+                f"Process started with PID: {process.pid}",
+                "Command is running in the background ",
+                level=Qgis.Success,
+                duration=45,
+            )
 
-            if process.returncode == 0:
-                print("Command executed successfully!")
-                print("Standard Output (stdout):")
-                print(stdout)
-            else:
-                print("Command failed.")
-                print("Error Output (stderr):")
-                print(stderr)
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -824,6 +905,10 @@ class Tomofast_x:
         )
         if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
             self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+            with open(
+                os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt", "w"
+            ) as tpfile:
+                tpfile.write(self.tomo_Path)
 
     def select_paramfile_path(self):
 
@@ -3271,6 +3356,18 @@ class Tomofast_x:
         self.dlg.doubleSpinBox_mag_int.setToolTip(
             "Manual overide of Magnetic Intensity"
         )
+
+    def show_version(self):
+        metadata_path = os.path.dirname(os.path.realpath(__file__)) + "/metadata.txt"
+
+        with open(metadata_path) as plugin_version_file:
+            metadata = plugin_version_file.readlines()
+            for line in metadata:
+                parts = line.split("=")
+                if len(parts) == 2 and parts[0] == "version":
+                    plugin_version = parts[1]
+
+            return plugin_version
 
     def initialise_variables(self):
         self.global_experimentType = 1

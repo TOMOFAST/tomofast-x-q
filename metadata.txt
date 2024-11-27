@@ -6,26 +6,27 @@
 name=Tomofast-x
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
-version=0.1
-author=uwa.edu.au
+version=0.2.1
+author=mark jessell
 email=mark.jessell@uwa.edu.au
 
 about=Helps make input files for Tomofast-x
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/TOMOFAST/tomofast-x-q
+repository=https://github.com/TOMOFAST/tomofast-x-q
 # End of mandatory metadata
 
 # Recommended items:
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=
+    0.2 Converted to dockable window
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, geophysics, gravity, magnetics
 
-homepage=http://homepage
+homepage=https://github.com/TOMOFAST/
 category=Plugins
 icon=icon.png
 # experimental flag
