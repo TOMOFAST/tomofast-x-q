@@ -25,7 +25,7 @@ I. For mag survey autofill (using centroid of mesh) or define Magnetic Field par
 J. Modify parameters and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]   
    
 **Run tomofast-x from command line using the just-generated files**   
-![tomofast dialog tab 3](plugin3.png)    
+![tomofast dialog tab 4](plugin4.png)    
 If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
 Under Windows this can only be run via WSL, so you will need to specify which Linux Distribution is installed and use the predefined Command as provided..
