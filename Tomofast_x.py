@@ -846,7 +846,7 @@ class Tomofast_x:
                 pre_command
                 + " mpirun -np "
                 + str(noProc)
-                + " "
+                + " --oversubscribe "
                 + wsl_tomo_path
                 + " -j "
                 + wsl_param_path
