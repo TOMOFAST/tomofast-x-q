@@ -783,14 +783,20 @@ class Tomofast_x:
 
             self.define_parameters()
             if os.path.exists(
-                os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt"
+                os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt"
             ):
                 with open(
-                    os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt", "r"
+                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt", "r"
                 ) as tpfile:
-                    first_line = tpfile.readline()
-                    self.tomo_Path = first_line
+                    line = tpfile.readline()
+                    self.tomo_Path = line.rstrip()
                     self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+
+                    line = tpfile.readline()
+                    self.dlg.lineEdit_pre_command_2_WSL_Distro.setText(line.rstrip())
+
+                    line = tpfile.readline()
+                    self.dlg.lineEdit_pre_command.setText(line.rstrip())
 
             self.dlg.version_label.setText("v " + self.show_version())
 
@@ -834,6 +840,15 @@ class Tomofast_x:
             wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
             wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
             pre_command = self.dlg.lineEdit_pre_command.text()
+            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+                self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+                with open(
+                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt", "w"
+                ) as tpfile:
+                    tpfile.write(self.tomo_Path + "\n")
+                    tpfile.write(distro + "\n")
+                    tpfile.write(pre_command + "\n")
+
         else:
             pre_command = ""
 
@@ -901,7 +916,7 @@ class Tomofast_x:
         if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
             self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
             with open(
-                os.path.dirname(os.path.realpath(__file__)) + "/tomopath.txt", "w"
+                os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt", "w"
             ) as tpfile:
                 tpfile.write(self.tomo_Path)
 
@@ -1595,6 +1610,40 @@ class Tomofast_x:
 
         self.tidy_layers()
 
+    def tidy_data(self, temp_file_path1, fileName1, dataName1):
+        # Read the file manually, skipping the first line, and saving it as temporary CSV
+        with open(fileName1, "r") as f:
+            lines = f.readlines()[1:]  # Skip the first line
+
+        with open(temp_file_path1, "w") as temp_file:
+
+            temp_file.writelines(f"x y height {dataName1}\n")
+            temp_file.writelines(lines)
+            temp_file.flush()
+            temp_file.close()
+
+        temp_data = pd.read_csv(
+            temp_file_path1,
+            na_values=["", " "],
+            delim_whitespace=True,  # Handles whitespace-separated data
+        )
+        temp_data = temp_data.dropna()
+        data_len = len(temp_data)
+        if self.global_experimentType == 1:
+            self.forward_data_grav_nData = data_len
+        else:
+            self.forward_data_magn_nData = data_len
+
+        temp_data.to_csv(f"{temp_file_path1}", sep=" ", index=False)
+
+        with open(fileName1, "w") as temp_file:
+
+            temp_file.writelines(f"{data_len}\n")
+            temp_file.flush()
+            temp_file.close()
+
+        temp_data.to_csv(f"{fileName1}", sep=" ", header=False, index=False, mode="a")
+
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
         # reset project CRS
@@ -1638,14 +1687,21 @@ class Tomofast_x:
                 fileName1 = self.global_outputFolderPath + "/data_magn.csv"
                 proj1 = self.magn_proj_out
                 dataName1 = "magn_data"
-            elif self.global_experimentType == 3:
+            elif (
+                self.global_experimentType == 3
+            ):  # need to add NaN removable for this case
                 fileName1 = self.global_outputFolderPath + "/data_grav.csv"
                 proj1 = self.grav_proj_out
                 dataName1 = "grav_data"
                 fileName2 = self.global_outputFolderPath + "/data_magn.csv"
                 dataName2 = "magn_data"
 
-            temp_file_path1 = self.global_outputFolderPath + "/data_temp_grav.csv"
+            temp_file_path1 = self.global_outputFolderPath + "/data_temp.csv"
+
+            self.tidy_data(temp_file_path1, fileName1, dataName1)
+
+            """temp_file_path1 = self.global_outputFolderPath + "/data_temp.csv"
+            
             # Read the file manually, skipping the first line, and saving it as temporary CSV
             with open(fileName1, "r") as f:
                 lines = f.readlines()[1:]  # Skip the first line
@@ -1680,6 +1736,7 @@ class Tomofast_x:
             temp_data.to_csv(
                 f"{fileName1}", sep=" ", header=False, index=False, mode="a"
             )
+            """
 
             # Define the URI to load the CSV with specified geometry fields and no header
             # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
@@ -1698,7 +1755,9 @@ class Tomofast_x:
                 print("Failed to load layer.")
 
             if self.global_experimentType == 3:
-                temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
+                self.tidy_data(temp_file_path1, fileName2, dataName2)
+
+                """temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
 
                 # Read the file manually, skipping the first line, and saving it as temporary CSV
                 with open(fileName2, "r") as f:
@@ -1711,19 +1770,20 @@ class Tomofast_x:
                         temp_file.flush()
                         temp_file.close()
                     # Define the URI to load the CSV with specified geometry fields and no header
-                    uri = f"file:///{temp_file_path2}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+                """
+                uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
 
-                    # Load the layer as a point layer
-                    layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
+                # Load the layer as a point layer
+                layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
 
-                    if layer.isValid():
-                        QgsProject.instance().addMapLayer(layer)
-                        layer.renderer().symbol().setSize(0.125)
-                        self.colour_points(layer, dataName2, "Mako", False)
-                        layer.triggerRepaint()
+                if layer.isValid():
+                    QgsProject.instance().addMapLayer(layer)
+                    layer.renderer().symbol().setSize(0.125)
+                    self.colour_points(layer, dataName2, "Mako", False)
+                    layer.triggerRepaint()
 
-                    else:
-                        print("Failed to load layer.")
+                else:
+                    print("Failed to load layer.")
 
         self.iface.mapCanvas().refresh()
 
