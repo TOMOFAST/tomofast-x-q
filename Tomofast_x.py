@@ -825,14 +825,10 @@ class Tomofast_x:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    # Example usage
-    file_path = "example.txt"  # Replace with your file path
-    old_text = "old_text"  # Text to be replaced
-    new_text = "new_text"  # Replacement text
-
     def run_inversion(self):
 
         if platform.system() == "Windows":
+            self.replace_text_in_file(self.paramfile_Path, "= C:/", "= /mnt/c/")
             distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
             wsl_path = "//wsl.localhost/" + distro
             wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
@@ -870,7 +866,6 @@ class Tomofast_x:
         else:  # Python 3.2+ and Unix
             kwargs.update(start_new_session=True)
 
-        self.replace_text_in_file(self.paramfile_Path, "=  C:/", "=  /mnt/c/")
         try:
             # Open a subprocess to execute the command
             process = subprocess.Popen(
@@ -1630,81 +1625,105 @@ class Tomofast_x:
             if layer.isValid():
                 QgsProject.instance().removeMapLayer(layer)
 
-        # open reprojected data layers
-        xcol = "POINT_X"
-        ycol = "POINT_Y"
+        if self.global_dataType != "points":
+            # open reprojected data layers
+            xcol = "POINT_X"
+            ycol = "POINT_Y"
 
-        if self.global_experimentType == 1:
-            fileName1 = self.global_outputFolderPath + "/data_grav.csv"
-            proj1 = self.grav_proj_out
-            dataName1 = "grav_data"
-        elif self.global_experimentType == 2:
-            fileName1 = self.global_outputFolderPath + "/data_magn.csv"
-            proj1 = self.magn_proj_out
-            dataName1 = "magn_data"
-        elif self.global_experimentType == 3:
-            fileName1 = self.global_outputFolderPath + "/data_grav.csv"
-            proj1 = self.grav_proj_out
-            dataName1 = "grav_data"
-            fileName2 = self.global_outputFolderPath + "/data_magn.csv"
-            dataName2 = "magn_data"
+            if self.global_experimentType == 1:
+                fileName1 = self.global_outputFolderPath + "/data_grav.csv"
+                proj1 = self.grav_proj_out
+                dataName1 = "grav_data"
+            elif self.global_experimentType == 2:
+                fileName1 = self.global_outputFolderPath + "/data_magn.csv"
+                proj1 = self.magn_proj_out
+                dataName1 = "magn_data"
+            elif self.global_experimentType == 3:
+                fileName1 = self.global_outputFolderPath + "/data_grav.csv"
+                proj1 = self.grav_proj_out
+                dataName1 = "grav_data"
+                fileName2 = self.global_outputFolderPath + "/data_magn.csv"
+                dataName2 = "magn_data"
 
-        temp_file_path1 = self.global_outputFolderPath + "/data_temp_grav.csv"
-        # Read the file manually, skipping the first line, and saving it as temporary CSV
-        with open(fileName1, "r") as f:
-            lines = f.readlines()[1:]  # Skip the first line
-
-        # temp_file_path = "/path/to/temp_file.csv"
-        with open(temp_file_path1, "w") as temp_file:
-
-            temp_file.writelines(f"x y height {dataName1}\n")
-            temp_file.writelines(lines)
-            temp_file.flush()
-            temp_file.close()
-
-        # Define the URI to load the CSV with specified geometry fields and no header
-        # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
-        uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
-
-        # Load the layer as a point layer
-        layer = QgsVectorLayer(uri, dataName1, "delimitedtext")
-
-        if layer.isValid():
-            QgsProject.instance().addMapLayer(layer)
-            layer.renderer().symbol().setSize(0.125)
-            self.colour_points(layer, dataName1, "Rocket", False)
-            layer.triggerRepaint()
-
-        else:
-            print("Failed to load layer.")
-
-        if self.global_experimentType == 3:
-            temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
-
+            temp_file_path1 = self.global_outputFolderPath + "/data_temp_grav.csv"
             # Read the file manually, skipping the first line, and saving it as temporary CSV
-            with open(fileName2, "r") as f:
+            with open(fileName1, "r") as f:
                 lines = f.readlines()[1:]  # Skip the first line
 
-                # temp_file_path2 = "/path/to/temp_file2.csv"
-                with open(temp_file_path2, "w") as temp_file:
-                    temp_file.writelines(f"x y height {dataName2}\n")
-                    temp_file.writelines(lines)
-                    temp_file.flush()
-                    temp_file.close()
-                # Define the URI to load the CSV with specified geometry fields and no header
-                uri = f"file:///{temp_file_path2}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+            with open(temp_file_path1, "w") as temp_file:
 
-                # Load the layer as a point layer
-                layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
+                temp_file.writelines(f"x y height {dataName1}\n")
+                temp_file.writelines(lines)
+                temp_file.flush()
+                temp_file.close()
 
-                if layer.isValid():
-                    QgsProject.instance().addMapLayer(layer)
-                    layer.renderer().symbol().setSize(0.125)
-                    self.colour_points(layer, dataName2, "Mako", False)
-                    layer.triggerRepaint()
+            temp_data = pd.read_csv(
+                temp_file_path1,
+                na_values=["", " "],
+                delim_whitespace=True,  # Handles whitespace-separated data
+            )
+            temp_data = temp_data.dropna()
+            data_len = len(temp_data)
+            if self.global_experimentType == 1:
+                self.forward_data_grav_nData = data_len
+            else:
+                self.forward_data_magn_nData = data_len
 
-                else:
-                    print("Failed to load layer.")
+            temp_data.to_csv(f"{temp_file_path1}", sep=" ", index=False)
+
+            with open(fileName1, "w") as temp_file:
+
+                temp_file.writelines(f"{data_len}\n")
+                temp_file.flush()
+                temp_file.close()
+
+            temp_data.to_csv(
+                f"{fileName1}", sep=" ", header=False, index=False, mode="a"
+            )
+
+            # Define the URI to load the CSV with specified geometry fields and no header
+            # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+            uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
+
+            # Load the layer as a point layer
+            layer = QgsVectorLayer(uri, dataName1, "delimitedtext")
+
+            if layer.isValid():
+                QgsProject.instance().addMapLayer(layer)
+                layer.renderer().symbol().setSize(0.125)
+                self.colour_points(layer, dataName1, "Rocket", False)
+                layer.triggerRepaint()
+
+            else:
+                print("Failed to load layer.")
+
+            if self.global_experimentType == 3:
+                temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
+
+                # Read the file manually, skipping the first line, and saving it as temporary CSV
+                with open(fileName2, "r") as f:
+                    lines = f.readlines()[1:]  # Skip the first line
+
+                    # temp_file_path2 = "/path/to/temp_file2.csv"
+                    with open(temp_file_path2, "w") as temp_file:
+                        temp_file.writelines(f"x y height {dataName2}\n")
+                        temp_file.writelines(lines)
+                        temp_file.flush()
+                        temp_file.close()
+                    # Define the URI to load the CSV with specified geometry fields and no header
+                    uri = f"file:///{temp_file_path2}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
+
+                    # Load the layer as a point layer
+                    layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
+
+                    if layer.isValid():
+                        QgsProject.instance().addMapLayer(layer)
+                        layer.renderer().symbol().setSize(0.125)
+                        self.colour_points(layer, dataName2, "Mako", False)
+                        layer.triggerRepaint()
+
+                    else:
+                        print("Failed to load layer.")
 
         self.iface.mapCanvas().refresh()
 
@@ -1770,10 +1789,10 @@ class Tomofast_x:
         self.setupMesh()
 
         meshBoxOffset = {
-            "south": int(self.meshBox["south"] + (self.cell_y / 2)),
-            "west": int(self.meshBox["west"] + (self.cell_x / 2)),
-            "north": int(self.meshBox["north"] + (self.cell_y / 2)),
-            "east": int(self.meshBox["east"] + (self.cell_x / 2)),
+            "south": int(self.meshBox["south"]),
+            "west": int(self.meshBox["west"]),
+            "north": int(self.meshBox["north"]),
+            "east": int(self.meshBox["east"]),
         }
 
         # write out mesh
@@ -2254,13 +2273,16 @@ class Tomofast_x:
     # write out parameter file
     def save_parameter_file(self):
         self.parse_parameters()
-
+        self.dlg.lineEdit_2_parfilePath.setText(
+            self.global_outputFolderPath + "/paramfile.txt"
+        )
+        self.paramfile_Path = self.global_outputFolderPath + "/paramfile.txt"
         self.f_params = open(self.global_outputFolderPath + "/paramfile.txt", "w")
 
         self.spacer("GLOBAL")
         self.f_params.write(
             "global.outputFolderPath             = {}\n".format(
-                self.output_directory + "/OUTPUT"
+                self.global_outputFolderPath + "/OUTPUT"
             )
         )
         if not self.global_description:
@@ -2329,13 +2351,13 @@ class Tomofast_x:
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
                 "modelGrid.grav.file                 = {}\n".format(
-                    self.output_directory + "/model_grid.txt"
+                    self.global_outputFolderPath + "/model_grid.txt"
                 )
             )
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
                 "modelGrid.magn.file                 = {}\n".format(
-                    self.output_directory + "/model_grid.txt"
+                    self.global_outputFolderPath + "/model_grid.txt"
                 )
             )
 
@@ -2371,12 +2393,12 @@ class Tomofast_x:
             )
             self.f_params.write(
                 "forward.data.grav.dataGridFile      = {}\n".format(
-                    self.output_directory + "/data_grav.csv"
+                    self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
             self.f_params.write(
                 "forward.data.grav.dataValuesFile    = {}\n".format(
-                    self.output_directory + "/data_grav.csv"
+                    self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
 
@@ -2389,23 +2411,23 @@ class Tomofast_x:
             if self.global_elevType == 1:
                 self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
-                        self.output_directory + "/data_magn.csv"
+                        self.output_dirglobal_outputFolderPathectory + "/data_magn.csv"
                     )
                 )
                 self.f_params.write(
                     "forward.data.magn.dataValuesFile    = {}\n".format(
-                        self.output_directory + "/data_magn.csv"
+                        self.global_outputFolderPath + "/data_magn.csv"
                     )
                 )
             else:
                 self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
-                        self.output_directory + "/data_magn_topo.csv"
+                        self.global_outputFolderPath + "/data_magn_topo.csv"
                     )
                 )
                 self.f_params.write(
                     "forward.data.magn.dataValuesFile    = {}\n".format(
-                        self.output_directory + "/data_magn_topo.csv"
+                        self.global_outputFolderPath + "/data_magn_topo.csv"
                     )
                 )
 
@@ -2439,7 +2461,7 @@ class Tomofast_x:
         )
         self.f_params.write(
             "sensit.folderPath                   = {}\n".format(
-                self.output_directory + "/OUTPUT/SENSIT/"
+                self.global_outputFolderPath + "/OUTPUT/SENSIT/"
             )
         )
 
