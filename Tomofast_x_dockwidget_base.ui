@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1132</width>
+    <width>1459</width>
     <height>1057</height>
    </rect>
   </property>
@@ -65,6 +65,9 @@ QTabBar::tab:hover {
 
 
 </string>
+    </property>
+    <property name="tabShape">
+     <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
      <number>0</number>

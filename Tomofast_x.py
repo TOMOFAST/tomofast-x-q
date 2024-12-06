@@ -832,77 +832,91 @@ class Tomofast_x:
             print(f"An error occurred: {e}")
 
     def run_inversion(self):
+        if (
+            os.path.exists(self.paramfile_Path)
+            and self.paramfile_Path != ""
+            and os.path.exists(self.tomo_Path)
+            and self.tomo_Path != ""
+        ):
+            if platform.system() == "Windows":
+                self.replace_text_in_file(self.paramfile_Path, "= C:/", "= /mnt/c/")
+                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
+                wsl_path = "//wsl.localhost/" + distro
+                wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
+                wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
+                pre_command = self.dlg.lineEdit_pre_command.text()
+                if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+                    self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+                    with open(
+                        os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
+                        "w",
+                    ) as tpfile:
+                        tpfile.write(self.tomo_Path + "\n")
+                        tpfile.write(distro + "\n")
+                        tpfile.write(pre_command + "\n")
 
-        if platform.system() == "Windows":
-            self.replace_text_in_file(self.paramfile_Path, "= C:/", "= /mnt/c/")
-            distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-            wsl_path = "//wsl.localhost/" + distro
-            wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
-            wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
-            pre_command = self.dlg.lineEdit_pre_command.text()
-            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
-                self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
-                with open(
-                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt", "w"
-                ) as tpfile:
-                    tpfile.write(self.tomo_Path + "\n")
-                    tpfile.write(distro + "\n")
-                    tpfile.write(pre_command + "\n")
+            else:
+                pre_command = ""
 
+            noProc = self.dlg.mQgsSpinBox_noProc.value()
+            # Path to your executable
+            if noProc == 1:
+                command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
+            else:
+                command = (
+                    pre_command
+                    + " mpirun -np "
+                    + str(noProc)
+                    + " --oversubscribe "
+                    + wsl_tomo_path
+                    + " -j "
+                    + wsl_param_path
+                )
+
+            args = shlex.split(command)
+
+            # set system/version dependent "start_new_session" analogs
+            kwargs = {}
+            if platform.system() == "Windows":
+                # from msdn [1]
+                CREATE_NEW_PROCESS_GROUP = (
+                    0x00000200  # note: could get it from subprocess
+                )
+                DETACHED_PROCESS = 0x00000008  # 0x8 | 0x200 == 0x208
+                kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+            elif sys.version_info < (3, 2):  # assume posix
+                kwargs.update(preexec_fn=os.setsid)
+            else:  # Python 3.2+ and Unix
+                kwargs.update(start_new_session=True)
+
+            try:
+                # Open a subprocess to execute the command
+                process = subprocess.Popen(
+                    args,
+                    shell=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    stdin=subprocess.PIPE,  # Redirect standard input (optional)
+                    close_fds=True,
+                    **kwargs,
+                )
+
+                # Print the process ID for tracking
+                self.iface.messageBar().pushMessage(
+                    f"Process started with PID: {process.pid}",
+                    "Command is running in the background ",
+                    level=Qgis.Success,
+                    duration=45,
+                )
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
         else:
-            pre_command = ""
-
-        noProc = self.dlg.mQgsSpinBox_noProc.value()
-        # Path to your executable
-        if noProc == 1:
-            command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
-        else:
-            command = (
-                pre_command
-                + " mpirun -np "
-                + str(noProc)
-                + " --oversubscribe "
-                + wsl_tomo_path
-                + " -j "
-                + wsl_param_path
-            )
-
-        args = shlex.split(command)
-
-        # set system/version dependent "start_new_session" analogs
-        kwargs = {}
-        if platform.system() == "Windows":
-            # from msdn [1]
-            CREATE_NEW_PROCESS_GROUP = 0x00000200  # note: could get it from subprocess
-            DETACHED_PROCESS = 0x00000008  # 0x8 | 0x200 == 0x208
-            kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
-        elif sys.version_info < (3, 2):  # assume posix
-            kwargs.update(preexec_fn=os.setsid)
-        else:  # Python 3.2+ and Unix
-            kwargs.update(start_new_session=True)
-
-        try:
-            # Open a subprocess to execute the command
-            process = subprocess.Popen(
-                args,
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                stdin=subprocess.PIPE,  # Redirect standard input (optional)
-                close_fds=True,
-                **kwargs,
-            )
-
-            # Print the process ID for tracking
             self.iface.messageBar().pushMessage(
-                f"Process started with PID: {process.pid}",
-                "Command is running in the background ",
-                level=Qgis.Success,
-                duration=45,
+                f"Paths to tomofastx and paramfile must be defined",
+                level=Qgis.Warning,
+                duration=15,
             )
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
 
     def select_tomo_Path(self):
 
@@ -1634,7 +1648,7 @@ class Tomofast_x:
         else:
             self.forward_data_magn_nData = data_len
 
-        temp_data.to_csv(f"{temp_file_path1}", sep=" ", index=False)
+        temp_data.to_csv(temp_file_path1, sep=" ", index=False)
 
         with open(fileName1, "w") as temp_file:
 
@@ -3533,3 +3547,4 @@ class Tomofast_x:
         self.dataType = "points"
         self.global_grav_sensor_height = 0
         self.global_magn_sensor_height = 0
+        self.paramfile_Path = ""
