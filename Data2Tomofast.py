@@ -111,7 +111,7 @@ class Data2Tomofast:
         plt.show()
 
     #=================================================================================
-    def generate_core_with_expanding_padding_sizes(self, core_min, core_max, core_cell_size, padding_size, both_sides):
+    def generate_cell_sizes(self, core_min, core_max, core_cell_size, padding_size, both_sides):
         '''
         Generates cell sizes with expanding paddings along one dimension.
         Returns an array with generated cell sizes and the actual padding size.
@@ -175,9 +175,9 @@ class Data2Tomofast:
         z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
 
         # Define cell sizes for the mesh with expanding paddings.
-        dx, x_padding = self.generate_core_with_expanding_padding_sizes(xcore_min, xcore_max, dx0, padding_size, True)
-        dy, y_padding = self.generate_core_with_expanding_padding_sizes(ycore_min, ycore_max, dy0, padding_size, True)
-        dz, z_padding = self.generate_core_with_expanding_padding_sizes(zcore_min, zcore_max, dz0, z_padding_size, False)
+        dx, x_padding = self.generate_cell_sizes(xcore_min, xcore_max, dx0, padding_size, True)
+        dy, y_padding = self.generate_cell_sizes(ycore_min, ycore_max, dy0, padding_size, True)
+        dz, z_padding = self.generate_cell_sizes(zcore_min, zcore_max, dz0, z_padding_size, False)
 
         # Grid with paddings.
         Xmin = xcore_min - x_padding
