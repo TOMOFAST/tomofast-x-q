@@ -1,6 +1,6 @@
 # Processing gravity data for Tomofast-x inversion.
 # Author: Vitaliy Ogarko
-# Version 1.3.2
+# Version 1.5
 
 import numpy as np
 import pandas as pd
@@ -110,11 +110,43 @@ class Data2Tomofast:
         plt.colorbar(label="Data", orientation="vertical")
         plt.show()
 
+    #=================================================================================
+    def generate_core_with_expanding_padding_sizes(self, core_min, core_max, core_cell_size, padding_size):
+        '''
+        Generates cell sizes with expanding paddings along one dimension.
+        Returns an array with generated cell sizes and the actual padding size.
+        '''
+        # Multiplier to increase cell size in the paddings.
+        cell_size_multiplier = 1.15
+
+        # Number of cells in the core.
+        n_core = int((core_max - core_min) / core_cell_size)
+
+        # Adding the core.
+        cell_sizes = list()
+        for i in range(n_core):
+            cell_sizes.append(core_cell_size)
+
+        # Adding expanding paddings.
+        curr_padding = 0.
+        curr_cell_size = core_cell_size
+        while (curr_padding < padding_size):
+            curr_cell_size = cell_size_multiplier * curr_cell_size
+            curr_padding += curr_cell_size
+            # Adding this cell size both in the front and in the end of the list, which corresponds to paddings on both sides of the core.
+            cell_sizes.append(curr_cell_size)
+            cell_sizes.insert(0, curr_cell_size)
+
+        # Convert list to numpy array.
+        cell_sizes = np.array(cell_sizes)
+
+        return cell_sizes, curr_padding
+
     # =================================================================================
-    def write_model_grid(self, padding_size, dx, dy, dz, meshBox, dataType, directory):
+    def write_model_grid(self, padding_size, dx0, dy0, dz, meshBox, dataType, directory):
         """
         Writes the Tomofast-x model grid.
-        dx, dy: scalars
+        dx0, dy0: scalars
         dz: vector of size nz
         """
 
@@ -135,18 +167,20 @@ class Data2Tomofast:
         ycore_min = meshBox["south"] - 1.0
         ycore_max = meshBox["north"] + 1.0
 
-        Zmin = 0.0
+        Zmin = 0.
         Zmax = Zmin + np.sum(dz)
 
+        # Define cell sizes for the mesh with expanding paddings.
+        dx, x_padding = self.generate_core_with_expanding_padding_sizes(xcore_min, xcore_max, dx0, padding_size)
+        dy, y_padding = self.generate_core_with_expanding_padding_sizes(ycore_min, ycore_max, dy0, padding_size)
+
         # Grid with paddings.
-        Xmin = xcore_min - padding_size
-        Xmax = xcore_max + padding_size
-        Ymin = ycore_min - padding_size
-        Ymax = ycore_max + padding_size
+        Xmin = xcore_min - x_padding
+        Ymin = ycore_min - y_padding
 
         # Grid dimensions.
-        nx = int((Xmax - Xmin) / dx)
-        ny = int((Ymax - Ymin) / dy)
+        nx = dx.size
+        ny = dy.size
         nz = dz.size
 
         self.nx = nx
@@ -163,12 +197,12 @@ class Data2Tomofast:
             Z2 = Z1 + dz[k]
 
             for j in range(ny):
-                Y1 = Ymin + j * dy
-                Y2 = Y1 + dy
+                Y1 = Ymin + sum(dy[0:j])
+                Y2 = Y1 + dy[j]
 
                 for i in range(nx):
-                    X1 = Xmin + i * dx
-                    X2 = X1 + dx
+                    X1 = Xmin + sum(dx[0:i])
+                    X2 = X1 + dx[i]
 
                     grid[ind, 0] = X1
                     grid[ind, 1] = X2
