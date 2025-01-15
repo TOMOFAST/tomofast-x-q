@@ -110,7 +110,7 @@ class Data2Tomofast:
         plt.colorbar(label="Data", orientation="vertical")
         plt.show()
 
-    #=================================================================================
+    # =================================================================================
     def generate_cell_sizes(self, core_min, core_max, core_cell_size, padding_size, both_sides):
         '''
         Generates cell sizes with expanding paddings along one dimension.
@@ -144,26 +144,16 @@ class Data2Tomofast:
 
         return cell_sizes, curr_padding
 
-    # =================================================================================
-    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, dataType, directory):
+    # ========================================================================================
+    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, directory):
         """
         Writes the Tomofast-x model grid.
-        dx0, dy0, dz0: scalars
-        padding_size: horizontal padding
+
+        dx0, dy0, dz0: cell size in the model core area.
+        padding_size: horizontal padding size.
+        meshBox: defines the model core and depth.
+        directory: output folder.
         """
-
-        """        if dataType == "points":
-            # print(self.df.columns)
-            data_x = self.df["POINT_X"].values
-            data_y = self.df["POINT_Y"].values
-
-            # Define the model horizontal dimensions, based on the observed data extent.
-            # The model core area size (adding 1m on each side not to coinside with data position).
-            xcore_min = data_x.min() - 1.0
-            xcore_max = data_x.max() + 1.0
-            ycore_min = data_y.min() - 1.0
-            ycore_max = data_y.max() + 1.0
-        else:"""
         xcore_min = meshBox["west"] - 1.0
         xcore_max = meshBox["east"] + 1.0
         ycore_min = meshBox["south"] - 1.0
@@ -182,7 +172,7 @@ class Data2Tomofast:
         # Grid with paddings.
         Xmin = xcore_min - x_padding
         Ymin = ycore_min - y_padding
-        Zmin = 0.
+        Zmin = zcore_min
 
         # Grid dimensions.
         nx = dx.size
@@ -295,6 +285,12 @@ class Data2Tomofast:
 
 # =================================================================================
 def main():
+    # Test adding topography.
+    # data2tomofast = Data2Tomofast(None)
+    # model_grid_file = 'o22/model_grid.txt'
+    # elevation_grid_file = 'o22/elevation_grid.csv'
+    # data2tomofast.add_topography(model_grid_file, elevation_grid_file)
+
     # Define the input CSV file with geophjysical data.
     input_file = "FortNorth_ausgrav_grav_data_points_Subset.csv"
     long_column = "LONGITUDE"
@@ -309,20 +305,12 @@ def main():
     elevation = 0.1
 
     # Horizontal model padding.
-    padding_size = 10000.0
+    padding_size = 10000.
 
     # Cell sizes (m).
-    dx = 600.0
-    dy = 600.0
-
-    nz = 45
-
-    # Define increasing cell size with depth.
-    dz = np.zeros(nz)
-    dz[0:20] = 200.0
-    dz[20:34] = 200.0
-    dz[34:42] = 1000.0
-    dz[42:45] = 2000.0
+    dx = 600.
+    dy = 600.
+    dz = 600.
 
     # ------------------------------------------------------------------
     data2tomofast = Data2Tomofast(None)
@@ -336,15 +324,29 @@ def main():
     data2tomofast.add_elevation(elevation)
 
     # Write Tomofast-x data file.
-    out_file = "TRANS_" + input_file
-    data2tomofast.write_data_tomofast(data_column, out_file)
+    out_file = 'o33'
+    data2tomofast.write_data_tomofast(data_column, out_file, eType=1)
 
     # Plot data values (for verification).
     data2tomofast.plot_data(data_column)
 
-    # Write Tomofast-x model grid.
-    data2tomofast.write_model_grid(padding_size, dx, dy, dz)
+    # Data positions.
+    data_x = data2tomofast.df['POINT_X'].values
+    data_y = data2tomofast.df['POINT_Y'].values
 
+    meshBox = dict()
+
+    # Define the model core horizontal dimensions, based on the observed data extent.
+    meshBox["west"] = data_x.min()
+    meshBox["east"] = data_x.max()
+    meshBox["south"] = data_y.min()
+    meshBox["north"] = data_y.max()
+
+    meshBox["core_depth"] = 10000.
+    meshBox["full_depth"] = 20000.
+
+    # Write Tomofast-x model grid.
+    data2tomofast.write_model_grid(padding_size, dx, dy, dz, meshBox, directory='o33')
 
 # ============================================================================
 if __name__ == "__main__":
