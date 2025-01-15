@@ -111,7 +111,7 @@ class Data2Tomofast:
         plt.show()
 
     #=================================================================================
-    def generate_core_with_expanding_padding_sizes(self, core_min, core_max, core_cell_size, padding_size):
+    def generate_core_with_expanding_padding_sizes(self, core_min, core_max, core_cell_size, padding_size, both_sides):
         '''
         Generates cell sizes with expanding paddings along one dimension.
         Returns an array with generated cell sizes and the actual padding size.
@@ -133,9 +133,11 @@ class Data2Tomofast:
         while (curr_padding < padding_size):
             curr_cell_size = cell_size_multiplier * curr_cell_size
             curr_padding += curr_cell_size
-            # Adding this cell size both in the front and in the end of the list, which corresponds to paddings on both sides of the core.
+            # Adding right padding.
             cell_sizes.append(curr_cell_size)
-            cell_sizes.insert(0, curr_cell_size)
+            if both_sides:
+                # Adding left padding.
+                cell_sizes.insert(0, curr_cell_size)
 
         # Convert list to numpy array.
         cell_sizes = np.array(cell_sizes)
@@ -143,11 +145,11 @@ class Data2Tomofast:
         return cell_sizes, curr_padding
 
     # =================================================================================
-    def write_model_grid(self, padding_size, dx0, dy0, dz, meshBox, dataType, directory):
+    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, dataType, directory):
         """
         Writes the Tomofast-x model grid.
-        dx0, dy0: scalars
-        dz: vector of size nz
+        dx0, dy0, dz0: scalars
+        padding_size: horizontal padding
         """
 
         """        if dataType == "points":
@@ -167,16 +169,20 @@ class Data2Tomofast:
         ycore_min = meshBox["south"] - 1.0
         ycore_max = meshBox["north"] + 1.0
 
-        Zmin = 0.
-        Zmax = Zmin + np.sum(dz)
+        zcore_min = 0.
+        zcore_max = meshBox["core_depth"]
+
+        z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
 
         # Define cell sizes for the mesh with expanding paddings.
-        dx, x_padding = self.generate_core_with_expanding_padding_sizes(xcore_min, xcore_max, dx0, padding_size)
-        dy, y_padding = self.generate_core_with_expanding_padding_sizes(ycore_min, ycore_max, dy0, padding_size)
+        dx, x_padding = self.generate_core_with_expanding_padding_sizes(xcore_min, xcore_max, dx0, padding_size, True)
+        dy, y_padding = self.generate_core_with_expanding_padding_sizes(ycore_min, ycore_max, dy0, padding_size, True)
+        dz, z_padding = self.generate_core_with_expanding_padding_sizes(zcore_min, zcore_max, dz0, z_padding_size, False)
 
         # Grid with paddings.
         Xmin = xcore_min - x_padding
         Ymin = ycore_min - y_padding
+        Zmin = 0.
 
         # Grid dimensions.
         nx = dx.size
