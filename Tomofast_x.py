@@ -2183,14 +2183,7 @@ class Tomofast_x:
         elif self.global_experimentType == 2:
             memory = 8 * compression * nx * ny * nz * nData
         else:
-            memory = (
-                8
-                * compression
-                * nx
-                * ny
-                * nz
-                * (self.forward_data_magn_nData + self.forward_data_grav_nData)
-            )
+            memory = 8 * compression * nx * ny * nz * nData * 2
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
