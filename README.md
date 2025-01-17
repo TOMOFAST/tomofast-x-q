@@ -12,9 +12,9 @@ B. Select Grav, mag or both Inversion stype [Step 1]
 C. Select a data layer (csv or tif format), define input and output projections, and Load data [Step 2a or Step 3a]   
 D. If csv data, select fields for lat_x, long_y & data [Step 2b or Step 3b, data loaded to QGIS once Assign fields button selected]   
 E. Select DTM tif file or use constant value [Step 4 reprojected dtm loaded to QGIS]   
-F. Specify mesh parameters (optionally defined from max/min extents of a polygon shapefile) and output directory for mesh and parameter files. Check Model Grid Size to make sure the mesh is not stupidly large. 
+F. Specify mesh parameters (optionally defined from max/min extents of a polygon shapefile) and output directory for mesh and parameter files. Check Model Grid Size to make sure the mesh is not stupidly large.    
 G. Define compression amount. Check the Estimated Memory Requirements to make sure you run the inversion on a computer with enough memory.    
-[Step 5 mesh and data files written out and loaded to QGIS]  
+[Step 5 mesh and data files written out and loaded to QGIS]   
     
 **Select Global Parameters tab**   
 ![tomofast dialog tab 2](plugin2.png)     
