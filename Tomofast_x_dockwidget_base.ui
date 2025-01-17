@@ -705,7 +705,7 @@ font-size: 13px;
 </string>
        </property>
        <property name="text">
-        <string>Hz Padding</string>
+        <string>Horiz. Padding</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
