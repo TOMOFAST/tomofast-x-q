@@ -29,9 +29,9 @@ J. Modify parameters and then save out Parameter File by clicking on Save Parame
 ![tomofast dialog tab 4](plugin4.png)    
 K. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
-Under Windows this can only be run via WSL, so you will need to specify which Linux Distribution is installed and use the predefined Command as provided..
+Under Windows this can only be run via WSL, so you will need to specify which Linux Distribution is installed and use the predefined Command as provided. (Direct control has not tested for Macs and under Linux doesn't seem to work...)   
    
-Otherwise copy these files to another machone and run tomofast-x there   
+Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    
 - **data_magn.csv and/or data_grav.csv**: observed geophysical response   
 - **model_grid.txt**: Model mesh   
 - **paramfile.txt**: parameter definition file   
