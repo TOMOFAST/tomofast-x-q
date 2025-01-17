@@ -1155,10 +1155,12 @@ class Tomofast_x:
 
             # enable GroupBox 3
             self.dlg.groupBox_3.setEnabled(True)
-            self.dlg.spinBox_mesh_thick_number.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
+            self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
+
         self.dlg.doubleSpinBox_coreDepth.setEnabled(True)
         self.dlg.doubleSpinBox_fullDepth.setEnabled(True)
+        self.dlg.mQgsDoubleSpinBox_compression_ratio.setEnabled(True)
 
     # process load grav point data and display as layer
     def load_csv_vector_grav(self, data_file_path, xcol_grav, ycol_grav, datacol_grav):
@@ -2125,6 +2127,7 @@ class Tomofast_x:
         self.dlg.nx_label.setText(str(nx))
         self.dlg.ny_label.setText(str(ny))
         self.dlg.nz_label.setText(str(nz))
+        self.update_memory_size()
 
     def update_memory_size(self):
         self.setupMesh()
@@ -2157,10 +2160,28 @@ class Tomofast_x:
         )
         nz = ncore + npad
 
+        if not self.suffix_known:
+            # Determine which input path to use based on experiment type
+            if self.global_experimentType in {1, 3}:
+                data_path = self.dlg.lineEdit_grav_data_path.text()
+            else:
+                data_path = self.dlg.lineEdit_magn_data_path.text()
+
+            # Extract suffix and store it
+            suffix = data_path.split(".")[-1].lower()
+            self.suffix_known = suffix
+
+        # Check the suffix and process accordingly
+        if self.suffix_known == "csv":
+            df = pd.DataFrame(data_path)
+            nData = len(df)
+        else:
+            nData = nx * ny
+
         if self.global_experimentType == 1:
-            memory = 8 * compression * nx * ny * nz * self.forward_data_grav_nData
+            memory = 8 * compression * nx * ny * nz * nData
         elif self.global_experimentType == 2:
-            memory = 8 * compression * nx * ny * nz * self.forward_data_magn_nData
+            memory = 8 * compression * nx * ny * nz * nData
         else:
             memory = (
                 8
@@ -2173,6 +2194,14 @@ class Tomofast_x:
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
+        print(
+            compression,
+            nx,
+            ny,
+            nz,
+            self.forward_data_magn_nData,
+            self.forward_data_grav_nData,
+        )
 
     def reproj_raster(self, rasterInPath, targetCrs, dataType):
         parameter = {
@@ -2463,7 +2492,7 @@ class Tomofast_x:
             if self.global_elevType == 1:
                 self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
-                        self.output_dirglobal_outputFolderPathectory + "/data_magn.csv"
+                        self.global_outputFolderPath + "/data_magn.csv"
                     )
                 )
                 self.f_params.write(
@@ -3459,3 +3488,4 @@ class Tomofast_x:
         self.global_grav_sensor_height = 0
         self.global_magn_sensor_height = 0
         self.paramfile_Path = ""
+        self.suffix_known = False

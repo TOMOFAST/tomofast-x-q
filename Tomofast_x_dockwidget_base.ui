@@ -540,7 +540,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>180</x>
-         <y>180</y>
+         <y>130</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -562,7 +562,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>80</y>
+         <y>40</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -584,7 +584,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>110</y>
+         <y>70</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -606,7 +606,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>150</y>
+         <y>130</y>
          <width>71</width>
          <height>20</height>
         </rect>
@@ -673,7 +673,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>110</y>
+         <y>70</y>
          <width>67</width>
          <height>21</height>
         </rect>
@@ -693,9 +693,9 @@ font-size: 13px;
       <widget class="QLabel" name="label_33">
        <property name="geometry">
         <rect>
-         <x>-24</x>
-         <y>180</y>
-         <width>191</width>
+         <x>70</x>
+         <y>130</y>
+         <width>101</width>
          <height>20</height>
         </rect>
        </property>
@@ -705,7 +705,7 @@ font-size: 13px;
 </string>
        </property>
        <property name="text">
-        <string>Horizontal Padding Size</string>
+        <string>Hz Padding</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -715,7 +715,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>84</y>
+         <y>44</y>
          <width>67</width>
          <height>16</height>
         </rect>
@@ -763,46 +763,11 @@ font-size: 13px;
         <string>Save Data and Mesh</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_60">
-       <property name="geometry">
-        <rect>
-         <x>80</x>
-         <y>20</y>
-         <width>151</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>-1</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">font-family: Arial; 
-font-size: 13px;
-</string>
-       </property>
-       <property name="text">
-        <string>Mesh Limits</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_28">
        <property name="geometry">
         <rect>
          <x>11</x>
-         <y>110</y>
+         <y>90</y>
          <width>31</width>
          <height>20</height>
         </rect>
@@ -823,7 +788,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>1</x>
-         <y>84</y>
+         <y>64</y>
          <width>41</width>
          <height>20</height>
         </rect>
@@ -844,7 +809,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>60</x>
-         <y>84</y>
+         <y>64</y>
          <width>101</width>
          <height>20</height>
         </rect>
@@ -869,7 +834,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>60</x>
-         <y>110</y>
+         <y>90</y>
          <width>101</width>
          <height>20</height>
         </rect>
@@ -894,7 +859,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>394</x>
-         <y>60</y>
+         <y>20</y>
          <width>151</width>
          <height>16</height>
         </rect>
@@ -929,7 +894,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>234</x>
-         <y>110</y>
+         <y>90</y>
          <width>91</width>
          <height>20</height>
         </rect>
@@ -954,7 +919,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>185</x>
-         <y>110</y>
+         <y>90</y>
          <width>31</width>
          <height>20</height>
         </rect>
@@ -975,7 +940,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>175</x>
-         <y>84</y>
+         <y>64</y>
          <width>41</width>
          <height>20</height>
         </rect>
@@ -996,7 +961,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>234</x>
-         <y>84</y>
+         <y>64</y>
          <width>91</width>
          <height>20</height>
         </rect>
@@ -1020,8 +985,8 @@ font-size: 13px;
       <widget class="QLabel" name="nz_label">
        <property name="geometry">
         <rect>
-         <x>550</x>
-         <y>30</y>
+         <x>220</x>
+         <y>160</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -1038,8 +1003,8 @@ font-size: 13px;
       <widget class="QLabel" name="nx_label">
        <property name="geometry">
         <rect>
-         <x>410</x>
-         <y>30</y>
+         <x>80</x>
+         <y>160</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -1056,8 +1021,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_5">
        <property name="geometry">
         <rect>
-         <x>520</x>
-         <y>30</y>
+         <x>190</x>
+         <y>160</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -1077,8 +1042,8 @@ font-size: 13px;
       <widget class="QLabel" name="ny_label">
        <property name="geometry">
         <rect>
-         <x>480</x>
-         <y>30</y>
+         <x>150</x>
+         <y>160</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -1095,8 +1060,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_3">
        <property name="geometry">
         <rect>
-         <x>380</x>
-         <y>30</y>
+         <x>50</x>
+         <y>160</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -1116,8 +1081,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_4">
        <property name="geometry">
         <rect>
-         <x>450</x>
-         <y>30</y>
+         <x>120</x>
+         <y>160</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -1137,8 +1102,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_6">
        <property name="geometry">
         <rect>
-         <x>340</x>
-         <y>30</y>
+         <x>10</x>
+         <y>160</y>
          <width>47</width>
          <height>13</height>
         </rect>
@@ -1158,7 +1123,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>460</x>
-         <y>140</y>
+         <y>100</y>
          <width>81</width>
          <height>22</height>
         </rect>
@@ -1183,7 +1148,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>370</x>
-         <y>140</y>
+         <y>100</y>
          <width>67</width>
          <height>16</height>
         </rect>
@@ -1207,7 +1172,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>250</x>
-         <y>40</y>
+         <y>30</y>
          <width>41</width>
          <height>23</height>
         </rect>
@@ -1232,7 +1197,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>4</x>
-         <y>42</y>
+         <y>32</y>
          <width>240</width>
          <height>18</height>
         </rect>
@@ -1257,7 +1222,7 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="geometry">
         <rect>
          <x>351</x>
-         <y>180</y>
+         <y>130</y>
          <width>62</width>
          <height>22</height>
         </rect>
@@ -1281,8 +1246,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>511</x>
-         <y>180</y>
+         <x>500</x>
+         <y>130</y>
          <width>62</width>
          <height>22</height>
         </rect>
@@ -1306,8 +1271,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>430</x>
-         <y>180</y>
+         <x>420</x>
+         <y>130</y>
          <width>81</width>
          <height>21</height>
         </rect>
@@ -1331,7 +1296,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>270</x>
-         <y>180</y>
+         <y>130</y>
          <width>77</width>
          <height>21</height>
         </rect>
@@ -1346,6 +1311,89 @@ font-size: 13px;
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_use_compression">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>188</y>
+         <width>105</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Use Compression</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_38">
+       <property name="geometry">
+        <rect>
+         <x>129</x>
+         <y>187</y>
+         <width>23</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Rate</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="memory_label">
+       <property name="geometry">
+        <rect>
+         <x>480</x>
+         <y>190</y>
+         <width>47</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_compression_ratio">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>187</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="maximum">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_39">
+       <property name="geometry">
+        <rect>
+         <x>290</x>
+         <y>190</y>
+         <width>181</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Estimated Memory Requirement (GB)</string>
        </property>
       </widget>
      </widget>
@@ -2327,102 +2375,6 @@ border-style: solid;border-width: 1px;border-color: black
         </widget>
        </item>
       </layout>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_20">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>470</y>
-        <width>551</width>
-        <height>81</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Matrix Compression</string>
-      </property>
-      <widget class="QCheckBox" name="checkBox_use_compression">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>38</y>
-         <width>105</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Use Compression</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_compression_ratio">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>37</y>
-         <width>111</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="decimals">
-        <number>5</number>
-       </property>
-       <property name="maximum">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.010000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.100000000000000</double>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_22">
-       <property name="geometry">
-        <rect>
-         <x>129</x>
-         <y>37</y>
-         <width>23</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Rate</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>290</x>
-         <y>40</y>
-         <width>181</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Estimated Memory Requirement (GB)</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="memory_label">
-       <property name="geometry">
-        <rect>
-         <x>480</x>
-         <y>40</y>
-         <width>47</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="Data_management">
