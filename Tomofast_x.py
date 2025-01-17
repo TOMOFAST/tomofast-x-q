@@ -810,6 +810,8 @@ class Tomofast_x:
                         tpfile.write(pre_command + "\n")
 
             else:
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = ""
                 pre_command = ""
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
