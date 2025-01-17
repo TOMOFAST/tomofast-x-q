@@ -111,11 +111,13 @@ class Data2Tomofast:
         plt.show()
 
     # =================================================================================
-    def generate_cell_sizes(self, core_min, core_max, core_cell_size, padding_size, both_sides):
-        '''
+    def generate_cell_sizes(
+        self, core_min, core_max, core_cell_size, padding_size, both_sides
+    ):
+        """
         Generates cell sizes with expanding paddings along one dimension.
         Returns an array with generated cell sizes and the actual padding size.
-        '''
+        """
         # Multiplier to increase cell size in the paddings.
         cell_size_multiplier = 1.15
 
@@ -128,9 +130,9 @@ class Data2Tomofast:
             cell_sizes.append(core_cell_size)
 
         # Adding expanding paddings.
-        curr_padding = 0.
+        curr_padding = 0.0
         curr_cell_size = core_cell_size
-        while (curr_padding < padding_size):
+        while curr_padding < padding_size:
             curr_cell_size = cell_size_multiplier * curr_cell_size
             curr_padding += curr_cell_size
             # Adding right padding.
@@ -154,20 +156,27 @@ class Data2Tomofast:
         meshBox: defines the model core and depth.
         directory: output folder.
         """
+        print("meshBox", meshBox)
         xcore_min = meshBox["west"] - 1.0
         xcore_max = meshBox["east"] + 1.0
         ycore_min = meshBox["south"] - 1.0
         ycore_max = meshBox["north"] + 1.0
 
-        zcore_min = 0.
+        zcore_min = 0.0
         zcore_max = meshBox["core_depth"]
 
         z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
 
         # Define cell sizes for the mesh with expanding paddings.
-        dx, x_padding = self.generate_cell_sizes(xcore_min, xcore_max, dx0, padding_size, True)
-        dy, y_padding = self.generate_cell_sizes(ycore_min, ycore_max, dy0, padding_size, True)
-        dz, z_padding = self.generate_cell_sizes(zcore_min, zcore_max, dz0, z_padding_size, False)
+        dx, x_padding = self.generate_cell_sizes(
+            xcore_min, xcore_max, dx0, padding_size, True
+        )
+        dy, y_padding = self.generate_cell_sizes(
+            ycore_min, ycore_max, dy0, padding_size, True
+        )
+        dz, z_padding = self.generate_cell_sizes(
+            zcore_min, zcore_max, dz0, z_padding_size, False
+        )
 
         # Grid with paddings.
         Xmin = xcore_min - x_padding
@@ -305,12 +314,12 @@ def main():
     elevation = 0.1
 
     # Horizontal model padding.
-    padding_size = 10000.
+    padding_size = 10000.0
 
     # Cell sizes (m).
-    dx = 600.
-    dy = 600.
-    dz = 600.
+    dx = 600.0
+    dy = 600.0
+    dz = 600.0
 
     # ------------------------------------------------------------------
     data2tomofast = Data2Tomofast(None)
@@ -324,15 +333,15 @@ def main():
     data2tomofast.add_elevation(elevation)
 
     # Write Tomofast-x data file.
-    out_file = 'o33'
+    out_file = "o33"
     data2tomofast.write_data_tomofast(data_column, out_file, eType=1)
 
     # Plot data values (for verification).
     data2tomofast.plot_data(data_column)
 
     # Data positions.
-    data_x = data2tomofast.df['POINT_X'].values
-    data_y = data2tomofast.df['POINT_Y'].values
+    data_x = data2tomofast.df["POINT_X"].values
+    data_y = data2tomofast.df["POINT_Y"].values
 
     meshBox = dict()
 
@@ -342,11 +351,12 @@ def main():
     meshBox["south"] = data_y.min()
     meshBox["north"] = data_y.max()
 
-    meshBox["core_depth"] = 10000.
-    meshBox["full_depth"] = 20000.
+    meshBox["core_depth"] = 10000.0
+    meshBox["full_depth"] = 20000.0
 
     # Write Tomofast-x model grid.
-    data2tomofast.write_model_grid(padding_size, dx, dy, dz, meshBox, directory='o33')
+    data2tomofast.write_model_grid(padding_size, dx, dy, dz, meshBox, directory="o33")
+
 
 # ============================================================================
 if __name__ == "__main__":

@@ -81,6 +81,7 @@ import subprocess
 import shlex
 import platform
 import sys
+import shutil
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -455,60 +456,6 @@ class Tomofast_x:
                 int,
                 "value",
             ],
-            "mesh.z.layers": [
-                self.z_layers,
-                self.dlg.spinBox_mesh_thick_number,
-                int,
-                "value",
-            ],
-            "mesh.z.layer1.base": [
-                self.z_layer1_base,
-                self.dlg.spinBox_mesh_layer_1,
-                int,
-                "value",
-            ],
-            "mesh.z.layer1.size": [
-                self.z_layer1_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_1,
-                float,
-                "value",
-            ],
-            "mesh.z.layer2.base": [
-                self.z_layer2_base,
-                self.dlg.spinBox_mesh_layer_2,
-                int,
-                "value",
-            ],
-            "mesh.z.layer2.size": [
-                self.z_layer2_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_2,
-                float,
-                "value",
-            ],
-            "mesh.z.layer3.base": [
-                self.z_layer3_base,
-                self.dlg.spinBox_mesh_layer_3,
-                int,
-                "value",
-            ],
-            "mesh.z.layer3.size": [
-                self.z_layer3_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_3,
-                float,
-                "value",
-            ],
-            "mesh.z.layer4.base": [
-                self.z_layer4_base,
-                self.dlg.spinBox_mesh_layer_4,
-                int,
-                "value",
-            ],
-            "mesh.z.layer4.size": [
-                self.z_layer4_size,
-                self.dlg.mQgsDoubleSpinBox_mesh_zsize_4,
-                float,
-                "value",
-            ],
             # Mag Field
             "forward.magneticField.declination": [
                 self.forward_magneticField_declination,
@@ -695,12 +642,10 @@ class Tomofast_x:
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setCrs(
                 QgsCoordinateReferenceSystem("EPSG:4326")
             )
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
-            self.dlg.spinBox_mesh_layer_2.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setEnabled(True)
-            self.dlg.spinBox_mesh_layer_1.setEnabled(True)
+
+            self.dlg.doubleSpinBox_coreDepth.setEnabled(False)
+            self.dlg.doubleSpinBox_fullDepth.setEnabled(False)
+
             self.dlg.radioButton_magn_inv.setChecked(False)
             self.dlg.pushButton_reset.setEnabled(True)
 
@@ -737,7 +682,8 @@ class Tomofast_x:
             self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type)
             self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
 
-            self.dlg.spinBox_mesh_thick_number.valueChanged.connect(self.mesh_layers)
+            self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
+            self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
 
             # updating model grid size
             self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
@@ -758,13 +704,19 @@ class Tomofast_x:
             self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
                 self.update_model_grid_size
             )
+            self.dlg.mQgsSpinBox_mesh_size_z.valueChanged.connect(
+                self.update_model_grid_size
+            )
             self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
                 self.update_model_grid_size
             )
-            self.dlg.spinBox_mesh_layer_1.valueChanged.connect(
+            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
                 self.update_model_grid_size
             )
-            self.dlg.lineEdit_ROI_path_select.clicked.connect(
+            self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(
                 self.update_model_grid_size
             )
 
@@ -839,10 +791,12 @@ class Tomofast_x:
             and self.tomo_Path != ""
         ):
             if platform.system() == "Windows":
-                self.replace_text_in_file(self.paramfile_Path, "= C:/", "= /mnt/c/")
+                self.paramfile_Path_run = self.paramfile_Path + "_run"
+                shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
+                self.replace_text_in_file(self.paramfile_Path_run, "= C:/", "= /mnt/c/")
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = self.paramfile_Path.replace("C:/", "/mnt/c/")
+                wsl_param_path = self.paramfile_Path_run.replace("C:/", "/mnt/c/")
                 wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
                 pre_command = self.dlg.lineEdit_pre_command.text()
                 if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
@@ -1000,7 +954,7 @@ class Tomofast_x:
             "Select Data File",
             ".",
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
-            "CSV (*.csv;*.CSV);;TIF (*.TIF;*.tif;*.TIFF;*.tiff);;ERS (*.ERS;*.ers)",
+            "Point/grid (*.csv;*.CSV;*.TIF;*.tif;*.TIFF;*.tiff;*.ERS;*.ers)",
         )
         if os.path.exists(self.filename_grav) and self.filename_grav != "":
             self.dlg.lineEdit_grav_data_path.setText(self.filename_grav)
@@ -1013,7 +967,7 @@ class Tomofast_x:
             None,
             "Select Data File",
             ".",
-            "CSV (*.csv;*.CSV);;TIF (*.TIF;*.tif;*.TIFF;*.tiff);;ERS (*.ERS;*.ers)",
+            "Point/grid (*.csv;*.CSV;*.TIF;*.tif;*.TIFF;*.tiff;*.ERS;*.ers)",
         )
         if os.path.exists(self.filename_magn) and self.filename_magn != "":
             self.dlg.pushButton_load_magn_data.setEnabled(True)
@@ -1183,7 +1137,6 @@ class Tomofast_x:
 
             # enable GroupBox 3
             self.dlg.groupBox_3.setEnabled(True)
-            self.dlg.spinBox_mesh_thick_number.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
             self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
             self.dlg.lineEdit_ROI_path_select.setEnabled(True)
@@ -1202,7 +1155,8 @@ class Tomofast_x:
             self.dlg.groupBox_3.setEnabled(True)
             self.dlg.spinBox_mesh_thick_number.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
-            self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
+        self.dlg.doubleSpinBox_coreDepth.setEnabled(True)
+        self.dlg.doubleSpinBox_fullDepth.setEnabled(True)
 
     # process load grav point data and display as layer
     def load_csv_vector_grav(self, data_file_path, xcol_grav, ycol_grav, datacol_grav):
@@ -1806,18 +1760,9 @@ class Tomofast_x:
         self.cell_x = self.dlg.mQgsSpinBox_mesh_size_x.value()
         self.cell_y = self.dlg.mQgsSpinBox_mesh_size_y.value()
         self.padding = self.dlg.mQgsSpinBox_mesh_padding.value()
-        self.z_layers = self.dlg.spinBox_mesh_thick_number.value()
-        self.z_layer1_base = int(self.dlg.spinBox_mesh_layer_1.value())
-        self.z_layer1_size = int(self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.value())
-        self.z_layer2_base = self.dlg.spinBox_mesh_layer_2.value()
-        self.z_layer2_size = self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.value()
-        self.z_layer3_base = self.dlg.spinBox_mesh_layer_3.value()
-        self.z_layer3_size = self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.value()
-        self.z_layer4_base = self.dlg.spinBox_mesh_layer_4.value()
-        self.z_layer4_size = self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.value()
 
-        self.dz = np.zeros(self.z_layer1_base)
-        self.dz[0 : self.z_layer1_base] = self.z_layer1_size
+        self.dz = self.dlg.mQgsSpinBox_mesh_size_z.value()
+
         self.data2tomofast = Data2Tomofast(None)
         self.grav_proj_in = (
             self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
@@ -1836,6 +1781,8 @@ class Tomofast_x:
             "west": self.dlg.mQgsSpinBox_mesh_west.value(),
             "north": self.dlg.mQgsSpinBox_mesh_north.value(),
             "east": self.dlg.mQgsSpinBox_mesh_east.value(),
+            "core_depth": self.dlg.doubleSpinBox_coreDepth.value(),
+            "full_depth": self.dlg.doubleSpinBox_fullDepth.value(),
         }
 
         self.global_grav_sensor_height = (
@@ -1867,6 +1814,8 @@ class Tomofast_x:
             "west": int(self.meshBox["west"]),
             "north": int(self.meshBox["north"]),
             "east": int(self.meshBox["east"]),
+            "core_depth": self.dlg.doubleSpinBox_coreDepth.value(),
+            "full_depth": self.dlg.doubleSpinBox_fullDepth.value(),
         }
 
         # write out mesh
@@ -1876,7 +1825,6 @@ class Tomofast_x:
             self.cell_y,
             self.dz,
             meshBoxOffset,
-            self.global_dataType,
             self.global_outputFolderPath,
         )
 
@@ -2132,7 +2080,6 @@ class Tomofast_x:
             self.cell_y,
             self.dz,
             self.meshBox,
-            self.global_dataType,
             self.global_outputFolderPath,
         )
 
@@ -2156,7 +2103,22 @@ class Tomofast_x:
             (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
             / self.cell_y
         )
-        nz = self.z_layer1_base
+
+        ncore = int(
+            float(self.dlg.doubleSpinBox_coreDepth.value())
+            / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
+        )
+        npad = int(
+            np.log(
+                float(
+                    self.dlg.doubleSpinBox_fullDepth.value()
+                    - float(self.dlg.doubleSpinBox_coreDepth.value())
+                )
+                / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
+            )
+            / np.log(1.15)
+        )
+        nz = ncore + npad
 
         self.dlg.nx_label.setText(str(nx))
         self.dlg.ny_label.setText(str(ny))
@@ -2177,7 +2139,21 @@ class Tomofast_x:
             (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
             / self.cell_y
         )
-        nz = self.z_layer1_base
+        ncore = int(
+            float(self.dlg.doubleSpinBox_coreDepth.value())
+            / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
+        )
+        npad = int(
+            np.log(
+                float(
+                    self.dlg.doubleSpinBox_fullDepth.value()
+                    - float(self.dlg.doubleSpinBox_coreDepth.value())
+                )
+                / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
+            )
+            / np.log(1.15)
+        )
+        nz = ncore + npad
 
         if self.global_experimentType == 1:
             memory = 8 * compression * nx * ny * nz * self.forward_data_grav_nData
@@ -2674,38 +2650,17 @@ class Tomofast_x:
             "#mesh.celly                          = {}\n".format(self.cell_y)
         )
         self.f_params.write(
+            "#mesh.cellz                          = {}\n".format(self.cell_y)
+        )
+        self.f_params.write(
             "#mesh.padding                        = {}\n".format(self.padding)
         )
         self.f_params.write(
-            "#mesh.z.layers                       = {}\n".format(self.z_layers)
+            "#mesh.z.coreDepth                       = {}\n".format(self.z_coreDepth)
         )
         self.f_params.write(
-            "#mesh.z.layer1.base                  = {}\n".format(self.z_layer1_base)
+            "#mesh.z.fullDepth                  = {}\n".format(self.z_fullDepth)
         )
-        self.f_params.write(
-            "#mesh.z.layer1.size                  = {}\n".format(self.z_layer1_size)
-        )
-        if self.z_layers > 1:
-            self.f_params.write(
-                "#mesh.z.layer2.base                  = {}\n".format(self.z_layer2_base)
-            )
-            self.f_params.write(
-                "#mesh.z.layer2.size                  = {}\n".format(self.z_layer2_size)
-            )
-        if self.z_layers > 2:
-            self.f_params.write(
-                "#mesh.z.layer3.base                  = {}\n".format(self.z_layer3_base)
-            )
-            self.f_params.write(
-                "#mesh.z.layer3.size                  = {}\n".format(self.z_layer3_size)
-            )
-        if self.z_layers > 3:
-            self.f_params.write(
-                "#mesh.z.layer4.base                  = {}\n".format(self.z_layer4_base)
-            )
-            self.f_params.write(
-                "#mesh.z.layer4.size                  = {}\n".format(self.z_layer4_size)
-            )
 
         self.spacer("ANOMALIES")
 
@@ -2931,6 +2886,8 @@ class Tomofast_x:
         self.global_magn_sensor_height = (
             self.dlg.doubleSpinBox_magn_sensor_height.value()
         )
+        self.z_coreDepth = self.dlg.doubleSpinBox_coreDepth.value()
+        self.z_fullDepth = self.dlg.doubleSpinBox_fullDepth.value()
 
     # load and parse existing parfile updating gui and storing parameters
     def load_parfile(self):
@@ -3179,22 +3136,8 @@ class Tomofast_x:
     # update mesh parameters to allow multiple layer thicknesses
     def mesh_layers(self):
 
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(False)
-        self.dlg.spinBox_mesh_layer_4.setEnabled(False)
-        self.dlg.spinBox_mesh_layer_3.setEnabled(False)
-        self.dlg.spinBox_mesh_layer_2.setEnabled(False)
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(False)
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(False)
-
-        if self.dlg.spinBox_mesh_thick_number.value() > 1:
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setEnabled(True)
-            self.dlg.spinBox_mesh_layer_2.setEnabled(True)
-        if self.dlg.spinBox_mesh_thick_number.value() > 2:
-            self.dlg.spinBox_mesh_layer_3.setEnabled(True)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setEnabled(True)
-        if self.dlg.spinBox_mesh_thick_number.value() > 3:
-            self.dlg.spinBox_mesh_layer_4.setEnabled(True)
-            self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setEnabled(True)
+        self.dlg.doubleSpinBox_coreDepth.setEnabled(True)
+        self.dlg.doubleSpinBox_fullDepth.setEnabled(True)
 
     def define_tips(self):
         self.dlg.checkBox_read_sens_matrix.setToolTip(
@@ -3236,9 +3179,6 @@ class Tomofast_x:
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
             "Index of power term for depth weighting [3 for magnetics]"
         )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_4.setToolTip(
-            "Define cell z size between 3rd and 4th depths"
-        )
         self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.setToolTip(
             "Index of power term for depth weighting [2 for gravity]"
         )
@@ -3274,15 +3214,6 @@ class Tomofast_x:
         )
         self.dlg.mQgsDoubleSpinBox_magn_model_weight.setToolTip(
             "Define weight of magnetic model damping term (m - m_prior)"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_1.setToolTip(
-            "Define cell z size down to base of 1st depth"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_2.setToolTip(
-            "Define cell z size between 1st and 2nd depth"
-        )
-        self.dlg.mQgsDoubleSpinBox_mesh_zsize_3.setToolTip(
-            "Define cell z size between 2nd and 3rd depth"
         )
         self.dlg.label_61.setToolTip(
             "Define input gravity data projection system [EPSG:4326]"
@@ -3393,26 +3324,11 @@ class Tomofast_x:
         self.dlg.radioButton_grav_dist_based_ADMM.setToolTip(
             "Select distance-based ADMM constraints"
         )
-        self.dlg.spinBox_mesh_thick_number.setToolTip(
-            "Define number of different cell z sizes for model grid"
-        )
         self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
             "Number of distinct pairs of ADMM density upper and lower bounds"
         )
         self.dlg.spinBox_magn_ADMM_number_litho.setToolTip(
             "Number of distinct pairs of ADMM magnetic susceptibility upper and lower bounds"
-        )
-        self.dlg.spinBox_mesh_layer_1.setToolTip(
-            "Depth to base of model with 1st cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_2.setToolTip(
-            "Depth to base of model with 2nd cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_3.setToolTip(
-            "Depth to base of model with 3rd cell z size"
-        )
-        self.dlg.spinBox_mesh_layer_4.setToolTip(
-            "Depth to base of model with 4th cell z size"
         )
         self.dlg.textEdit_experiment_description.setToolTip(
             "Provide free-form metadata for experiment"
@@ -3509,15 +3425,8 @@ class Tomofast_x:
         self.cell_x = 2000
         self.cell_y = 2000
         self.padding = 10000
-        self.z_layers = 1
-        self.z_layer1_base = 20
-        self.z_layer1_size = 200
-        self.z_layer2_base = 34
-        self.z_layer2_size = 200
-        self.z_layer3_base = 42
-        self.z_layer3_size = 1000
-        self.z_layer4_base = 45
-        self.z_layer4_size = 1000
+        self.z_coreDepth = 10000
+        self.z_fullDepth = 20000
         self.filename_grav = ""
         self.filename_magn = ""
         self.grav_proj_in = "EPSG:4326"
