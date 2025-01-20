@@ -156,7 +156,6 @@ class Data2Tomofast:
         meshBox: defines the model core and depth.
         directory: output folder.
         """
-        print("meshBox", meshBox)
         xcore_min = meshBox["west"] - 1.0
         xcore_max = meshBox["east"] + 1.0
         ycore_min = meshBox["south"] - 1.0

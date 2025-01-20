@@ -450,6 +450,19 @@ class Tomofast_x:
             # MESH
             "mesh.cellx": [self.cell_x, self.dlg.mQgsSpinBox_mesh_size_x, int, "value"],
             "mesh.celly": [self.cell_y, self.dlg.mQgsSpinBox_mesh_size_y, int, "value"],
+            "mesh.cellz": [self.dz, self.dlg.mQgsSpinBox_mesh_size_z, float, "value"],
+            "mesh.z.coreDepth": [
+                self.z_coreDepth,
+                self.dlg.doubleSpinBox_coreDepth,
+                float,
+                "value",
+            ],
+            "mesh.z.fullDepth": [
+                self.z_fullDepth,
+                self.dlg.doubleSpinBox_fullDepth,
+                float,
+                "value",
+            ],
             "mesh.padding": [
                 self.padding,
                 self.dlg.mQgsSpinBox_mesh_padding,
@@ -651,17 +664,17 @@ class Tomofast_x:
 
             self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
             self.dlg.pushButton_load_grav_data.clicked.connect(
-                self.confirm_data_file_grav
+                lambda: self.confirm_data_file("grav")
             )
             self.dlg.pushButton_load_magn_data.clicked.connect(
-                self.confirm_data_file_mag
+                lambda: self.confirm_data_file("magn")
             )
             self.dlg.pushButton_save_paramfile.clicked.connect(self.save_parameter_file)
             self.dlg.pushButton_grav_data_path.clicked.connect(
-                self.select_grav_data_file
+                lambda: self.select_data_file("grav")
             )
             self.dlg.pushButton_magn_data_path.clicked.connect(
-                self.select_magn_data_file
+                lambda: self.select_data_file("magn")
             )
             self.dlg.pushButton_assign_grav_fields.clicked.connect(
                 self.process_data_fields_grav
@@ -949,31 +962,24 @@ class Tomofast_x:
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
 
-    def select_grav_data_file(self):
+    def select_data_file(self, dataType):
 
-        self.filename_grav, _filter = QFileDialog.getOpenFileName(
+        filename, _filter = QFileDialog.getOpenFileName(
             None,
             "Select Data File",
             ".",
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
             "Point/grid (*.csv;*.CSV;*.TIF;*.tif;*.TIFF;*.tiff;*.ERS;*.ers)",
         )
-        if os.path.exists(self.filename_grav) and self.filename_grav != "":
-            self.dlg.lineEdit_grav_data_path.setText(self.filename_grav)
-            self.dlg.pushButton_load_grav_data.setEnabled(True)
-
-    # select existing point or raster magn data
-    def select_magn_data_file(self):
-
-        self.filename_magn, _filter = QFileDialog.getOpenFileName(
-            None,
-            "Select Data File",
-            ".",
-            "Point/grid (*.csv;*.CSV;*.TIF;*.tif;*.TIFF;*.tiff;*.ERS;*.ers)",
-        )
-        if os.path.exists(self.filename_magn) and self.filename_magn != "":
-            self.dlg.pushButton_load_magn_data.setEnabled(True)
-            self.dlg.lineEdit_magn_data_path.setText(self.filename_magn)
+        if os.path.exists(filename) and filename != "":
+            if dataType == "grav":
+                self.dlg.lineEdit_grav_data_path.setText(filename)
+                self.dlg.pushButton_load_grav_data.setEnabled(True)
+                self.filename_grav = filename
+            else:
+                self.dlg.lineEdit_magn_data_path.setText(filename)
+                self.dlg.pushButton_load_magn_data.setEnabled(True)
+                self.filename_magn = filename
 
     # select existing point or raster magn data
     def select_dtm(self):
@@ -987,6 +993,58 @@ class Tomofast_x:
             self.load_dtm()
             self.global_elevFilename = self.dtm_filename
             self.global_elevType = 2
+
+    # process input grav data and update gui to allow next stage of data to be defined
+    def confirm_data_file(self, dataType):
+        self.process_data_file()
+
+        if dataType == "grav":
+            self.grav_proj_in = (
+                self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
+            )
+            self.grav_proj_out = (
+                self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
+            )
+            suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
+        else:
+            self.magn_proj_in = (
+                self.dlg.mQgsProjectionSelectionWidget_magn_in.crs().authid()
+            )
+            self.magn_proj_out = (
+                self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
+            )
+            suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
+
+        if suffix.lower() == "csv":
+            self.global_dataType = "points"
+        else:
+            self.global_dataType = "raster"
+
+        # enable GroupBox 9
+        if self.global_dataType == "points":
+            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.label_44.setEnabled(True)
+            self.dlg.label_45.setEnabled(True)
+            self.dlg.label_47.setEnabled(True)
+            if dataType == "grav":
+                self.dlg.comboBox_grav_field_x.setEnabled(True)
+                self.dlg.comboBox_grav_field_y.setEnabled(True)
+                self.dlg.comboBox_grav_field_data.setEnabled(True)
+                self.dlg.pushButton_assign_grav_fields.setEnabled(True)
+            else:
+                self.dlg.comboBox_magn_field_x.setEnabled(True)
+                self.dlg.comboBox_magn_field_y.setEnabled(True)
+                self.dlg.comboBox_magn_field_data.setEnabled(True)
+                self.dlg.pushButton_assign_magn_fields.setEnabled(True)
+
+            self.dlg.pushButton_select_dtm_path.setEnabled(False)
+        else:
+            self.dlg.groupBox_2.setEnabled(True)
+            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.lineEdit_dtm_path.setEnabled(False)
+            self.dlg.pushButton_select_dtm_path.setEnabled(False)
+
+            self.update_widgets()
 
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file_grav(self):
@@ -2160,6 +2218,12 @@ class Tomofast_x:
         )
         nz = ncore + npad
 
+        print("self.suffix_known", self.suffix_known)
+        print("self.global_experimentType", self.global_experimentType)
+        print(
+            "self.dlg.lineEdit_grav_data_path.text()",
+            self.dlg.lineEdit_grav_data_path.text(),
+        )
         if not self.suffix_known:
             # Determine which input path to use based on experiment type
             if self.global_experimentType in {1, 3}:
@@ -2170,20 +2234,18 @@ class Tomofast_x:
             # Extract suffix and store it
             suffix = data_path.split(".")[-1].lower()
             self.suffix_known = suffix
-
-        # Check the suffix and process accordingly
-        if self.suffix_known == "csv":
-            df = pd.DataFrame(data_path)
-            nData = len(df)
-        else:
-            nData = nx * ny
+            if self.suffix_known == "csv":
+                df = pd.DataFrame(data_path)
+                self.nData = len(df)
+            else:
+                self.nData = nx * ny
 
         if self.global_experimentType == 1:
-            memory = 8 * compression * nx * ny * nz * nData
+            memory = 8 * compression * nx * ny * nz * self.nData
         elif self.global_experimentType == 2:
-            memory = 8 * compression * nx * ny * nz * nData
+            memory = 8 * compression * nx * ny * nz * self.nData
         else:
-            memory = 8 * compression * nx * ny * nz * nData * 2
+            memory = 8 * compression * nx * ny * nz * self.nData * 2
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
@@ -2674,7 +2736,7 @@ class Tomofast_x:
             "#mesh.celly                          = {}\n".format(self.cell_y)
         )
         self.f_params.write(
-            "#mesh.cellz                          = {}\n".format(self.cell_y)
+            "#mesh.cellz                          = {}\n".format(self.dz)
         )
         self.f_params.write(
             "#mesh.padding                        = {}\n".format(self.padding)
@@ -3448,6 +3510,7 @@ class Tomofast_x:
         self.inversion_admm_magn_weight = 0
         self.cell_x = 2000
         self.cell_y = 2000
+        self.dz = 100
         self.padding = 10000
         self.z_coreDepth = 10000
         self.z_fullDepth = 20000
