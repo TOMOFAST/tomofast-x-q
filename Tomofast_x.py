@@ -61,7 +61,8 @@ from qgis.core import (
     QgsClassificationEqualInterval,
     QgsSymbol,
 )
-
+from qgis.PyQt.QtWidgets import QDockWidget
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
 
@@ -640,7 +641,20 @@ class Tomofast_x:
             # show the dockwidget
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dlg)
-
+            # Find existing dock widgets in the right area
+            right_docks = [
+                d
+                for d in self.iface.mainWindow().findChildren(QDockWidget)
+                if self.iface.mainWindow().dockWidgetArea(d) == Qt.RightDockWidgetArea
+            ]
+            # If there are other dock widgets, tab this one with the first one found
+            if right_docks:
+                for dock in right_docks:
+                    if dock != self.dlg:
+                        self.iface.mainWindow().tabifyDockWidget(dock, self.dlg)
+                        # Optionally, bring your plugin tab to the front
+                        self.dlg.raise_()
+                        break
             self.dlg.show()
             self.define_tips()
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setCrs(
@@ -2218,12 +2232,6 @@ class Tomofast_x:
         )
         nz = ncore + npad
 
-        print("self.suffix_known", self.suffix_known)
-        print("self.global_experimentType", self.global_experimentType)
-        print(
-            "self.dlg.lineEdit_grav_data_path.text()",
-            self.dlg.lineEdit_grav_data_path.text(),
-        )
         if not self.suffix_known:
             # Determine which input path to use based on experiment type
             if self.global_experimentType in {1, 3}:
@@ -2254,8 +2262,7 @@ class Tomofast_x:
             nx,
             ny,
             nz,
-            self.forward_data_magn_nData,
-            self.forward_data_grav_nData,
+            self.nData,
         )
 
     def reproj_raster(self, rasterInPath, targetCrs, dataType):
