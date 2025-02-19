@@ -2233,7 +2233,7 @@ class Tomofast_x:
         )
         nz = ncore + npad
 
-        """if not self.suffix_known:
+        if not self.suffix_known:
             # Determine which input path to use based on experiment type
             if self.global_experimentType in {1, 3}:
                 data_path = self.dlg.lineEdit_grav_data_path.text()
@@ -2243,12 +2243,8 @@ class Tomofast_x:
             # Extract suffix and store it
             suffix = data_path.split(".")[-1].lower()
             self.suffix_known = suffix
-            if self.suffix_known == "csv":
-                print("data_path", data_path)
-                df = pd.DataFrame(data_path)
-                self.nData = len(df)
-            else:
-                self.nData = nx * ny"""
+            if self.suffix_known != "csv":
+                self.nData = nx * ny
 
         if self.global_experimentType == 1:
             memory = 8 * compression * nx * ny * nz * self.nData
