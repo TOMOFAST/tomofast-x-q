@@ -1,6 +1,8 @@
 # Tomofast-x QGIS Plugin
  QGIS Plugin to help Tomofast-x usage
- 
+
+**<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
+
 ## Install
 Save repository to disk as a zip file. Use QGIS Plugin Manager to load directly from zip file.
 

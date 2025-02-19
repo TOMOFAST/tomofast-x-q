@@ -3,11 +3,11 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Tomofast-x
+name=tomofast_x_q
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
 version=0.2.2
-author=mark jessell
+author=mark jessell, vitaliy ogarko
 email=mark.jessell@uwa.edu.au
 
 about=Helps make input files for Tomofast-x

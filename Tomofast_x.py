@@ -1265,7 +1265,7 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
-
+            self.nData= result.featureCount()
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
 
@@ -1302,6 +1302,7 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_magn, "Spectral", True)
             result.triggerRepaint()
+            self.nData= result.featureCount()
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
@@ -2232,7 +2233,7 @@ class Tomofast_x:
         )
         nz = ncore + npad
 
-        if not self.suffix_known:
+        """if not self.suffix_known:
             # Determine which input path to use based on experiment type
             if self.global_experimentType in {1, 3}:
                 data_path = self.dlg.lineEdit_grav_data_path.text()
@@ -2243,10 +2244,11 @@ class Tomofast_x:
             suffix = data_path.split(".")[-1].lower()
             self.suffix_known = suffix
             if self.suffix_known == "csv":
+                print("data_path", data_path)
                 df = pd.DataFrame(data_path)
                 self.nData = len(df)
             else:
-                self.nData = nx * ny
+                self.nData = nx * ny"""
 
         if self.global_experimentType == 1:
             memory = 8 * compression * nx * ny * nz * self.nData
