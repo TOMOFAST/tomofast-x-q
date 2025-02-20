@@ -983,7 +983,7 @@ class Tomofast_x:
             "Select Data File",
             ".",
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
-            "Point/grid (*.csv;*.CSV;*.TIF;*.tif;*.TIFF;*.tiff;*.ERS;*.ers)",
+            "Point/grid (*.csv *.CSV *.TIF *.tif *.TIFF *.tiff *.ERS *.ers)",
         )
         if os.path.exists(filename) and filename != "":
             if dataType == "grav":
@@ -1265,7 +1265,7 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
-            self.nData= result.featureCount()
+            self.nData = result.featureCount()
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
 
@@ -1302,7 +1302,7 @@ class Tomofast_x:
             QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_magn, "Spectral", True)
             result.triggerRepaint()
-            self.nData= result.featureCount()
+            self.nData = result.featureCount()
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
