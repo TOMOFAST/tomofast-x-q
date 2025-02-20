@@ -838,7 +838,7 @@ class Tomofast_x:
 
             else:
                 wsl_tomo_path = self.tomo_Path
-                wsl_param_path = ""
+                wsl_param_path = self.paramfile_Path
                 pre_command = ""
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
@@ -850,12 +850,11 @@ class Tomofast_x:
                     pre_command
                     + " mpirun -np "
                     + str(noProc)
-                    + " --oversubscribe "
+                    + " "
                     + wsl_tomo_path
                     + " -j "
                     + wsl_param_path
                 )
-
             args = shlex.split(command)
 
             # set system/version dependent "start_new_session" analogs
@@ -883,7 +882,7 @@ class Tomofast_x:
                     close_fds=True,
                     **kwargs,
                 )
-
+                print("process", process)
                 # Print the process ID for tracking
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
@@ -891,7 +890,6 @@ class Tomofast_x:
                     level=Qgis.Success,
                     duration=45,
                 )
-
             except Exception as e:
                 print(f"An error occurred: {e}")
         else:
@@ -908,7 +906,7 @@ class Tomofast_x:
             "Select tomofast executable",
             ".",
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
-            "All (*.*)",
+            "All (*)",
         )
         if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
             self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
@@ -2255,13 +2253,6 @@ class Tomofast_x:
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
-        print(
-            compression,
-            nx,
-            ny,
-            nz,
-            self.nData,
-        )
 
     def reproj_raster(self, rasterInPath, targetCrs, dataType):
         parameter = {
