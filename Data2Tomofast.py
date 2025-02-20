@@ -196,31 +196,40 @@ class Data2Tomofast:
         grid = np.zeros((nelements, 10))
         ind = 0
 
-        for k in range(nz):
-            Z1 = Zmin + sum(dz[0:k])
-            Z2 = Z1 + dz[k]
+        # Pre-compute cumulative sums
+        x_cumsum = np.cumsum(np.concatenate(([0], dx[:-1])))
+        y_cumsum = np.cumsum(np.concatenate(([0], dy[:-1])))
+        z_cumsum = np.cumsum(np.concatenate(([0], dz[:-1])))
 
-            for j in range(ny):
-                Y1 = Ymin + sum(dy[0:j])
-                Y2 = Y1 + dy[j]
+        # Create coordinate arrays
+        X1 = Xmin + x_cumsum
+        X2 = X1 + dx
+        Y1 = Ymin + y_cumsum
+        Y2 = Y1 + dy
+        Z1 = Zmin + z_cumsum
+        Z2 = Z1 + dz
 
-                for i in range(nx):
-                    X1 = Xmin + sum(dx[0:i])
-                    X2 = X1 + dx[i]
+        # Create indices arrays (0-based for correct coordinate indexing)
+        i_indices = np.arange(nx)
+        j_indices = np.arange(ny)
+        k_indices = np.arange(nz)
 
-                    grid[ind, 0] = X1
-                    grid[ind, 1] = X2
-                    grid[ind, 2] = Y1
-                    grid[ind, 3] = Y2
-                    grid[ind, 4] = Z1
-                    grid[ind, 5] = Z2
-                    grid[ind, 6] = 0.0
+        # Create meshgrids with correct ordering
+        I, J, K = np.meshgrid(i_indices, j_indices, k_indices, indexing="ij")
+        X1_mesh, Y1_mesh, Z1_mesh = np.meshgrid(X1, Y1, Z1, indexing="ij")
+        X2_mesh, Y2_mesh, Z2_mesh = np.meshgrid(X2, Y2, Z2, indexing="ij")
 
-                    grid[ind, 7] = i + 1
-                    grid[ind, 8] = j + 1
-                    grid[ind, 9] = k + 1
-
-                    ind = ind + 1
+        # Reshape everything to match the grid array
+        grid[:, 0] = X1_mesh.ravel("F")  # Use Fortran-style ordering
+        grid[:, 1] = X2_mesh.ravel("F")
+        grid[:, 2] = Y1_mesh.ravel("F")
+        grid[:, 3] = Y2_mesh.ravel("F")
+        grid[:, 4] = Z1_mesh.ravel("F")
+        grid[:, 5] = Z2_mesh.ravel("F")
+        grid[:, 6] = 0.0
+        grid[:, 7] = (I + 1).ravel("F")  # Add 1 for 1-based indexing
+        grid[:, 8] = (J + 1).ravel("F")
+        grid[:, 9] = (K + 1).ravel("F")
 
         model_grid_file_name = directory + "/model_grid.txt"
 

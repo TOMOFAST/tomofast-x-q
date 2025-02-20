@@ -2149,14 +2149,15 @@ class Tomofast_x:
                 self.datacol_magn, self.global_outputFolderPath, 2
             )
 
-        self.data2tomofast.write_model_grid(
+        if dataFormat == "points":
+            self.data2tomofast.write_model_grid(
             self.padding,
             self.cell_x,
             self.cell_y,
             self.dz,
             self.meshBox,
             self.global_outputFolderPath,
-        )
+            )
 
         self.dlg.nx_label.setText(str(self.data2tomofast.nx))
         self.dlg.ny_label.setText(str(self.data2tomofast.ny))
