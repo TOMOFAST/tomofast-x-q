@@ -3,66 +3,36 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=SGTool
-qgisMinimumVersion=3.24
-description=Simple Potential Field Processing
-version=0.2.11
-author=Mark Jessell
+name=tomofast_x_q
+qgisMinimumVersion=3.0
+description=Supprts Tomofast-x geophysical inversion code
+version=0.2.3
+author=mark jessell, vitaliy ogarko
 email=mark.jessell@uwa.edu.au
 
-about=Simple Potential Field Processing using FFT grid filters, e.g. RTP, 1VD, Band Pass, Analytic Signal, Upward Continuation etc.
+about=Helps make input files for Tomofast-x
 
-tracker=https://github.com/swaxi/SGTool/issues
-repository=https://github.com/swaxi/SGTool
+tracker=https://github.com/TOMOFAST/tomofast-x-q
+repository=https://github.com/TOMOFAST/tomofast-x-q
 # End of mandatory metadata
 
 # Recommended items:
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.11 Remove path insertion in worms code
-      * add relief shading option (based on Grass algorithm)
-      * generalise a bit epsg parsing for GRD
-    0.2.10 Bug fixes and GUI Update
-      * GUI now split over 5 tabs
-      * Add tool to produce outline polygon from a grid
-      * Improved null handling in Normalise Grids tool
-      * Remove unused joblib import
-    0.2.9 Docked widget now adds in tabified mode if another widget already there
-      * Reformulated RTP & RTE codes
-      * Add grid outline tool
-      * Add extra Utils tab to declutter GUI (for now!)
-    0.2.8 Added Threshold to NaN tool
-      * New conversion of worms to polyline shapefile option
-      * New grid normalisation tool
-      * New threshold to NaN tool      
-      * Sun shading for 90 zenith reset to 88 as this can blow up otherwise
-      * Better handling of irregular grids by using linear infill of NaNs
-      * Checkboxes labels defined directly
-      * GUI rearranged so gradient tools all together
-      * Vertical Integration now uses user-defined buffer
-    0.2.7 Add worming and improve installation of plugin on PC & Mac
-    0.2.6 Add RGB conversion to grayscale
-    0.2.5 2024-12-11
-      * add convolution filtering
-      * add simple gridding from csv and xyz format files
-      * change to pyIGRF for RTP_E calcs
-    0.2.3 2024-11-26
-      * Bug fixes to Directional Cleaning
-      * Change of behaviour: existing layer now overwritten in QGIS
-      * Loading of GRD format optimised and now massively quicker
-      * Check for unlikely lengths (>100) with geographic grids
-    0.2.2 2024-11-25: Initial upload to plugin repository.
-
+changelog=0.2.3 Fix memory calc for points bug
+    * Add demo movie link to repository
+    0.2.2 Added variable hz and vt padding
+    0.2 Converted to dockable window
 
 # Tags are comma separated with spaces allowed
-tags=python, geophysics, gravity, magnetics, filters
+tags=python, geophysics, gravity, magnetics
 
-homepage=https://github.com/swaxi/SGTool
+homepage=https://github.com/TOMOFAST/
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
