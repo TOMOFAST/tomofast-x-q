@@ -5,6 +5,28 @@
 
 ## Install
 Save repository to disk as a zip file. Use QGIS Plugin Manager to load directly from zip file.
+- To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS.
+
+#### Windows
+First install Windows Subsytem for Linux (WSL): Open PowerShell or Windows Command Prompt in administrator mode by right-clicking and selecting **Run as administrator**, type in the following command on the command line  
+``` 
+    wsl --install   
+```
+then restart your machine. This will also install the Ubuntu operating system wihtin WSL (it will not affect your normal windows system). Now follow the steps below...   
+
+#### All systems
+1) Install **gfortran** on your system (WSL if you are using windows) using the relevant install commands: https://fortran-lang.org/learn/os_setup/install_gfortran/   
+2) Install **OpenMPI** on your system (WSL if you are using windows) using the relevant install commands: https://docs.open-mpi.org/en/v5.0.x/installing-open-mpi/quickstart.html   
+3) If not already installed, install **git** on your computer (WSL if you are using windows) using the relevant install commands: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git   
+4) Download **Tomofast-x** on your system (WSL if you are using windows) by entering: 
+```
+    git clone https://github.com/TOMOFAST/Tomofast-x.git  
+```
+
+5) Change to the tomofast-x directory and compile the code by entering the following command:   
+```
+     make
+```
 
 ## Simple instructions
 **Select tomofast-x-q plugin and Select Import existing field databases tab**   
