@@ -626,6 +626,7 @@ class Tomofast_x:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
+
             # print "** STARTING Tomofast_x"
 
             # dockwidget may not exist if:
@@ -634,6 +635,19 @@ class Tomofast_x:
             if self.dlg == None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dlg = Tomofast_xDockWidget()
+
+            if platform.system() == "Darwin":
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True) 
+                self.dlg.lineEdit_pre_command.setEnabled(False)
+                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
+            elif platform.system() == "Windows":
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False) 
+                self.dlg.lineEdit_pre_command.setEnabled(True)
+                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
+            else: # Linux
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False) 
+                self.dlg.lineEdit_pre_command.setEnabled(False)
+                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
 
             # connect to provide cleanup on closing of dockwidget
             self.dlg.closingPlugin.connect(self.onClosePlugin)
@@ -758,6 +772,7 @@ class Tomofast_x:
             self.dlg.pushButton_2_select_parfilePath.clicked.connect(
                 self.select_paramfile_path
             )
+
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
 
             self.define_parameters()
@@ -776,6 +791,9 @@ class Tomofast_x:
 
                     line = tpfile.readline()
                     self.dlg.lineEdit_pre_command.setText(line.rstrip())
+
+                    line = tpfile.readline()
+                    self.dlg.lineEdit_2_mpirunPath_2.setText(line.rstrip())
 
             self.dlg.version_label.setText("v " + self.show_version())
 
@@ -826,20 +844,32 @@ class Tomofast_x:
                 wsl_param_path = self.paramfile_Path_run.replace("C:/", "/mnt/c/")
                 wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
                 pre_command = self.dlg.lineEdit_pre_command.text()
-                if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
-                    self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
-                    with open(
-                        os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
-                        "w",
-                    ) as tpfile:
-                        tpfile.write(self.tomo_Path + "\n")
-                        tpfile.write(distro + "\n")
-                        tpfile.write(pre_command + "\n")
+                mpirun_path = " mpirun "
+
+            elif platform.system() == "Darwin":
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
+                pre_command = ""
+                mpirun_path = " "+self.dlg.lineEdit_2_mpirunPath_2.text().strip()+" "
+                distro = " "
 
             else:
                 wsl_tomo_path = self.tomo_Path
                 wsl_param_path = self.paramfile_Path
                 pre_command = ""
+                mpirun_path = " mpirun "
+                distro = " "
+
+            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+                self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+                with open(
+                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
+                    "w",
+                ) as tpfile:
+                    tpfile.write(self.tomo_Path + "\n")
+                    tpfile.write(distro + "\n")
+                    tpfile.write(pre_command + "\n")
+                    tpfile.write(mpirun_path + "\n") 
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
             # Path to your executable
@@ -848,7 +878,8 @@ class Tomofast_x:
             else:
                 command = (
                     pre_command
-                    + " mpirun -np "
+                    + mpirun_path
+                    + " -np "
                     + str(noProc)
                     + " "
                     + wsl_tomo_path
@@ -856,7 +887,7 @@ class Tomofast_x:
                     + wsl_param_path
                 )
             args = shlex.split(command)
-
+            print("args", args)
             # set system/version dependent "start_new_session" analogs
             kwargs = {}
             if platform.system() == "Windows":
@@ -870,6 +901,9 @@ class Tomofast_x:
                 kwargs.update(preexec_fn=os.setsid)
             else:  # Python 3.2+ and Unix
                 kwargs.update(start_new_session=True)
+
+
+            print("args,kwargs",args,kwargs)
 
             try:
                 # Open a subprocess to execute the command
@@ -1743,44 +1777,7 @@ class Tomofast_x:
 
             self.tidy_data(temp_file_path1, fileName1, dataName1)
 
-            """temp_file_path1 = self.global_outputFolderPath + "/data_temp.csv"
             
-            # Read the file manually, skipping the first line, and saving it as temporary CSV
-            with open(fileName1, "r") as f:
-                lines = f.readlines()[1:]  # Skip the first line
-
-            with open(temp_file_path1, "w") as temp_file:
-
-                temp_file.writelines(f"x y height {dataName1}\n")
-                temp_file.writelines(lines)
-                temp_file.flush()
-                temp_file.close()
-
-            temp_data = pd.read_csv(
-                temp_file_path1,
-                na_values=["", " "],
-                delim_whitespace=True,  # Handles whitespace-separated data
-            )
-            temp_data = temp_data.dropna()
-            data_len = len(temp_data)
-            if self.global_experimentType == 1:
-                self.forward_data_grav_nData = data_len
-            else:
-                self.forward_data_magn_nData = data_len
-
-            temp_data.to_csv(f"{temp_file_path1}", sep=" ", index=False)
-
-            with open(fileName1, "w") as temp_file:
-
-                temp_file.writelines(f"{data_len}\n")
-                temp_file.flush()
-                temp_file.close()
-
-            temp_data.to_csv(
-                f"{fileName1}", sep=" ", header=False, index=False, mode="a"
-            )
-            """
-
             # Define the URI to load the CSV with specified geometry fields and no header
             # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
             uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
@@ -1800,28 +1797,26 @@ class Tomofast_x:
             if self.global_experimentType == 3:
                 self.tidy_data(temp_file_path1, fileName2, dataName2)
 
-                """temp_file_path2 = self.global_outputFolderPath + "/data_temp_magn.csv"
-
-                # Read the file manually, skipping the first line, and saving it as temporary CSV
-                with open(fileName2, "r") as f:
-                    lines = f.readlines()[1:]  # Skip the first line
-
-                    # temp_file_path2 = "/path/to/temp_file2.csv"
-                    with open(temp_file_path2, "w") as temp_file:
-                        temp_file.writelines(f"x y height {dataName2}\n")
-                        temp_file.writelines(lines)
-                        temp_file.flush()
-                        temp_file.close()
-                    # Define the URI to load the CSV with specified geometry fields and no header
-                """
                 uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
 
-                # Load the layer as a point layer
                 layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
 
                 if layer.isValid():
                     QgsProject.instance().addMapLayer(layer)
-                    layer.renderer().symbol().setSize(0.125)
+                    
+                    # Check if the renderer exists and is of correct type before modifying
+                    renderer = layer.renderer()
+                    if renderer and hasattr(renderer, 'symbol') and callable(getattr(renderer, 'symbol', None)):
+                        # For single symbol renderer
+                        symbol = renderer.symbol()
+                        if symbol:
+                            symbol.setSize(0.125)
+                    else:
+                        # Either create a new renderer or handle different renderer types
+                        # For example, creating a new single symbol renderer:
+                        symbol = QgsMarkerSymbol.createSimple({'name': 'circle', 'size': '0.125'})
+                        layer.setRenderer(QgsSingleSymbolRenderer(symbol))
+                    
                     self.colour_points(layer, dataName2, "Mako", False)
                     layer.triggerRepaint()
 
@@ -1979,11 +1974,14 @@ class Tomofast_x:
             "INPUT": mesh_layer,
             "RASTERCOPY": self.global_outputFolderPath + reprojDataName,
             "COLUMN_PREFIX": "data",
-            "OUTPUT": "memory2",
+            "OUTPUT": "memory:",
         }
-        processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
+        print("parameter",parameter)
+        # Get the layer ID from runAndLoadResults
+        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
 
-        new_data_layer = QgsProject.instance().mapLayersByName("memory2")[0]
+        # Get the actual layer object from the ID
+        new_data_layer = QgsProject.instance().mapLayer(layer_id)
 
         # convert layer to dataframe
         data = []
@@ -2004,8 +2002,12 @@ class Tomofast_x:
 
         # Create a pandas DataFrame
         data_df = pd.DataFrame(data, columns=fields)
-
-        data_df = data_df.drop(columns=["fid", "id"])
+        
+        # Only drop columns if they exist in the dataframe
+        if "fid" in data_df.columns:
+            data_df = data_df.drop(columns=["fid"])
+        if "id" in data_df.columns:
+            data_df = data_df.drop(columns=["id"])
 
         new_column_order = ["POINT_X", "POINT_Y", "data1"]
         data_df = data_df[new_column_order]
@@ -3450,6 +3452,28 @@ class Tomofast_x:
         )
         self.dlg.doubleSpinBox_mag_int.setToolTip(
             "Manual overide of Magnetic Intensity"
+        )
+        
+        self.dlg.pushButton_select_tomoPath.setToolTip(
+            "Select path to tomofast executable, e.g. '/opt/homebrew/bin/tomofastx'"
+        )
+        self.dlg.pushButton_2_select_parfilePath.setToolTip(
+            "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
+        )
+        self.dlg.lineEdit_2_mpirunPath_2.setToolTip(   
+            "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS Only)"
+        )
+        self.dlg.lineEdit_pre_command.setToolTip(   
+            "Pre-command to run before inversion, e.g. 'wsl -e' (Windows WSL only)"
+        )
+        self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
+            "Name of WSL Distro to run the inversion in, e.g. 'Ubuntu-20.04' (Windows WSL only)"
+        )
+        self.dlg.mQgsSpinBox_noProc.setToolTip(
+            "Number of processors to use for inversion (If more than 1 requires openmpi to be installed)"
+        )
+        self.dlg.pushButton_3_runInversion.setToolTip(
+            "Run the inversion using the parameters defined in the parfile"
         )
 
     def show_version(self):
