@@ -887,7 +887,7 @@ class Tomofast_x:
                     + wsl_param_path
                 )
             args = shlex.split(command)
-            print("args", args)
+
             # set system/version dependent "start_new_session" analogs
             kwargs = {}
             if platform.system() == "Windows":
@@ -901,9 +901,6 @@ class Tomofast_x:
                 kwargs.update(preexec_fn=os.setsid)
             else:  # Python 3.2+ and Unix
                 kwargs.update(start_new_session=True)
-
-
-            print("args,kwargs",args,kwargs)
 
             try:
                 # Open a subprocess to execute the command
@@ -942,12 +939,6 @@ class Tomofast_x:
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
             "All (*)",
         )
-        if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
-            self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
-            with open(
-                os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt", "w"
-            ) as tpfile:
-                tpfile.write(self.tomo_Path)
 
     def select_paramfile_path(self):
 
