@@ -6,7 +6,7 @@
 name=tomofast_x_q
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
-version=0.2.3
+version=0.2.4
 author=mark jessell, vitaliy ogarko
 email=mark.jessell@uwa.edu.au
 
@@ -20,7 +20,9 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.3 Fix memory calc for points bug
+changelog=0.2.4 Fixes for MacOS when running inversions
+    * GUI tweaks for MacOS
+    0.2.3 Fix memory calc for points bug
     * Add demo movie link to repository
     0.2.2 Added variable hz and vt padding
     0.2 Converted to dockable window
