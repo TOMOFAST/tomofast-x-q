@@ -1252,6 +1252,7 @@ class Tomofast_x:
             self.dlg.groupBox_3.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
             self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
+            self.dlg.lineEdit_ROI_path_select.setEnabled(True)
 
         self.dlg.doubleSpinBox_coreDepth.setEnabled(True)
         self.dlg.doubleSpinBox_fullDepth.setEnabled(True)
