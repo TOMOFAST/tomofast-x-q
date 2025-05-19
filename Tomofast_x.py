@@ -3521,7 +3521,9 @@ class Tomofast_x:
         self.dlg.pushButton_3_runInversion.setToolTip(
             "Run the inversion using the parameters defined in the parfile"
         )
-
+        self.dlg.pushButton_3_visualise.setToolTip(
+            "Visualise X-Y-Z slices of output model\nRequires pyvtk to be installed in QGIS"
+        )
     def show_version(self):
         metadata_path = os.path.dirname(os.path.realpath(__file__)) + "/metadata.txt"
 
