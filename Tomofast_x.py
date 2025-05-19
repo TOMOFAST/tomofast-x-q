@@ -284,7 +284,7 @@ class Tomofast_x:
             ],
             "forward.depthWeighting.magn.power": [
                 self.forward_depthWeighting_magn_power,
-                self.dlg.mQgsDoubleSpinBox,
+                self.dlg.mQgsDoubleSpinBox_mag_depth_weighting,
                 float,
                 "value",
             ],
@@ -2849,7 +2849,7 @@ class Tomofast_x:
             self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.value()
         )
         self.forward_depthWeighting_magn_power = (
-            self.dlg.mQgsDoubleSpinBox.value()
+            self.dlg.mQgsDoubleSpinBox_mag_depth_weighting.value()
         )
         if self.dlg.checkBox_read_sens_matrix.isChecked():
             self.sensit_readFromFiles = 1
