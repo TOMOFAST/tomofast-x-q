@@ -68,6 +68,8 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog
 
 # import functions from scripts
 from .Data2Tomofast import Data2Tomofast
+from .viz import display_voxet_files_clipped_qgis
+
 import numpy as np
 import pandas as pd
 from osgeo import gdal
@@ -769,8 +771,13 @@ class Tomofast_x:
             self.dlg.pushButton_reset.clicked.connect(self.reset_params)
 
             self.dlg.pushButton_select_tomoPath.clicked.connect(self.select_tomo_Path)
+
             self.dlg.pushButton_2_select_parfilePath.clicked.connect(
                 self.select_paramfile_path
+            )
+            
+            self.dlg.pushButton_3_visualise.clicked.connect(
+                self.visualise_output
             )
 
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
@@ -798,6 +805,42 @@ class Tomofast_x:
             self.dlg.version_label.setText("v " + self.show_version())
 
         # result = self.dlg.exec_()
+
+    def visualise_output(self):
+        paramPath=self.paramfile_Path
+        path,filename=os.path.split(paramPath)
+        if os.path.exists(paramPath) and paramPath != "":
+            with open(paramPath, "r", encoding="utf-8") as file:
+                contents = file.readlines()
+                for line in contents:
+                    if "global.experimentType" in line:
+                        experimentType = line.split("=")[1].strip()
+                        break
+            if experimentType == "1":                        
+                xfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
+                yfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
+                zfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
+                xyzfiles=[xfile,yfile,zfile]
+                print("xyzfiles",xyzfiles)
+                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
+            elif experimentType == "2":                        
+                xfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
+                yfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
+                zfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
+                xyzfiles=[xfile,yfile,zfile]
+                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
+            else :                        
+                xfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
+                yfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
+                zfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
+                xyzfiles=[xfile,yfile,zfile]
+                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
+
+                xfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
+                yfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
+                zfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
+                xyzfiles=[xfile,yfile,zfile]
+                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
 
     def replace_text_in_file(self, file_path, old_text, new_text):
         """
@@ -1450,16 +1493,19 @@ class Tomofast_x:
 
         # Get the index of the field to be modified (e.g., 'Log MS')
         field_index = elev.fields().indexOf("elevation")
-
+        noneFlag = False
         # Iterate over the features and set the negative values
         for feature in elev.getFeatures():
             original_value = feature[field_index]
 
             if original_value is not None:
                 negative_value = -original_value
-
-                # Update the field with the negative value
-                elev.changeAttributeValue(feature.id(), field_index, negative_value)
+            else:
+                negative_value=0
+                noneFlag = True
+            # Update the field with the negative value
+            elev.changeAttributeValue(feature.id(), field_index, negative_value)
+            
         elev.commitChanges()
 
         QgsVectorFileWriter.writeAsVectorFormat(
@@ -1468,6 +1514,13 @@ class Tomofast_x:
             "utf-8",
             driverName="CSV",
         )
+
+        self.iface.messageBar().pushMessage(
+                "The DTM does not cover the full extent of the mesh includiing padding.",
+                "Outside elevations set to zero",
+                level=Qgis.Warning,
+                duration=45,
+            )
 
     # rename layer field name
     def rename_dp_field(self, rlayer, oldname, newname):
@@ -1681,6 +1734,7 @@ class Tomofast_x:
 
     def tidy_data(self, temp_file_path1, fileName1, dataName1):
         # Read the file manually, skipping the first line, and saving it as temporary CSV
+
         with open(fileName1, "r") as f:
             lines = f.readlines()[1:]  # Skip the first line
 
@@ -2225,19 +2279,19 @@ class Tomofast_x:
             / np.log(1.15)
         )
         nz = ncore + npad
+        #if not self.suffix_known:
+        # Determine which input path to use based on experiment type
+        if self.global_experimentType in {1, 3}:
+            data_path = self.dlg.lineEdit_grav_data_path.text()
+        else:
+            data_path = self.dlg.lineEdit_magn_data_path.text()
 
-        if not self.suffix_known:
-            # Determine which input path to use based on experiment type
-            if self.global_experimentType in {1, 3}:
-                data_path = self.dlg.lineEdit_grav_data_path.text()
-            else:
-                data_path = self.dlg.lineEdit_magn_data_path.text()
+        # Extract suffix and store it
+        suffix = data_path.split(".")[-1].lower()
+        self.suffix_known = suffix
 
-            # Extract suffix and store it
-            suffix = data_path.split(".")[-1].lower()
-            self.suffix_known = suffix
-            if self.suffix_known != "csv":
-                self.nData = nx * ny
+        if self.suffix_known != "csv":
+            self.nData = nx * ny
 
         if self.global_experimentType == 1:
             memory = 8 * compression * nx * ny * nz * self.nData
@@ -2535,18 +2589,18 @@ class Tomofast_x:
                     self.forward_data_magn_nData
                 )
             )
-            if self.global_elevType == 1:
-                self.f_params.write(
-                    "forward.data.magn.dataGridFile      = {}\n".format(
-                        self.global_outputFolderPath + "/data_magn.csv"
-                    )
+            """if self.global_elevType == 1:"""
+            self.f_params.write(
+                "forward.data.magn.dataGridFile      = {}\n".format(
+                    self.global_outputFolderPath + "/data_magn.csv"
                 )
-                self.f_params.write(
-                    "forward.data.magn.dataValuesFile    = {}\n".format(
-                        self.global_outputFolderPath + "/data_magn.csv"
-                    )
+            )
+            self.f_params.write(
+                "forward.data.magn.dataValuesFile    = {}\n".format(
+                    self.global_outputFolderPath + "/data_magn.csv"
                 )
-            else:
+            )
+            """else:
                 self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
                         self.global_outputFolderPath + "/data_magn_topo.csv"
@@ -2556,7 +2610,7 @@ class Tomofast_x:
                     "forward.data.magn.dataValuesFile    = {}\n".format(
                         self.global_outputFolderPath + "/data_magn_topo.csv"
                     )
-                )
+                )"""
 
         self.spacer("DEPTH WEIGHTING")
 
@@ -2846,7 +2900,7 @@ class Tomofast_x:
             self.forward_depthWeighting_type = 1
 
         self.forward_depthWeighting_grav_power = (
-            self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.value()
+            self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.value()
         )
         self.forward_depthWeighting_magn_power = (
             self.dlg.mQgsDoubleSpinBox_mag_depth_weighting.value()

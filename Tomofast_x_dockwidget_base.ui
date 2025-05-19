@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1459</width>
+    <width>964</width>
     <height>890</height>
    </rect>
   </property>
@@ -3491,7 +3491,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>450</x>
-           <y>130</y>
+           <y>110</y>
            <width>121</width>
            <height>23</height>
           </rect>
@@ -3573,7 +3573,7 @@ p, li { white-space: pre-wrap; }
           <rect>
            <x>410</x>
            <y>70</y>
-           <width>51</width>
+           <width>61</width>
            <height>21</height>
           </rect>
          </property>
@@ -3602,6 +3602,19 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="text">
           <string>Path to mpirun</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_3_visualise">
+         <property name="geometry">
+          <rect>
+           <x>450</x>
+           <y>140</y>
+           <width>121</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Visualise</string>
          </property>
         </widget>
        </widget>
