@@ -2,17 +2,18 @@ import os
 import numpy as np
 import sys
 
-# Check if PyVista is installed
-try:
-    import pyvista as pv
-except ImportError:
-    print("PyVista is not installed. Installing PyVista...")
-
 
 def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', opacity=1.0, show_edges=False):
     """
     Display multiple VTK voxet files with colors clipped to a specific percentile in QGIS.
     """
+    # Check if PyVista is installed
+    try:
+        import pyvista as pv
+    except ImportError:
+        print("PyVista is not installed. Please install PyVista...")
+        return
+    
     # Create a plotter
     plotter = pv.Plotter()
     

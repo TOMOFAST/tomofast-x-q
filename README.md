@@ -3,6 +3,14 @@
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; **<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
+## Recent changes
+changelog=0.2.5 Fixes for DTM for grav and mag when smaller than mesh extent   
+    * Fixes for name of data file when DTM used   
+    * Fixes for depth weight values saved in paramfile   
+    * Add visualisation of end model (requires pyvista library to be installed)   
+    0.2.4 Fixes for MacOS when running inversions   
+    * GUI tweaks for MacOS   
+    
 ## Install
 Use QGIS Plugin Manager to load directly the Plugin Repository (experimental) or download the zip file of this repository and use Install from Zip file in the QGIS Plugin Manager.   
 - To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS.

@@ -6,7 +6,7 @@
 name=tomofast_x_q
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
-version=0.2.4
+version=0.2.5
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
 
@@ -20,7 +20,11 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.4 Fixes for MacOS when running inversions
+changelog=0.2.5 Fixes for DTM for grav and mag when smaller than mesh extent
+    * Fixes for name of data file when DTM used
+    * Fixes for depth weight values saved in paramfile
+    * Add visualisation of end model (requires pyvista library to be installed)
+    0.2.4 Fixes for MacOS when running inversions
     * GUI tweaks for MacOS
     0.2.3 Fix memory calc for points bug
     * Add demo movie link to repository
