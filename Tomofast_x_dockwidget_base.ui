@@ -501,7 +501,7 @@ font-size: 12px;</string>
         <x>10</x>
         <y>440</y>
         <width>591</width>
-        <height>261</height>
+        <height>221</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -520,27 +520,6 @@ font-size: 12px;</string>
       <property name="title">
        <string>Step 5 : Specify Mesh Parameters</string>
       </property>
-      <widget class="QLabel" name="label_48">
-       <property name="geometry">
-        <rect>
-         <x>9</x>
-         <y>222</y>
-         <width>95</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">font-family: Arial; 
-font-size: 13px;
-</string>
-       </property>
-       <property name="text">
-        <string>Output Directory</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_padding">
        <property name="geometry">
         <rect>
@@ -607,38 +586,6 @@ font-size: 13px;
         <number>10</number>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_output_directory_path">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>109</x>
-         <y>220</y>
-         <width>271</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">font-color:gray
-</string>
-       </property>
-       <property name="inputMask">
-        <string/>
-       </property>
-       <property name="text">
-        <string>Select directory to save tomofast files</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="placeholderText">
-        <string/>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_21">
        <property name="geometry">
         <rect>
@@ -700,37 +647,6 @@ font-size: 13px;
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="lineEdit_output_directory_path_select">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>389</x>
-         <y>220</y>
-         <width>171</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>Choose your Main Project </string>
-       </property>
-       <property name="whatsThis">
-        <string/>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
-       </property>
-       <property name="text">
-        <string>Save Data and Mesh</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_28">
@@ -1949,7 +1865,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>210</x>
-        <y>710</y>
+        <y>670</y>
         <width>381</width>
         <height>21</height>
        </rect>
@@ -1962,7 +1878,7 @@ border-style: solid;border-width: 1px;border-color: black
        </font>
       </property>
       <property name="text">
-       <string>After saving data, continue on to Grav/Mag Parameters Tab...</string>
+       <string>Continue on to Grav/Mag Parameters Tab...</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1975,7 +1891,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>710</y>
+        <y>670</y>
         <width>101</width>
         <height>23</height>
        </rect>
@@ -1988,7 +1904,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>130</x>
-        <y>710</y>
+        <y>670</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -3318,9 +3234,9 @@ separated pairs)</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>530</y>
-        <width>181</width>
+        <x>390</x>
+        <y>520</y>
+        <width>171</width>
         <height>23</height>
        </rect>
       </property>
@@ -3332,6 +3248,90 @@ separated pairs)</string>
       </property>
       <property name="text">
        <string>Save Parameter File</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_output_directory_path">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>488</y>
+        <width>271</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-color:gray
+</string>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string>Select directory to save tomofast files</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="lineEdit_output_directory_path_select">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>488</y>
+        <width>171</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Choose your Main Project </string>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
+      </property>
+      <property name="text">
+       <string>Save Data and Mesh</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_48">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>490</y>
+        <width>95</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+      </property>
+      <property name="text">
+       <string>Output Directory</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
