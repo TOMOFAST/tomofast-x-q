@@ -1948,7 +1948,7 @@ border-style: solid;border-width: 1px;border-color: black
         <x>300</x>
         <y>310</y>
         <width>301</width>
-        <height>61</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -1957,8 +1957,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_80">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>23</y>
+         <x>30</x>
+         <y>33</y>
          <width>51</width>
          <height>20</height>
         </rect>
@@ -1976,8 +1976,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>60</x>
-         <y>23</y>
+         <x>100</x>
+         <y>30</y>
          <width>89</width>
          <height>20</height>
         </rect>
@@ -1998,15 +1998,14 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_81">
        <property name="geometry">
         <rect>
-         <x>157</x>
-         <y>23</y>
-         <width>51</width>
+         <x>20</x>
+         <y>50</y>
+         <width>91</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>Norm
-Power</string>
+        <string>Norm Power</string>
        </property>
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_norm_power">
@@ -2015,8 +2014,8 @@ Power</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>210</x>
-         <y>23</y>
+         <x>100</x>
+         <y>60</y>
          <width>89</width>
          <height>20</height>
         </rect>
@@ -2062,8 +2061,8 @@ Power</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>100</y>
-        <width>401</width>
+        <y>140</y>
+        <width>591</width>
         <height>53</height>
        </rect>
       </property>
@@ -2163,7 +2162,7 @@ Power</string>
         <x>10</x>
         <y>308</y>
         <width>281</width>
-        <height>61</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -2173,7 +2172,7 @@ Power</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>36</y>
+         <y>20</y>
          <width>193</width>
          <height>16</height>
         </rect>
@@ -2189,7 +2188,7 @@ Power</string>
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>20</y>
+         <y>40</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -2202,13 +2201,42 @@ Power</string>
        <property name="geometry">
         <rect>
          <x>180</x>
-         <y>20</y>
+         <y>40</y>
          <width>89</width>
          <height>20</height>
         </rect>
        </property>
        <property name="value">
         <double>3.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioButton_magn_ADMM_dist_based">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>121</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Distance-based</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioButton_magn_ADMM_depth_based">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>70</y>
+         <width>121</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Depth-based</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -2219,8 +2247,8 @@ Power</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>430</y>
-        <width>561</width>
+        <y>490</y>
+        <width>581</width>
         <height>111</height>
        </rect>
       </property>
@@ -2379,7 +2407,7 @@ Day/Month/Year</string>
         <x>9</x>
         <y>30</y>
         <width>301</width>
-        <height>61</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -2389,7 +2417,7 @@ Day/Month/Year</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>36</y>
+         <y>20</y>
          <width>198</width>
          <height>16</height>
         </rect>
@@ -2405,7 +2433,7 @@ Day/Month/Year</string>
        <property name="geometry">
         <rect>
          <x>160</x>
-         <y>20</y>
+         <y>40</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -2417,14 +2445,46 @@ Day/Month/Year</string>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_depth_weight_power">
        <property name="geometry">
         <rect>
-         <x>210</x>
-         <y>20</y>
+         <x>200</x>
+         <y>40</y>
          <width>89</width>
          <height>20</height>
         </rect>
        </property>
        <property name="value">
         <double>2.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioButton_grav_dist_based_ADMM">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>131</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Distance-based</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioButton_grav_depth_based_ADMM">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>70</y>
+         <width>111</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Depth-based</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -2437,7 +2497,7 @@ Day/Month/Year</string>
         <x>320</x>
         <y>30</y>
         <width>291</width>
-        <height>61</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -2446,10 +2506,10 @@ Day/Month/Year</string>
       <widget class="QLabel" name="label_40">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>23</y>
-         <width>34</width>
-         <height>16</height>
+         <x>23</x>
+         <y>30</y>
+         <width>41</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="text">
@@ -2465,8 +2525,8 @@ Day/Month/Year</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>23</y>
+         <x>80</x>
+         <y>30</y>
          <width>89</width>
          <height>20</height>
         </rect>
@@ -2487,9 +2547,9 @@ Day/Month/Year</string>
       <widget class="QLabel" name="label_66">
        <property name="geometry">
         <rect>
-         <x>130</x>
-         <y>23</y>
-         <width>58</width>
+         <x>10</x>
+         <y>60</y>
+         <width>61</width>
          <height>16</height>
         </rect>
        </property>
@@ -2506,8 +2566,8 @@ Day/Month/Year</string>
        </property>
        <property name="geometry">
         <rect>
-         <x>190</x>
-         <y>23</y>
+         <x>80</x>
+         <y>60</y>
          <width>89</width>
          <height>20</height>
         </rect>
@@ -2533,8 +2593,8 @@ Day/Month/Year</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>370</y>
-        <width>391</width>
+        <y>420</y>
+        <width>581</width>
         <height>53</height>
        </rect>
       </property>
@@ -2612,9 +2672,9 @@ Day/Month/Year</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>550</y>
+        <y>610</y>
         <width>591</width>
-        <height>121</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -2623,35 +2683,29 @@ Day/Month/Year</string>
       <widget class="QTextEdit" name="textEdit_5_magn_ADMM_bounds">
        <property name="geometry">
         <rect>
-         <x>300</x>
-         <y>20</y>
-         <width>282</width>
-         <height>59</height>
+         <x>311</x>
+         <y>30</y>
+         <width>271</width>
+         <height>41</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0.0 1.0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="placeholderText">
         <string>-20. 20. 90. 130. 220. 260.</string>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton_magn_ADMM_dist_based">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>23</y>
-         <width>121</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Distance-based</string>
-       </property>
-      </widget>
       <widget class="QLineEdit" name="lineEdit_magn_ADMM_weight">
        <property name="geometry">
         <rect>
-         <x>300</x>
-         <y>90</y>
-         <width>133</width>
+         <x>90</x>
+         <y>60</y>
+         <width>71</width>
          <height>20</height>
         </rect>
        </property>
@@ -2659,33 +2713,17 @@ Day/Month/Year</string>
         <string>1d-5</string>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton_magn_ADMM_depth_based">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>46</y>
-         <width>121</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Depth-based</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_85">
        <property name="geometry">
         <rect>
-         <x>206</x>
-         <y>90</y>
-         <width>81</width>
+         <x>16</x>
+         <y>60</y>
+         <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Mag Weight</string>
+        <string>Weight</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2694,8 +2732,8 @@ Day/Month/Year</string>
       <widget class="QLabel" name="label_84">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>20</y>
+         <x>160</x>
+         <y>30</y>
          <width>141</width>
          <height>41</height>
         </rect>
@@ -2712,8 +2750,8 @@ Day/Month/Year</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>80</y>
-         <width>66</width>
+         <y>30</y>
+         <width>71</width>
          <height>16</height>
         </rect>
        </property>
@@ -2731,7 +2769,7 @@ Day/Month/Year</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>80</y>
+         <y>30</y>
          <width>41</width>
          <height>18</height>
         </rect>
@@ -2751,9 +2789,9 @@ Day/Month/Year</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>200</y>
         <width>591</width>
-        <height>121</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="title">
@@ -2762,8 +2800,8 @@ Day/Month/Year</string>
       <widget class="QLabel" name="label_73">
        <property name="geometry">
         <rect>
-         <x>170</x>
-         <y>20</y>
+         <x>180</x>
+         <y>30</y>
          <width>131</width>
          <height>41</height>
         </rect>
@@ -2776,22 +2814,6 @@ separated pairs)</string>
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton_grav_depth_based_ADMM">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>46</y>
-         <width>111</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Depth-based</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
       <widget class="QSpinBox" name="spinBox_grav_number_ADMM_litho">
        <property name="enabled">
         <bool>true</bool>
@@ -2799,7 +2821,7 @@ separated pairs)</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>80</y>
+         <y>20</y>
          <width>41</width>
          <height>18</height>
         </rect>
@@ -2815,10 +2837,17 @@ separated pairs)</string>
        <property name="geometry">
         <rect>
          <x>320</x>
-         <y>20</y>
+         <y>30</y>
          <width>256</width>
-         <height>59</height>
+         <height>41</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0.0 5.0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="placeholderText">
         <string>-20. 20. 90. 130. 220. 260.</string>
@@ -2827,41 +2856,25 @@ separated pairs)</string>
       <widget class="QLabel" name="label_74">
        <property name="geometry">
         <rect>
-         <x>219</x>
-         <y>90</y>
-         <width>81</width>
+         <x>20</x>
+         <y>50</y>
+         <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Grav Weight</string>
+        <string>Weight</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton_grav_dist_based_ADMM">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>23</y>
-         <width>131</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Distance-based</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
       <widget class="QLineEdit" name="lineEdit_grav_ADMM_weight">
        <property name="geometry">
         <rect>
-         <x>320</x>
-         <y>90</y>
-         <width>133</width>
+         <x>90</x>
+         <y>50</y>
+         <width>91</width>
          <height>20</height>
         </rect>
        </property>
@@ -2873,8 +2886,8 @@ separated pairs)</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>80</y>
-         <width>66</width>
+         <y>20</y>
+         <width>71</width>
          <height>16</height>
         </rect>
        </property>
@@ -2890,7 +2903,7 @@ separated pairs)</string>
       <property name="geometry">
        <rect>
         <x>130</x>
-        <y>690</y>
+        <y>710</y>
         <width>371</width>
         <height>21</height>
        </rect>
