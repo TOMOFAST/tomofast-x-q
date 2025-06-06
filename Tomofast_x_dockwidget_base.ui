@@ -2880,7 +2880,7 @@ p, li { white-space: pre-wrap; }
       </widget>
       <widget class="QPushButton" name="pushButton_calc_IGRF">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>

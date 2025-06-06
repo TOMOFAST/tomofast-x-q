@@ -1179,6 +1179,7 @@ class Tomofast_x:
         # enable GroupBox 10
         if self.global_dataType == "points":
             self.dlg.groupBox_10.setEnabled(True)
+            self.dlg.groupBox_12.setEnabled(True)
             self.dlg.label_77.setEnabled(True)
             self.dlg.label_78.setEnabled(True)
             self.dlg.label_82.setEnabled(True)
@@ -1189,6 +1190,7 @@ class Tomofast_x:
             self.dlg.lineEdit_ROI_path_select.setEnabled(True)
             self.dlg.lineEdit_ROI_path.setEnabled(True)
         else:
+            self.dlg.groupBox_12.setEnabled(True)
             self.dlg.groupBox_2.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
@@ -1689,7 +1691,6 @@ class Tomofast_x:
                     duration=15,
                 )
                 self.dlg.pushButton_save_paramfile.setEnabled(True)
-                self.dlg.pushButton_calc_IGRF.setEnabled(True)
                 self.update_memory_size()
 
     # calculate mesh and add topographic info before saveing out again
