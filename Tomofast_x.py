@@ -3214,6 +3214,7 @@ class Tomofast_x:
 
         if self.dlg.radioButton_grav_inv.isChecked():  # grav
             self.dlg.groupBox.setEnabled(True)
+            self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(False)
@@ -3226,7 +3227,7 @@ class Tomofast_x:
             self.dlg.groupBox_29.setEnabled(False)
             self.dlg.groupBox_30.setEnabled(False)
             self.dlg.groupBox_23.setEnabled(False)
-
+            self.dlg.groupBox_12.setEnabled(False)
             self.dlg.groupBox_35.setEnabled(False)
             self.global_experimentType = 1
 
@@ -3236,7 +3237,9 @@ class Tomofast_x:
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.pushButton_load_magn_data.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(True)
+            self.dlg.groupBox_12.setEnabled(True)
 
+            self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_16.setEnabled(False)
             self.dlg.groupBox_26.setEnabled(False)
             self.dlg.groupBox_22.setEnabled(False)
@@ -3249,7 +3252,10 @@ class Tomofast_x:
             self.global_experimentType = 2
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
+            self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.dlg.groupBox.setEnabled(True)
+            self.dlg.groupBox_6.setEnabled(True)
+            self.dlg.groupBox_12.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
