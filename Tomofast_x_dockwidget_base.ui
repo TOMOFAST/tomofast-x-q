@@ -2134,6 +2134,9 @@ border-style: solid;border-width: 1px;border-color: black
       </layout>
      </widget>
      <widget class="QLabel" name="label_9">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>231</x>

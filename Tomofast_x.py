@@ -3223,12 +3223,14 @@ class Tomofast_x:
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_6.setEnabled(True)
+            self.dlg.label_7.setEnabled(True)
 
             self.dlg.groupBox_29.setEnabled(False)
             self.dlg.groupBox_30.setEnabled(False)
             self.dlg.groupBox_23.setEnabled(False)
             self.dlg.groupBox_12.setEnabled(False)
             self.dlg.groupBox_35.setEnabled(False)
+            self.dlg.label_9.setEnabled(False)
             self.global_experimentType = 1
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
@@ -3238,17 +3240,20 @@ class Tomofast_x:
             self.dlg.pushButton_load_magn_data.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
+            self.dlg.label_9.setEnabled(True)
 
             self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_16.setEnabled(False)
             self.dlg.groupBox_26.setEnabled(False)
             self.dlg.groupBox_22.setEnabled(False)
+            self.dlg.label_7.setEnabled(False)
 
             self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
             self.dlg.groupBox_23.setEnabled(True)
 
             self.dlg.groupBox_35.setEnabled(True)
+
             self.global_experimentType = 2
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
@@ -3269,6 +3274,9 @@ class Tomofast_x:
             self.dlg.groupBox_23.setEnabled(True)
 
             self.dlg.groupBox_35.setEnabled(True)
+            self.dlg.label_7.setEnabled(True)
+            self.dlg.label_9.setEnabled(True)
+
             self.global_experimentType = 3
 
     # update mesh parameters to allow multiple layer thicknesses
