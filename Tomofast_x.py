@@ -3273,7 +3273,9 @@ class Tomofast_x:
             self.dlg.groupBox_16.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
+            self.dlg.label_7.setEnabled(True)
 
+            self.dlg.label_9.setEnabled(False)
             self.dlg.groupBox_7.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(False)
             self.dlg.groupBox_12.setEnabled(False)
@@ -3291,7 +3293,9 @@ class Tomofast_x:
             self.dlg.groupBox_16.setEnabled(False)
             self.dlg.groupBox_22.setEnabled(False)
             self.dlg.groupBox_26.setEnabled(False)
-
+            self.dlg.label_7.setEnabled(False)
+            
+            self.dlg.label_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
@@ -3309,7 +3313,9 @@ class Tomofast_x:
             self.dlg.groupBox_16.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
+            self.dlg.label_7.setEnabled(True)
 
+            self.dlg.label_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
