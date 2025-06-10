@@ -721,9 +721,9 @@ class Tomofast_x:
             )
             self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
 
-            self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type)
-            self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type)
-            self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type)
+            self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type_reset_gui)
+            self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type_reset_gui)
+            self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type_reset_gui)
 
             self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
             self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
@@ -3236,7 +3236,7 @@ class Tomofast_x:
                 p[1].setText(p[-2](p[0][0]))
                 p[2].setText(p[-2](p[0][1]))
                 p[3].setText(p[-2](p[0][2]))
-        self.inversion_type()
+        self.inversion_type_reset_gui()
         self.dlg.lineEdit_param_load_path.clear()
         self.dlg.groupBox_2.setEnabled(False)
         self.dlg.groupBox_3.setEnabled(False)
@@ -3252,7 +3252,7 @@ class Tomofast_x:
             self.dlg.mQgsspinBox_grav_number_ADMM_litho.setEnabled(False)
             self.dlg.mQgsSpinBox_13.setEnabled(False)"""
 
-        self.inversion_type()
+        self.inversion_type_reset_gui()
                 
 
     # update elevation type based on gui
@@ -3263,7 +3263,7 @@ class Tomofast_x:
         self.global_elevType = 2
 
     # update inversion type based on gui
-    def inversion_type(self):
+    def inversion_type_reset_gui(self):
         # enable GroupBoxes
 
         if self.dlg.radioButton_grav_inv.isChecked():  # grav
