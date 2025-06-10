@@ -1924,6 +1924,15 @@ class Tomofast_x:
             self.dlg.doubleSpinBox_magn_sensor_height.value()
         )
 
+    def in_ROI(self,x,y,meshBox):
+        """
+        Check if the point (x, y) is within the defined mesh box.
+        """
+        return (
+            meshBox["west"] <= x <= meshBox["east"]
+            and meshBox["south"] <= y <= meshBox["north"]
+        )
+
     # convert raster data into points based on mesh locations
     def convert_raster_data(self, filename, proj_out, dataType):
 
@@ -1994,14 +2003,15 @@ class Tomofast_x:
             feature = QgsFeature()
 
             # Set the geometry (Point) for the feature
-            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)
-            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)
-            point = QgsPointXY(x, y)
+            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)+(self.cell_x/2)
+            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)+(self.cell_y/2)
+            if self.in_ROI(x,y,self.meshBox):
+                point = QgsPointXY(x, y)
 
-            feature.setGeometry(QgsGeometry.fromPointXY(point))
+                feature.setGeometry(QgsGeometry.fromPointXY(point))
 
-            # Add the feature to the layer
-            provider.addFeature(feature)
+                # Add the feature to the layer
+                provider.addFeature(feature)
 
         # Update the layer's extent
         mesh_layer.updateExtents()
@@ -2248,7 +2258,9 @@ class Tomofast_x:
             float(self.dlg.doubleSpinBox_coreDepth.value())
             / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
         )
-        npad = int(
+
+        try:
+            npad = int(
             np.log(
                 float(
                     self.dlg.doubleSpinBox_fullDepth.value()
@@ -2257,7 +2269,9 @@ class Tomofast_x:
                 / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
             )
             / np.log(1.15)
-        )
+            )
+        except:
+            npad = 0
         nz = ncore + npad
 
         self.dlg.nx_label.setText(str(nx))
@@ -2284,7 +2298,8 @@ class Tomofast_x:
             float(self.dlg.doubleSpinBox_coreDepth.value())
             / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
         )
-        npad = int(
+        try:
+            npad = int(
             np.log(
                 float(
                     self.dlg.doubleSpinBox_fullDepth.value()
@@ -2293,7 +2308,9 @@ class Tomofast_x:
                 / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
             )
             / np.log(1.15)
-        )
+            )
+        except:
+            npad = 0
         nz = ncore + npad
         #if not self.suffix_known:
         # Determine which input path to use based on experiment type
@@ -3612,11 +3629,11 @@ class Tomofast_x:
         self.inversion_joint_grav_problemWeight = 1
         self.inversion_joint_magn_problemWeight = 0
         self.inversion_admm_grav_enableADMM = 0
-        self.inversion_admm_grav_nLithologies = 1
+        self.inversion_admm_grav_nLithologies = 0
         self.inversion_admm_grav_bounds = ""
         self.inversion_admm_grav_weight = 0
         self.inversion_admm_magn_enableADMM = 0
-        self.inversion_admm_magn_nLithologies = 1
+        self.inversion_admm_magn_nLithologies = 0
         self.inversion_admm_magn_bounds = ""
         self.inversion_admm_magn_weight = 0
         self.cell_x = 2000
