@@ -2003,8 +2003,8 @@ class Tomofast_x:
             feature = QgsFeature()
 
             # Set the geometry (Point) for the feature
-            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)+(self.cell_x/2)
-            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)+(self.cell_y/2)
+            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)
+            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)
             if self.in_ROI(x,y,self.meshBox):
                 point = QgsPointXY(x, y)
 
