@@ -970,7 +970,7 @@ class Tomofast_x:
                     close_fds=True,
                     **kwargs,
                 )
-                print("process", process)
+                print("command ", command)
                 # Print the process ID for tracking
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
