@@ -85,7 +85,7 @@ import shlex
 import platform
 import sys
 import shutil
-
+import time
 # Initialize Qt resources from file resources.py
 from .resources import *
 
@@ -371,8 +371,8 @@ class Tomofast_x:
             # ADMM constraints
             "inversion.admm.grav.enableADMM": [
                 self.inversion_admm_grav_enableADMM,
-                self.dlg.radioButton_grav_depth_based_ADMM,
-                self.dlg.radioButton_grav_dist_based_ADMM,
+                self.dlg.radioButton_grav_depth_based_weighting,
+                self.dlg.radioButton_grav_dist_based_weighting,
                 int,
                 "radio",
             ],
@@ -396,8 +396,8 @@ class Tomofast_x:
             ],
             "inversion.admm.magn.enableADMM": [
                 self.inversion_admm_magn_enableADMM,
-                self.dlg.radioButton_magn_ADMM_dist_based,
-                self.dlg.radioButton_magn_ADMM_depth_based,
+                self.dlg.radioButton_magn_dist_based_weighting,
+                self.dlg.radioButton_magn_depth_based_weighting,
                 int,
                 "radio",
             ],
@@ -422,9 +422,9 @@ class Tomofast_x:
             # MULTIPLIERS
             "global.grav.dataUnitsMultiplier": [
                 self.global_grav_dataUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_grav_data_multiplier,
-                float,
-                "value",
+                self.dlg.lineEdit_grav_data_multiplier,
+                str,
+                "text",
             ],
             "global.grav.modelUnitsMultiplier": [
                 self.global_grav_modelUnitsMultiplier,
@@ -434,9 +434,9 @@ class Tomofast_x:
             ],
             "global.magn.dataUnitsMultiplier": [
                 self.global_magn_dataUnitsMultiplier,
-                self.dlg.mQgsDoubleSpinBox_magn_data_multiplier,
-                float,
-                "value",
+                self.dlg.lineEdit_magn_data_multiplier,
+                str,
+                "text",
             ],
             "global.grav.sensor_height": [
                 self.global_grav_sensor_height,
@@ -779,6 +779,9 @@ class Tomofast_x:
             self.dlg.pushButton_3_visualise.clicked.connect(
                 self.visualise_output
             )
+            self.dlg.pushButton_kernel_path_select.clicked.connect(
+                self.select_kernel_path
+            )
 
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
 
@@ -805,6 +808,15 @@ class Tomofast_x:
             self.dlg.version_label.setText("v " + self.show_version())
 
         # result = self.dlg.exec_()
+        
+        
+        
+    def select_kernel_path(self):
+        self.kernelfiledirectory = QFileDialog.getExistingDirectory(
+            None, "Select kernel directory"
+        )
+        if self.kernelfiledirectory != "":
+            self.dlg.lineEdit_kernel_path.setText(self.kernelfiledirectory)
 
     def visualise_output(self):
         paramPath=self.paramfile_Path
@@ -1758,6 +1770,7 @@ class Tomofast_x:
         else:
             self.forward_data_magn_nData = data_len
 
+        time.sleep(5)
         temp_data.to_csv(temp_file_path1, sep=" ", index=False)
 
         with open(fileName1, "w") as temp_file:
@@ -2481,7 +2494,7 @@ class Tomofast_x:
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
                 "global.grav.dataUnitsMultiplier     = {}\n".format(
-                    "1.d" + str(int(self.global_grav_dataUnitsMultiplier))
+                    str(int(self.global_grav_dataUnitsMultiplier))
                 )
             )
             self.f_params.write(
@@ -2493,7 +2506,7 @@ class Tomofast_x:
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
                 "global.magn.dataUnitsMultiplier     = {}\n".format(
-                    "1.d" + str(int(self.global_magn_dataUnitsMultiplier))
+                     str(int(self.global_magn_dataUnitsMultiplier))
                 )
             )
             self.f_params.write(
@@ -2641,11 +2654,19 @@ class Tomofast_x:
                 self.sensit_readFromFiles
             )
         )
-        self.f_params.write(
-            "sensit.folderPath                   = {}\n".format(
-                self.global_outputFolderPath + "/OUTPUT/SENSIT/"
+        if self.sensit_readFromFiles == 0:
+            self.f_params.write(
+                "sensit.folderPath                   = {}\n".format(
+                    self.global_outputFolderPath + "/OUTPUT/SENSIT/"
+                )
             )
-        )
+        else:
+            self.f_params.write(
+                "sensit.folderPath                   = {}\n".format(
+                    self.kernelfiledirectory+"/"
+                )
+            )
+
 
         self.spacer("MATRIX COMPRESSION")
 
@@ -2663,16 +2684,18 @@ class Tomofast_x:
 
         self.spacer("INVERSION parameters")
 
-        self.f_params.write(
+        if self.inversion_admm_grav_nLithologies > 0 or self.inversion_admm_magn_nLithologies > 0:
+            self.f_params.write(
             "inversion.nMajorIterations          = {}\n".format(
-                self.inversion_nMajorIterations
+                "50"
             )
         )
-        self.f_params.write(
-            "inversion.nMinorIterations          = {}\n".format(
-                self.inversion_nMinorIterations
+        else:
+            self.f_params.write(
+                "inversion.nMinorIterations          = {}\n".format(
+                    self.inversion_nMinorIterations
+                    )
             )
-        )
         self.f_params.write(
             "inversion.writeModelEveryNiter      = {}\n".format(
                 self.inversion_writeModelEveryNiter
@@ -2730,6 +2753,18 @@ class Tomofast_x:
                     self.inversion_admm_grav_nLithologies
                 )
             )
+            if self.inversion_admm_grav_nLithologies > 0:
+                self.f_params.write(
+                    "inversion.admm.dataCostThreshold      = {}\n".format(
+                        "3.e-3"
+                    )
+                )
+            if self.inversion_admm_grav_nLithologies >0:
+                self.f_params.write(
+                    "inversion.admm.weightMultiplier      = {}\n".format(
+                        "2.0"
+                    )
+                )            
             if self.inversion_admm_grav_bounds == "":
                 self.f_params.write(
                     "inversion.admm.grav.bounds          = {}\n".format("-1d-10 1d10")
@@ -2740,11 +2775,18 @@ class Tomofast_x:
                         self.inversion_admm_grav_bounds
                     )
                 )
-            self.f_params.write(
+            if self.inversion_admm_grav_nLithologies > 0:
+                self.f_params.write(
+                    "inversion.admm.grav.weight      = {}\n".format(
+                        "100"
+                    )
+                )            
+            else:
+                self.f_params.write(
                 "inversion.admm.grav.weight          = {}\n".format(
                     self.inversion_admm_grav_weight
                 )
-            )
+                )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -2757,6 +2799,18 @@ class Tomofast_x:
                     self.inversion_admm_magn_nLithologies
                 )
             )
+            if self.inversion_admm_magn_nLithologies >0:
+                self.f_params.write(
+                    "inversion.admm.dataCostThreshold      = {}\n".format(
+                        "3.e-3"
+                    )
+                )
+            if self.inversion_admm_magn_nLithologies >0:
+                self.f_params.write(
+                    "inversion.admm.weightMultiplier      = {}\n".format(
+                        "2.0"
+                    )
+                )
             if self.inversion_admm_magn_bounds == "":
                 self.f_params.write(
                     "inversion.admm.magn.bounds          = {}\n".format("-1d-10 1d10")
@@ -2767,11 +2821,18 @@ class Tomofast_x:
                         self.inversion_admm_magn_bounds
                     )
                 )
-            self.f_params.write(
+            if self.inversion_admm_grav_nLithologies > 0:
+                self.f_params.write(
+                    "inversion.admm.magn.weight      = {}\n".format(
+                        "100"
+                    )
+                )            
+            else:
+                self.f_params.write(
                 "inversion.admm.magn.weight          = {}\n".format(
                     self.inversion_admm_magn_weight
                 )
-            )
+                )
 
         self.spacer("MESH")
 
@@ -2948,21 +3009,31 @@ class Tomofast_x:
             self.dlg.mQgsDoubleSpinBox_magn_weight.value()
         )
 
-        if self.dlg.radioButton_grav_depth_based_ADMM.isChecked():
-            self.inversion_grav_admm_enableADMM = 1
+        if self.dlg.radioButton_grav_depth_based_weighting.isChecked():
+            self.inversion_grav_depthWeighting = 1
         else:
-            self.inversion_grav_admm_enableADMM = 2
-        if self.dlg.radioButton_magn_ADMM_dist_based.isChecked():
-            self.inversion_mag_admm_enableADMM = 1
+            self.inversion_grav_depthWeighting = 2
+        if self.dlg.radioButton_magn_dist_based_weighting.isChecked():
+            self.inversion_mag_depthWeighting = 1
         else:
-            self.inversion_mag_admm_enableADMM = 3
+            self.inversion_mag_depthWeighting = 2
 
         self.inversion_admm_grav_nLithologies = (
-            self.dlg.spinBox_grav_number_ADMM_litho.value()
-        )  # ??
+            int(self.dlg.spinBox_grav_number_ADMM_litho.value())
+        )
+        if self.inversion_admm_grav_nLithologies >0:
+            self.inversion_admm_grav_enableADMM = 1
+        else:
+            self.inversion_admm_grav_enableADMM = 0
+        
         self.inversion_admm_magn_nLithologies = (
-            self.dlg.spinBox_magn_ADMM_number_litho.value()
-        )  # ??
+            int(self.dlg.spinBox_magn_ADMM_number_litho.value())
+        )
+        if self.inversion_admm_magn_nLithologies >0:
+            self.inversion_admm_magn_enableADMM = 1
+        else:
+            self.inversion_admm_magn_enableADMM = 0
+
         if self.dlg.textEdit_grav_ADMM_bounds.toPlainText():
             self.inversion_admm_grav_bounds = (
                 self.dlg.textEdit_grav_ADMM_bounds.toPlainText()
@@ -2977,13 +3048,13 @@ class Tomofast_x:
             self.inversion_admm_magn_weight = self.dlg.lineEdit_magn_ADMM_weight.text()
 
         self.global_grav_dataUnitsMultiplier = (
-            self.dlg.mQgsDoubleSpinBox_grav_data_multiplier.value()
+            float(self.dlg.lineEdit_grav_data_multiplier.text())
         )
         self.global_grav_modelUnitsMultiplier = (
             self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.value()
         )
         self.global_magn_dataUnitsMultiplier = (
-            self.dlg.mQgsDoubleSpinBox_magn_data_multiplier.value()
+            float(self.dlg.lineEdit_magn_data_multiplier.text())
         )
         self.global_magn_modelUnitsMultiplier = (
             self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.value()
@@ -3146,7 +3217,7 @@ class Tomofast_x:
                 p[1].setText(p[-2](p[0][0]))
                 p[2].setText(p[-2](p[0][1]))
                 p[3].setText(p[-2](p[0][2]))
-        self.enable_boxes()
+        self.inversion_type()
         self.dlg.lineEdit_param_load_path.clear()
         self.dlg.groupBox_2.setEnabled(False)
         self.dlg.groupBox_3.setEnabled(False)
@@ -3155,51 +3226,15 @@ class Tomofast_x:
     # update gui
     def enable_boxes(self):
 
-        self.dlg.groupBox_16.setEnabled(True)
-        self.dlg.groupBox_26.setEnabled(True)
-        self.dlg.groupBox_22.setEnabled(True)
-        self.dlg.groupBox_4.setEnabled(True)
-        self.dlg.groupBox_28.setEnabled(True)
-        self.dlg.groupBox_19.setEnabled(True)
-        self.dlg.groupBox_25.setEnabled(True)
-        if self.dataType == "raster":
+
+
+        """if self.dataType == "raster":
             self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
             self.dlg.mQgsspinBox_grav_number_ADMM_litho.setEnabled(False)
-            self.dlg.mQgsSpinBox_13.setEnabled(False)
+            self.dlg.mQgsSpinBox_13.setEnabled(False)"""
 
-        if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.dlg.groupBox.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.groupBox_3.setEnabled(True)
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_7.setEnabled(False)
-            self.dlg.groupBox_10.setEnabled(False)
-
-            self.dlg.groupBox_6.setEnabled(True)
-
-            self.dlg.groupBox_29.setEnabled(False)
-            self.dlg.groupBox_30.setEnabled(False)
-            self.dlg.groupBox_23.setEnabled(False)
-
-            self.dlg.groupBox_35.setEnabled(False)
-            self.dlg.pushButton_load_grav_data.setEnabled(True)
-
-        if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.dlg.groupBox.setEnabled(False)
-            self.dlg.groupBox_9.setEnabled(False)
-            self.dlg.groupBox_3.setEnabled(False)
-            self.dlg.groupBox_2.setEnabled(False)
-            self.dlg.groupBox_7.setEnabled(True)
-            self.dlg.groupBox_10.setEnabled(True)
-
-            self.dlg.groupBox_6.setEnabled(True)
-
-            self.dlg.groupBox_29.setEnabled(True)
-            self.dlg.groupBox_30.setEnabled(True)
-            self.dlg.groupBox_23.setEnabled(True)
-
-            self.dlg.groupBox_35.setEnabled(True)
-            self.dlg.pushButton_load_magn_data.setEnabled(True)
+        self.inversion_type()
+                
 
     # update elevation type based on gui
     def dtm_type(self):
@@ -3216,67 +3251,53 @@ class Tomofast_x:
             self.dlg.groupBox.setEnabled(True)
             self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.groupBox_16.setEnabled(True)
+            self.dlg.groupBox_22.setEnabled(True)
+            self.dlg.groupBox_26.setEnabled(True)
+
             self.dlg.groupBox_7.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(False)
-
-            self.dlg.groupBox_16.setEnabled(True)
-            self.dlg.groupBox_26.setEnabled(True)
-            self.dlg.groupBox_22.setEnabled(True)
-            self.dlg.groupBox_6.setEnabled(True)
-            self.dlg.label_7.setEnabled(True)
-
+            self.dlg.groupBox_12.setEnabled(False)
+            self.dlg.groupBox_23.setEnabled(False)
             self.dlg.groupBox_29.setEnabled(False)
             self.dlg.groupBox_30.setEnabled(False)
-            self.dlg.groupBox_23.setEnabled(False)
-            self.dlg.groupBox_12.setEnabled(False)
             self.dlg.groupBox_35.setEnabled(False)
-            self.dlg.label_9.setEnabled(False)
             self.global_experimentType = 1
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
-            self.dlg.groupBox.setEnabled(False)
-            self.dlg.groupBox_9.setEnabled(False)
-            self.dlg.groupBox_7.setEnabled(True)
             self.dlg.pushButton_load_magn_data.setEnabled(False)
+            self.dlg.groupBox.setEnabled(False)
+            self.dlg.groupBox_6.setEnabled(True)
+            self.dlg.groupBox_9.setEnabled(False)
+            self.dlg.groupBox_16.setEnabled(False)
+            self.dlg.groupBox_22.setEnabled(False)
+            self.dlg.groupBox_26.setEnabled(False)
+
+            self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
-            self.dlg.label_9.setEnabled(True)
-
-            self.dlg.groupBox_6.setEnabled(False)
-            self.dlg.groupBox_16.setEnabled(False)
-            self.dlg.groupBox_26.setEnabled(False)
-            self.dlg.groupBox_22.setEnabled(False)
-            self.dlg.label_7.setEnabled(False)
-
+            self.dlg.groupBox_23.setEnabled(True)
             self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
-            self.dlg.groupBox_23.setEnabled(True)
-
             self.dlg.groupBox_35.setEnabled(True)
-
             self.global_experimentType = 2
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
             self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.dlg.groupBox.setEnabled(True)
             self.dlg.groupBox_6.setEnabled(True)
-            self.dlg.groupBox_12.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.groupBox_16.setEnabled(True)
+            self.dlg.groupBox_22.setEnabled(True)
+            self.dlg.groupBox_26.setEnabled(True)
+
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
-
-            self.dlg.groupBox_16.setEnabled(True)
-            self.dlg.groupBox_26.setEnabled(True)
-            self.dlg.groupBox_22.setEnabled(True)
-
+            self.dlg.groupBox_12.setEnabled(True)
+            self.dlg.groupBox_23.setEnabled(True)
             self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
-            self.dlg.groupBox_23.setEnabled(True)
-
             self.dlg.groupBox_35.setEnabled(True)
-            self.dlg.label_7.setEnabled(True)
-            self.dlg.label_9.setEnabled(True)
-
             self.global_experimentType = 3
 
     # update mesh parameters to allow multiple layer thicknesses
@@ -3334,7 +3355,7 @@ class Tomofast_x:
         self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.setToolTip(
             "Multiplier for scaling of output models"
         )
-        self.dlg.mQgsDoubleSpinBox_grav_data_multiplier.setToolTip(
+        self.dlg.lineEdit_grav_data_multiplier.setToolTip(
             "Multiplier for input gravity data to convert it to SI units"
         )
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power.setToolTip(
@@ -3346,7 +3367,7 @@ class Tomofast_x:
         self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.setToolTip(
             "Multiplier for scaling of output models"
         )
-        self.dlg.mQgsDoubleSpinBox_magn_data_multiplier.setToolTip(
+        self.dlg.lineEdit_magn_data_multiplier.setToolTip(
             "Multiplier for input magnetic data to convert it to SI units"
         )
         self.dlg.mQgsDoubleSpinBox_grav_weight.setToolTip(
@@ -3458,16 +3479,16 @@ class Tomofast_x:
         self.dlg.radioButton_joint_inv.setToolTip(
             "Define parameters for joint gravity-magnetic inversion experiemnt"
         )
-        self.dlg.radioButton_magn_ADMM_depth_based.setToolTip(
+        self.dlg.radioButton_magn_depth_based_weighting.setToolTip(
             "Select depth-based ADMM constraints"
         )
-        self.dlg.radioButton_magn_ADMM_dist_based.setToolTip(
+        self.dlg.radioButton_magn_dist_based_weighting.setToolTip(
             "Select distance-based ADMM constraints"
         )
-        self.dlg.radioButton_grav_depth_based_ADMM.setToolTip(
+        self.dlg.radioButton_grav_depth_based_weighting.setToolTip(
             "Select depth-based ADMM constraints"
         )
-        self.dlg.radioButton_grav_dist_based_ADMM.setToolTip(
+        self.dlg.radioButton_grav_dist_based_weighting.setToolTip(
             "Select distance-based ADMM constraints"
         )
         self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
@@ -3538,6 +3559,10 @@ class Tomofast_x:
         )
         self.dlg.pushButton_3_visualise.setToolTip(
             "Visualise X-Y-Z slices of output model\nRequires pyvtk to be installed in QGIS"
+        )
+
+        self.dlg.pushButton_kernel_path_select.setToolTip(
+            "Select path to directory containing prior sensitivity kernel to reuse"
         )
     def show_version(self):
         metadata_path = os.path.dirname(os.path.realpath(__file__)) + "/metadata.txt"

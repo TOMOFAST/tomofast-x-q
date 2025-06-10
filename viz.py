@@ -102,19 +102,3 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
     
     return plotter
 
-# Example usage for QGIS console (use absolute paths)
-voxet_files = [
-    "C:/path/to/voxet1.vtk",
-    "C:/path/to/voxet2.vtk",
-    "C:/path/to/voxet3.vtk"
-]
-
-print("Starting voxet visualization...")
-display_voxet_files_clipped_qgis(
-    files=voxet_files,
-    clip_percentile=95,
-    cmap='rainbow',
-    opacity=0.7,
-    show_edges=False
-)
-print("Function execution completed")
