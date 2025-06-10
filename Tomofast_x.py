@@ -786,6 +786,8 @@ class Tomofast_x:
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
 
             self.define_parameters()
+            self.reset_params()
+
             if os.path.exists(
                 os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt"
             ):
@@ -3267,7 +3269,7 @@ class Tomofast_x:
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
             self.dlg.pushButton_load_magn_data.setEnabled(False)
             self.dlg.groupBox.setEnabled(False)
-            self.dlg.groupBox_6.setEnabled(True)
+            self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_9.setEnabled(False)
             self.dlg.groupBox_16.setEnabled(False)
             self.dlg.groupBox_22.setEnabled(False)

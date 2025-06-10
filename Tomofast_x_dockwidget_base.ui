@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>mQgsSpinBox_mesh_south_2</class>
  <widget class="QDockWidget" name="mQgsSpinBox_mesh_south_2">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -1941,7 +1944,7 @@ border-style: solid;border-width: 1px;border-color: black
      </attribute>
      <widget class="QGroupBox" name="groupBox_30">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -1972,7 +1975,7 @@ border-style: solid;border-width: 1px;border-color: black
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_weight">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -2010,7 +2013,7 @@ border-style: solid;border-width: 1px;border-color: black
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_norm_power">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -2168,7 +2171,7 @@ border-style: solid;border-width: 1px;border-color: black
      </widget>
      <widget class="QGroupBox" name="groupBox_29">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -2446,7 +2449,7 @@ border-style: solid;border-width: 1px;border-color: black
      </widget>
      <widget class="QGroupBox" name="groupBox_23">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -2493,7 +2496,7 @@ border-style: solid;border-width: 1px;border-color: black
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_multiplier">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -2535,7 +2538,7 @@ border-style: solid;border-width: 1px;border-color: black
      </widget>
      <widget class="QGroupBox" name="groupBox_35">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -2618,6 +2621,9 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
       <widget class="QLabel" name="label_83">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -2635,21 +2641,15 @@ p, li { white-space: pre-wrap; }
       </widget>
       <widget class="QSpinBox" name="spinBox_magn_ADMM_number_litho">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>30</y>
-         <width>41</width>
-         <height>18</height>
+         <width>42</width>
+         <height>22</height>
         </rect>
-       </property>
-       <property name="maximum">
-        <number>100</number>
-       </property>
-       <property name="value">
-        <number>0</number>
        </property>
       </widget>
      </widget>
