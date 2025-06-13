@@ -1636,7 +1636,7 @@ class Tomofast_x:
 
             self.global_dataType = "points"
 
-        elif suffix.lower() == "tif" or suffix.lower() == "tiff":
+        elif suffix.lower() == "tif" or suffix.lower() == "tiff" or suffix.lower() == "ers" :
             # Load the TIFF file as a QgsRasterLayer
             self.data_raster_layer = QgsRasterLayer(filename, "data")
             extent = self.data_raster_layer.extent()
@@ -3294,7 +3294,7 @@ class Tomofast_x:
             self.dlg.groupBox_22.setEnabled(False)
             self.dlg.groupBox_26.setEnabled(False)
             self.dlg.label_7.setEnabled(False)
-            
+
             self.dlg.label_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(True)
             self.dlg.groupBox_10.setEnabled(True)
