@@ -2711,10 +2711,15 @@ class Tomofast_x:
         )
         else:
             self.f_params.write(
-                "inversion.nMinorIterations          = {}\n".format(
-                    self.inversion_nMinorIterations
+                "inversion.nMajorIterations          = {}\n".format(
+                    self.inversion_nMajorIterations
                     )
             )
+        self.f_params.write(
+            "inversion.nMinorIterations          = {}\n".format(
+                self.inversion_nMinorIterations
+                )
+        )
         self.f_params.write(
             "inversion.writeModelEveryNiter      = {}\n".format(
                 self.inversion_writeModelEveryNiter
