@@ -4,7 +4,12 @@
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; **<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.5 Fixes for DTM for grav and mag when smaller than mesh extent   
+changelog=0.2.6 Simplify GUI choices
+    * make safe for non-C drives for windows
+    * make safe for spaces in paths
+    * fix ERS import
+    * Multiple GUI tweaks
+    0.2.5 Fixes for DTM for grav and mag when smaller than mesh extent   
     * Fixes for name of data file when DTM used   
     * Fixes for depth weight values saved in paramfile   
     * Add visualisation of end model (requires pyvista library to be installed)   
