@@ -35,6 +35,7 @@ from qgis.core import (
     QgsField,
     QgsVectorFileWriter,
     QgsPoint,
+
 )
 from qgis.PyQt.QtCore import (
     QSettings,
@@ -43,6 +44,7 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QVariant,
     Qt,
+    QUrl,
 )
 from qgis.core import (
     QgsProject,
@@ -63,7 +65,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
 
 # import functions from scripts
@@ -809,7 +811,17 @@ class Tomofast_x:
 
             self.dlg.version_label.setText("v " + self.show_version())
 
-        # result = self.dlg.exec_()
+            self.dlg.pushButton_plugin_manual.clicked.connect(
+                        lambda: QDesktopServices.openUrl(
+                            QUrl("https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf")
+                        )
+                    )
+            self.dlg.pushButton_tomofast_manual.clicked.connect(
+                        lambda: QDesktopServices.openUrl(
+                            QUrl("https://github.com/TOMOFAST/Tomofast-x/raw/refs/heads/master/docs/Tomofast-x%20User%20Manual.docx")
+                        )
+                )
+
         
         
         

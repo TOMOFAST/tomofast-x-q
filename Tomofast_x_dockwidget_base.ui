@@ -3296,9 +3296,9 @@ font-size: 13px;
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>170</y>
+           <y>180</y>
            <width>571</width>
-           <height>541</height>
+           <height>481</height>
           </rect>
          </property>
          <property name="font">
@@ -3540,6 +3540,32 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="text">
           <string>Visualise</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_plugin_manual">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>680</y>
+           <width>191</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Download Plugin Manual</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_tomofast_manual">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>680</y>
+           <width>211</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Download Tomofast-x  Manual</string>
          </property>
         </widget>
        </widget>
