@@ -2076,7 +2076,7 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>23</y>
+         <y>33</y>
          <width>65</width>
          <height>16</height>
         </rect>
@@ -2132,8 +2132,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLineEdit" name="lineEdit_grav_data_multiplier">
        <property name="geometry">
         <rect>
-         <x>120</x>
-         <y>20</y>
+         <x>100</x>
+         <y>30</y>
          <width>51</width>
          <height>21</height>
         </rect>
@@ -2285,8 +2285,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_35">
        <property name="geometry">
         <rect>
-         <x>90</x>
-         <y>20</y>
+         <x>20</x>
+         <y>30</y>
          <width>65</width>
          <height>16</height>
         </rect>
@@ -2301,8 +2301,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_37">
        <property name="geometry">
         <rect>
-         <x>110</x>
-         <y>50</y>
+         <x>40</x>
+         <y>60</y>
          <width>41</width>
          <height>21</height>
         </rect>
@@ -2320,8 +2320,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>170</x>
-         <y>50</y>
+         <x>100</x>
+         <y>60</y>
          <width>80</width>
          <height>20</height>
         </rect>
@@ -2342,8 +2342,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLineEdit" name="lineEdit_magn_data_multiplier">
        <property name="geometry">
         <rect>
-         <x>170</x>
-         <y>20</y>
+         <x>100</x>
+         <y>30</y>
          <width>51</width>
          <height>21</height>
         </rect>

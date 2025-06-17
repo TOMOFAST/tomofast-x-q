@@ -1,4 +1,0 @@
-/Users/00073294/Documents/GitHub/Tomofast-x/tomofastx
-Ubuntu-20.04
-wsl -e
-/opt/homebrew/bin/mpirun
