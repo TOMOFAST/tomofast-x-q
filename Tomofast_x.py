@@ -895,10 +895,11 @@ class Tomofast_x:
             if platform.system() == "Windows":
                 self.paramfile_Path_run = self.paramfile_Path + "_run"
                 shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
-                self.replace_text_in_file(self.paramfile_Path_run, "= C:/", "= /mnt/c/")
+                drive= self.paramfile_Path_run[0:2]
+                self.replace_text_in_file(self.paramfile_Path_run, "= {}:/".format(drive[0]), "= /mnt/{}/".format(drive[0].lower()))
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = self.paramfile_Path_run.replace("C:/", "/mnt/c/")
+                wsl_param_path = self.paramfile_Path_run.replace("{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower()))
                 wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
                 pre_command = self.dlg.lineEdit_pre_command.text()
                 mpirun_path = " mpirun "

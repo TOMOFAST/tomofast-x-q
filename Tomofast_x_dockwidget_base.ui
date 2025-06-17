@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
+    <width>1134</width>
     <height>890</height>
    </rect>
   </property>
@@ -1949,7 +1949,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>300</x>
-        <y>330</y>
+        <y>320</y>
         <width>301</width>
         <height>101</height>
        </rect>
@@ -2041,7 +2041,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>3</y>
+        <y>13</y>
         <width>201</width>
         <height>21</height>
        </rect>
@@ -2064,9 +2064,9 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>140</y>
-        <width>591</width>
-        <height>53</height>
+        <y>40</y>
+        <width>271</width>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -2091,8 +2091,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_34">
        <property name="geometry">
         <rect>
-         <x>300</x>
-         <y>23</y>
+         <x>50</x>
+         <y>60</y>
          <width>29</width>
          <height>16</height>
         </rect>
@@ -2110,8 +2110,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>350</x>
-         <y>23</y>
+         <x>100</x>
+         <y>60</y>
          <width>80</width>
          <height>20</height>
         </rect>
@@ -2152,7 +2152,7 @@ border-style: solid;border-width: 1px;border-color: black
       </property>
       <property name="geometry">
        <rect>
-        <x>231</x>
+        <x>220</x>
         <y>290</y>
         <width>231</width>
         <height>21</height>
@@ -2169,195 +2169,15 @@ border-style: solid;border-width: 1px;border-color: black
        <string>Magnetics Parameters</string>
       </property>
      </widget>
-     <widget class="QGroupBox" name="groupBox_29">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>320</y>
-        <width>281</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Mag  Depth Weighting</string>
-      </property>
-      <widget class="QCheckBox" name="checkBox_magn_depth_weighting">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>193</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Enable Depth Weighting</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_23">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>40</y>
-         <width>41</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Power</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mag_depth_weighting">
-       <property name="geometry">
-        <rect>
-         <x>189</x>
-         <y>40</y>
-         <width>80</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="value">
-        <double>3.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radioButton_magn_dist_based_weighting">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>70</y>
-         <width>121</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Distance-based</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radioButton_magn_depth_based_weighting">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>70</y>
-         <width>121</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Depth-based</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_16">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>9</x>
-        <y>30</y>
-        <width>301</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Grav Depth Weighting</string>
-      </property>
-      <widget class="QCheckBox" name="checkBox_grav_depth_weighting">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>198</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Enable Depth Weighting</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_17">
-       <property name="geometry">
-        <rect>
-         <x>170</x>
-         <y>40</y>
-         <width>41</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Power</string>
-       </property>
-      </widget>
-      <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_depth_weight_power">
-       <property name="geometry">
-        <rect>
-         <x>208</x>
-         <y>40</y>
-         <width>81</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="value">
-        <double>2.000000000000000</double>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radioButton_grav_dist_based_weighting">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>70</y>
-         <width>131</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Distance-based</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radioButton_grav_depth_based_weighting">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>70</y>
-         <width>111</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Depth-based</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </widget>
      <widget class="QGroupBox" name="groupBox_26">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>320</x>
-        <y>30</y>
-        <width>281</width>
+        <x>300</x>
+        <y>40</y>
+        <width>301</width>
         <height>101</height>
        </rect>
       </property>
@@ -2454,9 +2274,9 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>440</y>
-        <width>591</width>
-        <height>53</height>
+        <y>320</y>
+        <width>271</width>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -2481,8 +2301,8 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_37">
        <property name="geometry">
         <rect>
-         <x>280</x>
-         <y>20</y>
+         <x>110</x>
+         <y>50</y>
          <width>41</width>
          <height>21</height>
         </rect>
@@ -2500,8 +2320,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>340</x>
-         <y>20</y>
+         <x>170</x>
+         <y>50</y>
          <width>80</width>
          <height>20</height>
         </rect>
@@ -2543,7 +2363,7 @@ border-style: solid;border-width: 1px;border-color: black
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>500</y>
+        <y>440</y>
         <width>591</width>
         <height>91</height>
        </rect>
@@ -2574,7 +2394,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLineEdit" name="lineEdit_magn_ADMM_weight">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>104</x>
          <y>60</y>
          <width>71</width>
          <height>20</height>
@@ -2590,7 +2410,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLabel" name="label_85">
        <property name="geometry">
         <rect>
-         <x>16</x>
+         <x>30</x>
          <y>60</y>
          <width>61</width>
          <height>20</height>
@@ -2660,7 +2480,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>200</y>
+        <y>150</y>
         <width>591</width>
         <height>81</height>
        </rect>
@@ -2671,7 +2491,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLineEdit" name="lineEdit_grav_ADMM_weight">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>50</y>
          <width>91</width>
          <height>20</height>
@@ -2739,7 +2559,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLabel" name="label_74">
        <property name="geometry">
         <rect>
-         <x>20</x>
+         <x>30</x>
          <y>50</y>
          <width>61</width>
          <height>20</height>
@@ -2774,7 +2594,7 @@ separated pairs)</string>
       <property name="geometry">
        <rect>
         <x>130</x>
-        <y>720</y>
+        <y>670</y>
         <width>371</width>
         <height>21</height>
        </rect>
@@ -2800,7 +2620,7 @@ separated pairs)</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>600</y>
+        <y>540</y>
         <width>591</width>
         <height>111</height>
        </rect>
@@ -3725,6 +3545,186 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
      </layout>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_16">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>60</y>
+      <width>301</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Grav Depth Weighting</string>
+    </property>
+    <widget class="QCheckBox" name="checkBox_grav_depth_weighting">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>198</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enable Depth Weighting</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_17">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>40</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Power</string>
+     </property>
+    </widget>
+    <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_depth_weight_power">
+     <property name="geometry">
+      <rect>
+       <x>208</x>
+       <y>40</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="value">
+      <double>2.000000000000000</double>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_grav_dist_based_weighting">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>131</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Distance-based</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_grav_depth_based_weighting">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>70</y>
+       <width>111</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Depth-based</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_29">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>1020</x>
+      <y>350</y>
+      <width>281</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Mag  Depth Weighting</string>
+    </property>
+    <widget class="QCheckBox" name="checkBox_magn_depth_weighting">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>193</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enable Depth Weighting</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_23">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>40</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Power</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_mag_depth_weighting">
+     <property name="geometry">
+      <rect>
+       <x>189</x>
+       <y>40</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="value">
+      <double>3.000000000000000</double>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_magn_dist_based_weighting">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>121</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Distance-based</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_magn_depth_based_weighting">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>70</y>
+       <width>121</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Depth-based</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
    </widget>
   </widget>
