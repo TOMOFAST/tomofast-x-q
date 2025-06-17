@@ -885,6 +885,9 @@ class Tomofast_x:
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    def add_quotes_to_path(self, path):
+        return '"' + path + '"'
+    
     def run_inversion(self):
         if (
             os.path.exists(self.paramfile_Path)
@@ -899,21 +902,21 @@ class Tomofast_x:
                 self.replace_text_in_file(self.paramfile_Path_run, "= {}:/".format(drive[0]), "= /mnt/{}/".format(drive[0].lower()))
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = '"'+self.paramfile_Path_run.replace("{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower()))+'"'
-                wsl_tomo_path = '"'+self.tomo_Path.replace(wsl_path, "")+'"'
+                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path_run.replace("{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())))
+                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path.replace(wsl_path, ""))
                 pre_command = self.dlg.lineEdit_pre_command.text()
                 mpirun_path = " mpirun "
 
             elif platform.system() == "Darwin":
-                wsl_tomo_path = '"'+self.tomo_Path+'"'
-                wsl_param_path = '"'+self.paramfile_Path+'"'
+                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
+                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
                 pre_command = ""
-                mpirun_path = " "+self.dlg.lineEdit_2_mpirunPath_2.text().strip()+" "
+                mpirun_path = self.add_quotes_to_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
                 distro = " "
 
             else:
-                wsl_tomo_path = '"'+self.tomo_Path+'"'
-                wsl_param_path = '"'+self.paramfile_Path+'"'
+                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
+                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
                 pre_command = ""
                 mpirun_path = " mpirun "
                 distro = " "
