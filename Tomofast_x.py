@@ -997,6 +997,8 @@ class Tomofast_x:
             # "CSV (*.csv;*.CSV);;GRD (*.GRD;*.grd);;TIF (*.TIF;*.tif;*.TIFF;*.tiff)",
             "All (*)",
         )
+        if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+            self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
 
     def select_paramfile_path(self):
 
