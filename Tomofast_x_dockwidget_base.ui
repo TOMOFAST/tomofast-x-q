@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1134</width>
-    <height>890</height>
+    <width>1590</width>
+    <height>1111</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -3553,8 +3553,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="geometry">
      <rect>
-      <x>1010</x>
-      <y>60</y>
+      <x>30</x>
+      <y>970</y>
       <width>301</width>
       <height>101</height>
      </rect>
@@ -3643,8 +3643,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="geometry">
      <rect>
-      <x>1020</x>
-      <y>350</y>
+      <x>340</x>
+      <y>970</y>
       <width>281</width>
       <height>101</height>
      </rect>
