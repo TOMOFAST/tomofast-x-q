@@ -3585,7 +3585,7 @@ class Tomofast_x:
             "Pre-command to run before inversion, e.g. 'wsl -e' (Windows WSL only)"
         )
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
-            "Name of WSL Distro to run the inversion in, e.g. 'Ubuntu-20.04' (Windows WSL only)"
+            "Name of WSL Distro to run the inversion in, e.g. 'Ubuntu-20.04' (Windows WSL only)\nIt will be the element after \\wsl.localhost\ in a windows path to the WSL disk"
         )
         self.dlg.mQgsSpinBox_noProc.setToolTip(
             "Number of processors to use for inversion (If more than 1 requires openmpi to be installed)"
