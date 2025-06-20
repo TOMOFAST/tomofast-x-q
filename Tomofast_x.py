@@ -1714,16 +1714,24 @@ class Tomofast_x:
                     self.dlg.lineEdit_output_directory_path.text()
                 )[-1]
 
-                self.save_outputs()
-                self.iface.messageBar().pushMessage(
-                    "Files saved to ",
-                    self.dlg.lineEdit_output_directory_path.text(),
-                    "Directory",
-                    level=Qgis.Success,
-                    duration=15,
-                )
-                self.dlg.pushButton_save_paramfile.setEnabled(True)
-                self.update_memory_size()
+                try:
+                    self.save_outputs()
+                    self.iface.messageBar().pushMessage(
+                        "Files saved to ",
+                        self.dlg.lineEdit_output_directory_path.text(),
+                        "Directory",
+                        level=Qgis.Success,
+                        duration=15,
+                    )
+                    self.dlg.pushButton_save_paramfile.setEnabled(True)
+                    self.update_memory_size()
+                except:
+                    self.iface.messageBar().pushMessage(
+                        "Error saving files",
+                        "Please check your input data and try again.",
+                        level=Qgis.Warning,
+                        duration=45,
+                    )
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
@@ -2505,6 +2513,14 @@ class Tomofast_x:
     # write out parameter file
     def save_parameter_file(self):
         self.parse_parameters()
+        if  (self.global_experimentType == 2 or self.global_experimentType == 3) and self.forward_magneticField_declination == 0.0 and self.forward_magneticField_inclination == -45.0 and self.forward_magneticField_intensity == 65000.0:
+            self.iface.messageBar().pushMessage(
+                f"Please define Magentic Field Parameters",
+                level=Qgis.Warning,
+                duration=30,
+            )            
+            return
+
         self.dlg.lineEdit_2_parfilePath.setText(
             self.global_outputFolderPath + "/paramfile.txt"
         )
@@ -3297,6 +3313,7 @@ class Tomofast_x:
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.label_7.setEnabled(True)
+            self.dlg.pushButton_load_grav_data.setEnabled(True)
 
             self.dlg.label_9.setEnabled(False)
             self.dlg.groupBox_7.setEnabled(False)
@@ -3309,7 +3326,6 @@ class Tomofast_x:
             self.global_experimentType = 1
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
-            self.dlg.pushButton_load_magn_data.setEnabled(False)
             self.dlg.groupBox.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_9.setEnabled(False)
@@ -3326,6 +3342,7 @@ class Tomofast_x:
             self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
             self.dlg.groupBox_35.setEnabled(True)
+            self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.global_experimentType = 2
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
@@ -3337,6 +3354,7 @@ class Tomofast_x:
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.label_7.setEnabled(True)
+            self.dlg.pushButton_load_grav_data.setEnabled(True)
 
             self.dlg.label_9.setEnabled(True)
             self.dlg.groupBox_7.setEnabled(True)

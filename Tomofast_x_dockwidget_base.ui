@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1590</width>
-    <height>1111</height>
+    <width>646</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
       <x>10</x>
       <y>0</y>
       <width>621</width>
-      <height>771</height>
+      <height>731</height>
      </rect>
     </property>
     <property name="minimumSize">
@@ -3579,8 +3579,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>970</y>
+      <x>20</x>
+      <y>1060</y>
       <width>301</width>
       <height>101</height>
      </rect>
@@ -3669,8 +3669,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>970</y>
+      <x>330</x>
+      <y>1060</y>
       <width>281</width>
       <height>101</height>
      </rect>
