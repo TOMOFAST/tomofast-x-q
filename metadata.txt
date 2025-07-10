@@ -6,7 +6,7 @@
 name=tomofast_x_q
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
-version=0.2.6
+version=0.2.7
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
 
@@ -20,7 +20,8 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.6 Simplify GUI choices   
+changelog=0.2.7 Allow users to modify parameters after files written
+    0.2.6 Simplify GUI choices   
     * make safe for non-C drives for windows   
     * make safe for spaces in paths   
     * fix ERS import   
