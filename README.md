@@ -4,7 +4,7 @@
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; **<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.7 Allow users to modify parameters after files written
+changelog=0.2.7 Allow users to modify parameters after files written   
     0.2.6 Simplify GUI choices   
     * make safe for non-C drives for windows   
     * make safe for spaces in paths   
