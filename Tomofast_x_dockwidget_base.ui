@@ -3153,28 +3153,6 @@ Day/Month/Year</string>
        </item>
       </layout>
      </widget>
-     <widget class="QPushButton" name="pushButton_save_paramfile">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>390</x>
-        <y>520</y>
-        <width>171</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Save Parameter File</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="lineEdit_output_directory_path">
       <property name="enabled">
        <bool>false</bool>
@@ -3235,7 +3213,7 @@ Day/Month/Year</string>
        <string notr="true">background-color: rgb(220, 220, 220, 255);</string>
       </property>
       <property name="text">
-       <string>Save Data and Mesh</string>
+       <string>Save Files</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_48">

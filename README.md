@@ -61,11 +61,11 @@ G. Define compression amount. Check the Estimated Memory Requirements to make su
 **Select Grav/Mag Parameters tab**   
 ![tomofast dialog tab 2](plugin2.png)    
 H. For mag survey autofill (using centroid of mesh) or define Magnetic Field parameters   
-I. Modify parameters and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]   
    
 **Select Global Parameters tab**   
 ![tomofast dialog tab 3](plugin3.png)     
-J. Specify Global Inversion parameters   
+I. Specify Global Inversion parameters   
+J. Modify parameters and then save out  File by clicking on Save Files button [Data and Parameter file written out]   
    
 **Run tomofast-x from plugin using the just-generated files**   
 ![tomofast dialog tab 4](plugin4.png)    

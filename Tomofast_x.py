@@ -701,7 +701,6 @@ class Tomofast_x:
             self.dlg.pushButton_load_magn_data.clicked.connect(
                 lambda: self.confirm_data_file("magn")
             )
-            self.dlg.pushButton_save_paramfile.clicked.connect(self.save_parameter_file)
             self.dlg.pushButton_grav_data_path.clicked.connect(
                 lambda: self.select_data_file("grav")
             )
@@ -1714,29 +1713,36 @@ class Tomofast_x:
                     self.dlg.lineEdit_output_directory_path.text()
                 )[-1]
 
-                #try:
-                if True:
-                    self.save_outputs()
-                    self.iface.messageBar().pushMessage(
-                        "Files saved to ",
-                        self.dlg.lineEdit_output_directory_path.text(),
-                        "Directory",
-                        level=Qgis.Success,
-                        duration=15,
-                    )
-                    self.dlg.pushButton_save_paramfile.setEnabled(True)
-                    self.update_memory_size()
-                """except:
+                try:
+                    result=self.save_outputs()
+                    if result:
+
+                        self.iface.messageBar().pushMessage(
+                            "Files saved to ",
+                            self.dlg.lineEdit_output_directory_path.text(),
+                            "Directory",
+                            level=Qgis.Success,
+                            duration=15,
+                        )
+                        self.update_memory_size()
+                        self.save_parameter_file()
+                except:
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
                         "Please check your input data and try again.",
                         level=Qgis.Warning,
                         duration=45,
                     )
-"""
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
-        
+        if  (self.global_experimentType == 2 or self.global_experimentType == 3) and self.forward_magneticField_declination == 0.0 and self.forward_magneticField_inclination == -45.0 and self.forward_magneticField_intensity == 65000.0:
+            self.iface.messageBar().pushMessage(
+                f"Please define Magnetic Field Parameters",
+                level=Qgis.Warning,
+                duration=30,
+            )            
+            return False
+                
         self.setupMesh()
 
         if self.global_experimentType == 1:
@@ -1773,6 +1779,8 @@ class Tomofast_x:
             mean_elevation = 0
 
         self.tidy_layers()
+
+        return True
 
     def tidy_data(self, temp_file_path1, fileName1, dataName1):
         # Read the file manually, skipping the first line, and saving it as temporary CSV
@@ -2513,13 +2521,7 @@ class Tomofast_x:
     # write out parameter file
     def save_parameter_file(self):
         self.parse_parameters()
-        if  (self.global_experimentType == 2 or self.global_experimentType == 3) and self.forward_magneticField_declination == 0.0 and self.forward_magneticField_inclination == -45.0 and self.forward_magneticField_intensity == 65000.0:
-            self.iface.messageBar().pushMessage(
-                f"Please define Magentic Field Parameters",
-                level=Qgis.Warning,
-                duration=30,
-            )            
-            return
+
 
         self.dlg.lineEdit_2_parfilePath.setText(
             self.global_outputFolderPath + "/paramfile.txt"
@@ -3515,9 +3517,7 @@ class Tomofast_x:
             "Assign x,y,data fields defined above"
         )
         self.dlg.pushButton_load_grav_data.setToolTip("Load gravity data as QGIS Layer")
-        self.dlg.pushButton_save_paramfile.setToolTip(
-            "Save out parameter file based on current dialog settings"
-        )
+
         self.dlg.pushButton_load_magn_data.setToolTip(
             "Load magnetic data as QGIS Layer"
         )
