@@ -67,7 +67,7 @@ I. Modify parameters and then save out Parameter File by clicking on Save Parame
 ![tomofast dialog tab 3](plugin3.png)     
 J. Specify Global Inversion parameters   
    
-**Run tomofast-x from command line using the just-generated files**   
+**Run tomofast-x from plugin using the just-generated files**   
 ![tomofast dialog tab 4](plugin4.png)    
 K. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
