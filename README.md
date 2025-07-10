@@ -46,7 +46,7 @@ then restart your machine. This will also install the Ubuntu operating system wi
 ```
 
 ## Simple instructions
-**Select tomofast-x-q plugin and Select Import existing field databases tab**   
+**Select tomofast-x-q plugin and Select Data/Mesh tab**   
 ![tomofast dialog tab 1](plugin.png)    
 A. Optionally pre-load an existing paramfile from disk [Step 0]      
 B. Select Grav, mag or both Inversion stype [Step 1]   
@@ -57,14 +57,15 @@ F. Specify mesh parameters (optionally defined from max/min extents of a polygon
 G. Define compression amount. Check the Estimated Memory Requirements to make sure you run the inversion on a computer with enough memory.    
 [Step 5 mesh and data files written out and loaded to QGIS]   
     
-**Select Global Parameters tab**   
-![tomofast dialog tab 2](plugin2.png)     
-H. Specify Global Inversion parameters   
-   
+
 **Select Grav/Mag Parameters tab**   
 ![tomofast dialog tab 3](plugin3.png)    
-I. For mag survey autofill (using centroid of mesh) or define Magnetic Field parameters   
-J. Modify parameters and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]   
+H. For mag survey autofill (using centroid of mesh) or define Magnetic Field parameters   
+I. Modify parameters and then save out Parameter File by clicking on Save Parameter File button [Parameter file written out]   
+   
+**Select Global Parameters tab**   
+![tomofast dialog tab 2](plugin2.png)     
+J. Specify Global Inversion parameters   
    
 **Run tomofast-x from command line using the just-generated files**   
 ![tomofast dialog tab 4](plugin4.png)    
