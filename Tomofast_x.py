@@ -847,7 +847,7 @@ class Tomofast_x:
                 yfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
                 zfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
                 xyzfiles=[xfile,yfile,zfile]
-                print("xyzfiles",xyzfiles)
+
                 display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
             elif experimentType == "2":                        
                 xfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
@@ -1714,7 +1714,8 @@ class Tomofast_x:
                     self.dlg.lineEdit_output_directory_path.text()
                 )[-1]
 
-                try:
+                #try:
+                if True:
                     self.save_outputs()
                     self.iface.messageBar().pushMessage(
                         "Files saved to ",
@@ -1725,17 +1726,17 @@ class Tomofast_x:
                     )
                     self.dlg.pushButton_save_paramfile.setEnabled(True)
                     self.update_memory_size()
-                except:
+                """except:
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
                         "Please check your input data and try again.",
                         level=Qgis.Warning,
                         duration=45,
                     )
-
+"""
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
-
+        
         self.setupMesh()
 
         if self.global_experimentType == 1:
@@ -1749,17 +1750,17 @@ class Tomofast_x:
             self.convert_point_data(self.global_dataType)
         else:
             if self.global_experimentType == 1:
-                self.convert_raster_data(self.filename_grav, self.grav_proj_out, 1)
+                self.convert_raster_data(self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1)
                 self.convert_point_data(self.global_dataType)
 
             elif self.global_experimentType == 2:
-                self.convert_raster_data(self.filename_magn, self.magn_proj_out, 2)
+                self.convert_raster_data(self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2)
                 self.convert_point_data(self.global_dataType)
 
             else:
-                self.convert_raster_data(self.filename_grav, self.grav_proj_out, 1)
+                self.convert_raster_data(self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1)
                 self.convert_point_data(self.global_dataType)
-                self.convert_raster_data(self.filename_magn, self.magn_proj_out, 2)
+                self.convert_raster_data(self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2)
                 self.convert_point_data(self.global_dataType)
 
         self.load_mesh_vector()
@@ -1812,7 +1813,7 @@ class Tomofast_x:
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
         # reset project CRS
-        if self.global_experimentType == 1 or self.global_experimentType == 3:
+        """if self.global_experimentType == 1 or self.global_experimentType == 3:
             QgsProject.instance().setCrs(
                 QgsCoordinateReferenceSystem(self.grav_proj_out)
             )
@@ -1830,14 +1831,14 @@ class Tomofast_x:
 
         else:
             if self.global_elevType == 1:
-                layers = ["Extracted Data", "data"]
+                layers = ["Extracted Data"]
             else:
-                layers = ["Extracted Data", "elevation_grid", "data"]
+                layers = ["Extracted Data", "elevation_grid"]
 
         for layer in layers:
             layer = QgsProject.instance().mapLayersByName(layer)[0]
             if layer.isValid():
-                QgsProject.instance().removeMapLayer(layer)
+                QgsProject.instance().removeMapLayer(layer)"""
 
         if self.global_dataType != "points":
             # open reprojected data layers
@@ -1970,10 +1971,10 @@ class Tomofast_x:
             reprojPoints = "/reproj_data_grav.csv"
         else:
             self.datacol_magn = "data"
-            self.filename_magn = self.global_outputFolderPath + "data_magn.csv"
+            self.filename_magn = self.global_outputFolderPath + "/data_magn.csv"
             reprojDataName = "/reproj_data_magn.tif"
             reprojPoints = "/reproj_data_magn.csv"
-
+        
         self.setupMesh()
 
         meshBoxOffset = {
@@ -2063,7 +2064,6 @@ class Tomofast_x:
             "EXTRA": "",
             "OUTPUT": self.global_outputFolderPath + reprojDataName,
         }
-
         # Run the processing algorithm
         processing.run("gdal:warpreproject", parameter)
 
@@ -2074,7 +2074,6 @@ class Tomofast_x:
             "COLUMN_PREFIX": "data",
             "OUTPUT": "memory:",
         }
-        print("parameter",parameter)
         # Get the layer ID from runAndLoadResults
         layer_id = processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
 
@@ -2270,7 +2269,8 @@ class Tomofast_x:
 
     def update_model_grid_size(self):
         self.setupMesh()
-
+        if self.cell_x==0 or self.cell_y==0 or int(self.dlg.mQgsSpinBox_mesh_size_z.value())==0:
+            return
         nx = int(
             (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
             / self.cell_x
