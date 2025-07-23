@@ -2816,7 +2816,7 @@ class Tomofast_x:
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
                     "inversion.admm.dataCostThreshold      = {}\n".format(
-                        "3.e-3"
+                        "0.1.e-3"
                     )
                 )
             if self.inversion_admm_grav_nLithologies >0:
@@ -2838,9 +2838,23 @@ class Tomofast_x:
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
                     "inversion.admm.grav.weight      = {}\n".format(
-                        "100"
+                        "1000.0"
                     )
                 )            
+            else:
+                self.f_params.write(
+                "inversion.admm.grav.weight          = {}\n".format(
+                    self.inversion_admm_grav_weight
+                )
+                )
+
+            if self.inversion_admm_grav_nLithologies > 0:
+                self.f_params.write(
+                    "inversion.admm.grav.weight      = {}\n".format(
+                        "1000.0"
+                    )
+                )            
+                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")            
             else:
                 self.f_params.write(
                 "inversion.admm.grav.weight          = {}\n".format(
@@ -2862,7 +2876,7 @@ class Tomofast_x:
             if self.inversion_admm_magn_nLithologies >0:
                 self.f_params.write(
                     "inversion.admm.dataCostThreshold      = {}\n".format(
-                        "3.e-3"
+                        "0.1e-3"
                     )
                 )
             if self.inversion_admm_magn_nLithologies >0:
@@ -2881,12 +2895,14 @@ class Tomofast_x:
                         self.inversion_admm_magn_bounds
                     )
                 )
-            if self.inversion_admm_grav_nLithologies > 0:
+
+            if self.inversion_admm_magn_nLithologies > 0:
                 self.f_params.write(
                     "inversion.admm.magn.weight      = {}\n".format(
-                        "100"
+                        "1000.0"
                     )
-                )            
+                )
+                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")            
             else:
                 self.f_params.write(
                 "inversion.admm.magn.weight          = {}\n".format(
