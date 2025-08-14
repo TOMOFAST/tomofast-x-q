@@ -823,7 +823,6 @@ class Tomofast_x:
                     )
                 )
             )
-        print("np.version", np.__version__)
 
     def select_kernel_path(self):
         self.kernelfiledirectory = QFileDialog.getExistingDirectory(
@@ -1124,10 +1123,18 @@ class Tomofast_x:
                 self.dlg.lineEdit_grav_data_path.setText(filename)
                 self.dlg.pushButton_load_grav_data.setEnabled(True)
                 self.filename_grav = filename
+
+                if filename.split(".")[-1].lower() == "csv":
+                    self.dlg.mQgsProjectionSelectionWidget_grav_in.setEnabled(True)
+                    self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(True)
+
             else:
                 self.dlg.lineEdit_magn_data_path.setText(filename)
                 self.dlg.pushButton_load_magn_data.setEnabled(True)
                 self.filename_magn = filename
+                if filename.split(".")[-1].lower() == "csv":
+                    self.dlg.mQgsProjectionSelectionWidget_magn_in.setEnabled(True)
+                    self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(True)
 
     # select existing point or raster magn data
     def select_dtm(self):
@@ -1145,28 +1152,35 @@ class Tomofast_x:
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file(self, dataType):
         self.process_data_file()
-
         if dataType == "grav":
-            self.grav_proj_in = (
-                self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
-            )
-            self.grav_proj_out = (
-                self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
-            )
             suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
         else:
-            self.magn_proj_in = (
-                self.dlg.mQgsProjectionSelectionWidget_magn_in.crs().authid()
-            )
-            self.magn_proj_out = (
-                self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
-            )
             suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
 
         if suffix.lower() == "csv":
             self.global_dataType = "points"
+            if dataType == "grav":
+                self.grav_proj_in = (
+                    self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
+                )
+                self.grav_proj_out = (
+                    self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
+                )
+                suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
+            else:
+                self.magn_proj_in = (
+                    self.dlg.mQgsProjectionSelectionWidget_magn_in.crs().authid()
+                )
+                self.magn_proj_out = (
+                    self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
+                )
+                suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
         else:
             self.global_dataType = "raster"
+            if dataType == "grav":
+                suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
+            else:
+                suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
 
         # enable GroupBox 9
         if self.global_dataType == "points":
@@ -1194,80 +1208,6 @@ class Tomofast_x:
 
             self.update_widgets()
 
-    # process input grav data and update gui to allow next stage of data to be defined
-    def confirm_data_file_grav(self):
-        self.process_data_file()
-        self.grav_proj_in = (
-            self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
-        )
-        self.grav_proj_out = (
-            self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
-        )
-
-        suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
-        if suffix.lower() == "csv":
-            self.global_dataType = "points"
-        else:
-            self.global_dataType = "raster"
-
-        # enable GroupBox 9
-        if self.global_dataType == "points":
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.label_44.setEnabled(True)
-            self.dlg.label_45.setEnabled(True)
-            self.dlg.label_47.setEnabled(True)
-            self.dlg.comboBox_grav_field_x.setEnabled(True)
-            self.dlg.comboBox_grav_field_y.setEnabled(True)
-            self.dlg.comboBox_grav_field_data.setEnabled(True)
-            self.dlg.pushButton_assign_grav_fields.setEnabled(True)
-            self.dlg.pushButton_select_dtm_path.setEnabled(False)
-        else:
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.lineEdit_dtm_path.setEnabled(False)
-            self.dlg.pushButton_select_dtm_path.setEnabled(False)
-
-            self.update_widgets()
-
-    # process input magn data and update gui to allow next stage of data to be defined
-    def confirm_data_file_mag(self):
-        self.process_data_file()
-        self.magn_proj_in = (
-            self.dlg.mQgsProjectionSelectionWidget_magn_in.crs().authid()
-        )
-        self.magn_proj_out = (
-            self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
-        )
-        suffix = self.dlg.lineEdit_magn_data_path.text().split(".")[-1]
-        if suffix.lower() == "csv":
-            self.global_dataType = "points"
-        else:
-            self.global_dataType = "raster"
-
-        # enable GroupBox 10
-        if self.global_dataType == "points":
-            self.dlg.groupBox_10.setEnabled(True)
-            self.dlg.groupBox_12.setEnabled(True)
-            self.dlg.label_77.setEnabled(True)
-            self.dlg.label_78.setEnabled(True)
-            self.dlg.label_82.setEnabled(True)
-            self.dlg.comboBox_magn_field_x.setEnabled(True)
-            self.dlg.comboBox_magn_field_y.setEnabled(True)
-            self.dlg.comboBox_magn_field_data.setEnabled(True)
-            self.dlg.pushButton_assign_magn_fields.setEnabled(True)
-            self.dlg.lineEdit_ROI_path_select.setEnabled(True)
-            self.dlg.lineEdit_ROI_path.setEnabled(True)
-        else:
-            self.dlg.groupBox_12.setEnabled(True)
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.lineEdit_dtm_path.setEnabled(False)
-            self.dlg.pushButton_select_dtm_path.setEnabled(False)
-            self.dlg.lineEdit_ROI_path_select.setEnabled(True)
-            self.dlg.lineEdit_ROI_path.setEnabled(True)
-            self.update_widgets()
-
-    # process load grav data, update gui and display as layer
     def process_data_fields_grav(self):
         self.update_widgets()
         self.load_csv_vector_grav(
@@ -1698,26 +1638,25 @@ class Tomofast_x:
             # Load the TIFF file as a QgsRasterLayer
             self.data_raster_layer = QgsRasterLayer(filename, "data")
             extent = self.data_raster_layer.extent()
+
+            proj = self.data_raster_layer.crs().authid()
+
             if self.global_experimentType == 1 or self.global_experimentType == 3:
-                out_proj = int(
-                    self.dlg.mQgsProjectionSelectionWidget_grav_out.crs()
-                    .authid()
-                    .split(":")[1]
-                )
+                self.grav_proj_in = proj
+                self.grav_proj_out = proj
+            elif self.global_experimentType == 2:
+                self.magn_proj_in = proj
+                self.magn_proj_out = proj
             else:
-                out_proj = int(
-                    self.dlg.mQgsProjectionSelectionWidget_magn_out.crs()
-                    .authid()
-                    .split(":")[1]
-                )
-            layer_crs = int(self.data_raster_layer.crs().authid().split(":")[1])
+                self.grav_proj_in = proj
+                self.grav_proj_out = proj
+                self.magn_proj_in = proj
+                self.magn_proj_out = proj
 
-            proj = Transformer.from_crs(layer_crs, out_proj, always_xy=True)
-            x, y = (extent.xMinimum(), extent.yMinimum())
-            minx, miny = proj.transform(x, y)
-
-            x, y = (extent.xMaximum(), extent.yMaximum())
-            maxx, maxy = proj.transform(x, y)
+            minx = extent.xMinimum()
+            miny = extent.yMinimum()
+            maxx = extent.xMaximum()
+            maxy = extent.yMaximum()
 
             self.dlg.mQgsSpinBox_mesh_south.setValue(int(miny))
             self.dlg.mQgsSpinBox_mesh_north.setValue(int(maxy))
@@ -1754,26 +1693,26 @@ class Tomofast_x:
                     self.dlg.lineEdit_output_directory_path.text()
                 )[-1]
 
-                try:
-                    result = self.save_outputs()
-                    if result:
+                # try:
+                result = self.save_outputs()
+                if result:
 
-                        self.iface.messageBar().pushMessage(
-                            "Files saved to ",
-                            self.dlg.lineEdit_output_directory_path.text(),
-                            "Directory",
-                            level=Qgis.Success,
-                            duration=15,
-                        )
-                        self.update_memory_size()
-                        self.save_parameter_file()
-                except:
+                    self.iface.messageBar().pushMessage(
+                        "Files saved to ",
+                        self.dlg.lineEdit_output_directory_path.text(),
+                        "Directory",
+                        level=Qgis.Success,
+                        duration=15,
+                    )
+                    self.update_memory_size()
+                    self.save_parameter_file()
+                """except:
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
                         "Please check your input data and try again.",
                         level=Qgis.Warning,
                         duration=45,
-                    )
+                    )"""
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
@@ -1991,7 +1930,7 @@ class Tomofast_x:
         self.dz = self.dlg.mQgsSpinBox_mesh_size_z.value()
 
         self.data2tomofast = Data2Tomofast(None)
-        self.grav_proj_in = (
+        """self.grav_proj_in = (
             self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
         )
         self.grav_proj_out = (
@@ -2002,7 +1941,7 @@ class Tomofast_x:
         )
         self.magn_proj_out = (
             self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
-        )
+        )"""
         self.meshBox = {
             "south": self.dlg.mQgsSpinBox_mesh_south.value(),
             "west": self.dlg.mQgsSpinBox_mesh_west.value(),
@@ -2378,6 +2317,15 @@ class Tomofast_x:
         self.dlg.ny_label.setText(str(ny))
         self.dlg.nz_label.setText(str(nz))
         self.update_memory_size()
+        self.update_ideal_compression_ratio(nx, ny, nz)
+
+    def update_ideal_compression_ratio(self, nx, ny, nz):
+        # Assumes Haar wavelet
+        # From Bruce et al. 2025 in prep.
+        if nx * ny * nz > 0:
+            ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr)
+            self.forward_matrixCompression_rate = ideal_cr * 2  # (just to be sure)
 
     def update_memory_size(self):
         self.setupMesh()
@@ -3372,6 +3320,8 @@ class Tomofast_x:
 
         if self.dlg.radioButton_grav_inv.isChecked():  # grav
             self.dlg.groupBox.setEnabled(True)
+            self.dlg.mQgsProjectionSelectionWidget_grav_in.setEnabled(False)
+            self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.groupBox_16.setEnabled(True)
@@ -3381,6 +3331,7 @@ class Tomofast_x:
             self.dlg.pushButton_load_grav_data.setEnabled(True)
 
             self.dlg.label_9.setEnabled(False)
+
             self.dlg.groupBox_7.setEnabled(False)
             self.dlg.groupBox_10.setEnabled(False)
             self.dlg.groupBox_12.setEnabled(False)
@@ -3392,6 +3343,9 @@ class Tomofast_x:
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
             self.dlg.groupBox.setEnabled(False)
+
+            self.dlg.mQgsProjectionSelectionWidget_magn_in.setEnabled(False)
+            self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_9.setEnabled(False)
             self.dlg.groupBox_16.setEnabled(False)
@@ -3413,6 +3367,10 @@ class Tomofast_x:
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
             self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.dlg.groupBox.setEnabled(True)
+            self.dlg.mQgsProjectionSelectionWidget_grav_in.setEnabled(False)
+            self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(False)
+            self.dlg.mQgsProjectionSelectionWidget_magn_in.setEnabled(False)
+            self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
             self.dlg.groupBox_16.setEnabled(True)
@@ -3442,7 +3400,7 @@ class Tomofast_x:
             "Load previously calculated sensistivity matrix\n\n[forward.sensit.readFromFiles]"
         )
         self.dlg.checkBox_use_compression.setToolTip(
-            "Use wavelet compression to speed calculations and reduce memory demands of inversion\n\n[forward.matrixCompression.rate]"
+            "Use wavelet compression to speed calculations and reduce memory demands of inversion\n\n[forward.matrixCompression.type]"
         )
         self.dlg.checkBox_grav_depth_weighting.setToolTip(
             "Enable depth weighting for gravity inversion\n\n[forward.depthWeighting.type]"
@@ -3481,7 +3439,7 @@ class Tomofast_x:
             "Index of power term for depth weighting [2 for gravity]\n\n[inversion.depthWeighting.grav.power]"
         )
         self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
-            "Amount of wavelt compression [smaller value means more compression]\n\n[forward.matrixCompression.rate]"
+            "Amount of wavelet compression [smaller value means more compression]\nAutomatically set to provide 1% error but value can be manually overidden\n\n[forward.matrixCompression.rate]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.setToolTip(
             "Multiplier for scaling of output models\n\n[global.grav_modelUnitsMultiplier]"
