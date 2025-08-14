@@ -47,6 +47,9 @@ then restart your machine. This will also install the Ubuntu operating system wi
 ```
 
 ## Simple instructions
+
+**Tooltips in plugin provide parameter name used in paramfile in squre brackets to help with subsequent manual editing**   
+   
 **Select tomofast-x-q plugin and Select Data/Mesh tab**   
 ![tomofast dialog tab 1](plugin.png)    
 A. Optionally pre-load an existing paramfile from disk [Step 0]      

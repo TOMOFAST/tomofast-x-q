@@ -35,7 +35,6 @@ from qgis.core import (
     QgsField,
     QgsVectorFileWriter,
     QgsPoint,
-
 )
 from qgis.PyQt.QtCore import (
     QSettings,
@@ -88,6 +87,7 @@ import platform
 import sys
 import shutil
 import time
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 
@@ -630,7 +630,6 @@ class Tomofast_x:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-
             # print "** STARTING Tomofast_x"
 
             # dockwidget may not exist if:
@@ -641,15 +640,15 @@ class Tomofast_x:
                 self.dlg = Tomofast_xDockWidget()
 
             if platform.system() == "Darwin":
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True) 
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
                 self.dlg.lineEdit_pre_command.setEnabled(False)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
             elif platform.system() == "Windows":
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False) 
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False)
                 self.dlg.lineEdit_pre_command.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
-            else: # Linux
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False) 
+            else:  # Linux
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False)
                 self.dlg.lineEdit_pre_command.setEnabled(False)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
 
@@ -724,7 +723,9 @@ class Tomofast_x:
 
             self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type_reset_gui)
             self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type_reset_gui)
-            self.dlg.radioButton_joint_inv.toggled.connect(self.inversion_type_reset_gui)
+            self.dlg.radioButton_joint_inv.toggled.connect(
+                self.inversion_type_reset_gui
+            )
 
             self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
             self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
@@ -776,10 +777,8 @@ class Tomofast_x:
             self.dlg.pushButton_2_select_parfilePath.clicked.connect(
                 self.select_paramfile_path
             )
-            
-            self.dlg.pushButton_3_visualise.clicked.connect(
-                self.visualise_output
-            )
+
+            self.dlg.pushButton_3_visualise.clicked.connect(self.visualise_output)
             self.dlg.pushButton_kernel_path_select.clicked.connect(
                 self.select_kernel_path
             )
@@ -811,19 +810,21 @@ class Tomofast_x:
             self.dlg.version_label.setText("v " + self.show_version())
 
             self.dlg.pushButton_plugin_manual.clicked.connect(
-                        lambda: QDesktopServices.openUrl(
-                            QUrl("https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf")
-                        )
+                lambda: QDesktopServices.openUrl(
+                    QUrl(
+                        "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf"
                     )
-            self.dlg.pushButton_tomofast_manual.clicked.connect(
-                        lambda: QDesktopServices.openUrl(
-                            QUrl("https://github.com/TOMOFAST/Tomofast-x/raw/refs/heads/master/docs/Tomofast-x%20User%20Manual.docx")
-                        )
                 )
+            )
+            self.dlg.pushButton_tomofast_manual.clicked.connect(
+                lambda: QDesktopServices.openUrl(
+                    QUrl(
+                        "https://github.com/TOMOFAST/Tomofast-x/raw/refs/heads/master/docs/Tomofast-x%20User%20Manual.docx"
+                    )
+                )
+            )
+        print("np.version", np.__version__)
 
-        
-        
-        
     def select_kernel_path(self):
         self.kernelfiledirectory = QFileDialog.getExistingDirectory(
             None, "Select kernel directory"
@@ -832,8 +833,8 @@ class Tomofast_x:
             self.dlg.lineEdit_kernel_path.setText(self.kernelfiledirectory)
 
     def visualise_output(self):
-        paramPath=self.paramfile_Path
-        path,filename=os.path.split(paramPath)
+        paramPath = self.paramfile_Path
+        path, filename = os.path.split(paramPath)
         if os.path.exists(paramPath) and paramPath != "":
             with open(paramPath, "r", encoding="utf-8") as file:
                 contents = file.readlines()
@@ -841,31 +842,55 @@ class Tomofast_x:
                     if "global.experimentType" in line:
                         experimentType = line.split("=")[1].strip()
                         break
-            if experimentType == "1":                        
-                xfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
-                yfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
-                zfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
-                xyzfiles=[xfile,yfile,zfile]
+            if experimentType == "1":
+                xfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
+                yfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
+                zfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
+                xyzfiles = [xfile, yfile, zfile]
 
-                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
-            elif experimentType == "2":                        
-                xfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
-                yfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
-                zfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
-                xyzfiles=[xfile,yfile,zfile]
-                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
-            else :                        
-                xfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
-                yfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
-                zfile=path+"/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
-                xyzfiles=[xfile,yfile,zfile]
-                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
+                display_voxet_files_clipped_qgis(
+                    xyzfiles,
+                    clip_percentile=95,
+                    cmap="jet",
+                    opacity=1.0,
+                    show_edges=False,
+                )
+            elif experimentType == "2":
+                xfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
+                yfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
+                zfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
+                xyzfiles = [xfile, yfile, zfile]
+                display_voxet_files_clipped_qgis(
+                    xyzfiles,
+                    clip_percentile=95,
+                    cmap="jet",
+                    opacity=1.0,
+                    show_edges=False,
+                )
+            else:
+                xfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
+                yfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
+                zfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
+                xyzfiles = [xfile, yfile, zfile]
+                display_voxet_files_clipped_qgis(
+                    xyzfiles,
+                    clip_percentile=95,
+                    cmap="jet",
+                    opacity=1.0,
+                    show_edges=False,
+                )
 
-                xfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
-                yfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
-                zfile=path+"/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
-                xyzfiles=[xfile,yfile,zfile]
-                display_voxet_files_clipped_qgis(xyzfiles, clip_percentile=95, cmap='jet', opacity=1.0, show_edges=False)
+                xfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
+                yfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
+                zfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
+                xyzfiles = [xfile, yfile, zfile]
+                display_voxet_files_clipped_qgis(
+                    xyzfiles,
+                    clip_percentile=95,
+                    cmap="jet",
+                    opacity=1.0,
+                    show_edges=False,
+                )
 
     def replace_text_in_file(self, file_path, old_text, new_text):
         """
@@ -898,7 +923,7 @@ class Tomofast_x:
 
     def add_quotes_to_path(self, path):
         return '"' + path + '"'
-    
+
     def run_inversion(self):
         if (
             os.path.exists(self.paramfile_Path)
@@ -909,12 +934,22 @@ class Tomofast_x:
             if platform.system() == "Windows":
                 self.paramfile_Path_run = self.paramfile_Path + "_run"
                 shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
-                drive= self.paramfile_Path_run[0:2]
-                self.replace_text_in_file(self.paramfile_Path_run, "= {}:/".format(drive[0]), "= /mnt/{}/".format(drive[0].lower()))
+                drive = self.paramfile_Path_run[0:2]
+                self.replace_text_in_file(
+                    self.paramfile_Path_run,
+                    "= {}:/".format(drive[0]),
+                    "= /mnt/{}/".format(drive[0].lower()),
+                )
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path_run.replace("{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())))
-                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path.replace(wsl_path, ""))
+                wsl_param_path = self.add_quotes_to_path(
+                    self.paramfile_Path_run.replace(
+                        "{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())
+                    )
+                )
+                wsl_tomo_path = self.add_quotes_to_path(
+                    self.tomo_Path.replace(wsl_path, "")
+                )
                 pre_command = self.dlg.lineEdit_pre_command.text()
                 mpirun_path = " mpirun "
 
@@ -922,7 +957,9 @@ class Tomofast_x:
                 wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
                 wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
                 pre_command = ""
-                mpirun_path = self.add_quotes_to_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
+                mpirun_path = self.add_quotes_to_path(
+                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                )
                 distro = " "
 
             else:
@@ -941,7 +978,7 @@ class Tomofast_x:
                     tpfile.write(self.tomo_Path + "\n")
                     tpfile.write(distro + "\n")
                     tpfile.write(pre_command + "\n")
-                    tpfile.write(mpirun_path + "\n") 
+                    tpfile.write(mpirun_path + "\n")
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
             # Path to your executable
@@ -1534,11 +1571,11 @@ class Tomofast_x:
             if original_value is not None:
                 negative_value = -original_value
             else:
-                negative_value=0
+                negative_value = 0
                 noneFlag = True
             # Update the field with the negative value
             elev.changeAttributeValue(feature.id(), field_index, negative_value)
-            
+
         elev.commitChanges()
 
         QgsVectorFileWriter.writeAsVectorFormat(
@@ -1549,11 +1586,11 @@ class Tomofast_x:
         )
 
         self.iface.messageBar().pushMessage(
-                "The DTM does not cover the full extent of the mesh includiing padding.",
-                "Outside elevations set to zero",
-                level=Qgis.Warning,
-                duration=45,
-            )
+            "The DTM does not cover the full extent of the mesh includiing padding.",
+            "Outside elevations set to zero",
+            level=Qgis.Warning,
+            duration=45,
+        )
 
     # rename layer field name
     def rename_dp_field(self, rlayer, oldname, newname):
@@ -1653,7 +1690,11 @@ class Tomofast_x:
 
             self.global_dataType = "points"
 
-        elif suffix.lower() == "tif" or suffix.lower() == "tiff" or suffix.lower() == "ers" :
+        elif (
+            suffix.lower() == "tif"
+            or suffix.lower() == "tiff"
+            or suffix.lower() == "ers"
+        ):
             # Load the TIFF file as a QgsRasterLayer
             self.data_raster_layer = QgsRasterLayer(filename, "data")
             extent = self.data_raster_layer.extent()
@@ -1714,7 +1755,7 @@ class Tomofast_x:
                 )[-1]
 
                 try:
-                    result=self.save_outputs()
+                    result = self.save_outputs()
                     if result:
 
                         self.iface.messageBar().pushMessage(
@@ -1733,16 +1774,22 @@ class Tomofast_x:
                         level=Qgis.Warning,
                         duration=45,
                     )
+
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
-        if  (self.global_experimentType == 2 or self.global_experimentType == 3) and self.forward_magneticField_declination == 0.0 and self.forward_magneticField_inclination == -45.0 and self.forward_magneticField_intensity == 65000.0:
+        if (
+            (self.global_experimentType == 2 or self.global_experimentType == 3)
+            and self.forward_magneticField_declination == 0.0
+            and self.forward_magneticField_inclination == -45.0
+            and self.forward_magneticField_intensity == 65000.0
+        ):
             self.iface.messageBar().pushMessage(
                 f"Please define Magnetic Field Parameters",
                 level=Qgis.Warning,
                 duration=30,
-            )            
+            )
             return False
-                
+
         self.setupMesh()
 
         if self.global_experimentType == 1:
@@ -1756,17 +1803,25 @@ class Tomofast_x:
             self.convert_point_data(self.global_dataType)
         else:
             if self.global_experimentType == 1:
-                self.convert_raster_data(self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1)
+                self.convert_raster_data(
+                    self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1
+                )
                 self.convert_point_data(self.global_dataType)
 
             elif self.global_experimentType == 2:
-                self.convert_raster_data(self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2)
+                self.convert_raster_data(
+                    self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2
+                )
                 self.convert_point_data(self.global_dataType)
 
             else:
-                self.convert_raster_data(self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1)
+                self.convert_raster_data(
+                    self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1
+                )
                 self.convert_point_data(self.global_dataType)
-                self.convert_raster_data(self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2)
+                self.convert_raster_data(
+                    self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2
+                )
                 self.convert_point_data(self.global_dataType)
 
         self.load_mesh_vector()
@@ -1874,7 +1929,6 @@ class Tomofast_x:
 
             self.tidy_data(temp_file_path1, fileName1, dataName1)
 
-            
             # Define the URI to load the CSV with specified geometry fields and no header
             # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
             uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
@@ -1900,10 +1954,14 @@ class Tomofast_x:
 
                 if layer.isValid():
                     QgsProject.instance().addMapLayer(layer)
-                    
+
                     # Check if the renderer exists and is of correct type before modifying
                     renderer = layer.renderer()
-                    if renderer and hasattr(renderer, 'symbol') and callable(getattr(renderer, 'symbol', None)):
+                    if (
+                        renderer
+                        and hasattr(renderer, "symbol")
+                        and callable(getattr(renderer, "symbol", None))
+                    ):
                         # For single symbol renderer
                         symbol = renderer.symbol()
                         if symbol:
@@ -1911,9 +1969,11 @@ class Tomofast_x:
                     else:
                         # Either create a new renderer or handle different renderer types
                         # For example, creating a new single symbol renderer:
-                        symbol = QgsMarkerSymbol.createSimple({'name': 'circle', 'size': '0.125'})
+                        symbol = QgsMarkerSymbol.createSimple(
+                            {"name": "circle", "size": "0.125"}
+                        )
                         layer.setRenderer(QgsSingleSymbolRenderer(symbol))
-                    
+
                     self.colour_points(layer, dataName2, "Mako", False)
                     layer.triggerRepaint()
 
@@ -1959,7 +2019,7 @@ class Tomofast_x:
             self.dlg.doubleSpinBox_magn_sensor_height.value()
         )
 
-    def in_ROI(self,x,y,meshBox):
+    def in_ROI(self, x, y, meshBox):
         """
         Check if the point (x, y) is within the defined mesh box.
         """
@@ -1982,7 +2042,7 @@ class Tomofast_x:
             self.filename_magn = self.global_outputFolderPath + "/data_magn.csv"
             reprojDataName = "/reproj_data_magn.tif"
             reprojPoints = "/reproj_data_magn.csv"
-        
+
         self.setupMesh()
 
         meshBoxOffset = {
@@ -2040,7 +2100,7 @@ class Tomofast_x:
             # Set the geometry (Point) for the feature
             x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)
             y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)
-            if self.in_ROI(x,y,self.meshBox):
+            if self.in_ROI(x, y, self.meshBox):
                 point = QgsPointXY(x, y)
 
                 feature.setGeometry(QgsGeometry.fromPointXY(point))
@@ -2083,7 +2143,9 @@ class Tomofast_x:
             "OUTPUT": "memory:",
         }
         # Get the layer ID from runAndLoadResults
-        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
+        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)[
+            "OUTPUT"
+        ]
 
         # Get the actual layer object from the ID
         new_data_layer = QgsProject.instance().mapLayer(layer_id)
@@ -2107,7 +2169,7 @@ class Tomofast_x:
 
         # Create a pandas DataFrame
         data_df = pd.DataFrame(data, columns=fields)
-        
+
         # Only drop columns if they exist in the dataframe
         if "fid" in data_df.columns:
             data_df = data_df.drop(columns=["fid"])
@@ -2258,12 +2320,12 @@ class Tomofast_x:
 
         if dataFormat == "points":
             self.data2tomofast.write_model_grid(
-            self.padding,
-            self.cell_x,
-            self.cell_y,
-            self.dz,
-            self.meshBox,
-            self.global_outputFolderPath,
+                self.padding,
+                self.cell_x,
+                self.cell_y,
+                self.dz,
+                self.meshBox,
+                self.global_outputFolderPath,
             )
 
         self.dlg.nx_label.setText(str(self.data2tomofast.nx))
@@ -2277,7 +2339,11 @@ class Tomofast_x:
 
     def update_model_grid_size(self):
         self.setupMesh()
-        if self.cell_x==0 or self.cell_y==0 or int(self.dlg.mQgsSpinBox_mesh_size_z.value())==0:
+        if (
+            self.cell_x == 0
+            or self.cell_y == 0
+            or int(self.dlg.mQgsSpinBox_mesh_size_z.value()) == 0
+        ):
             return
         nx = int(
             (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
@@ -2295,14 +2361,14 @@ class Tomofast_x:
 
         try:
             npad = int(
-            np.log(
-                float(
-                    self.dlg.doubleSpinBox_fullDepth.value()
-                    - float(self.dlg.doubleSpinBox_coreDepth.value())
+                np.log(
+                    float(
+                        self.dlg.doubleSpinBox_fullDepth.value()
+                        - float(self.dlg.doubleSpinBox_coreDepth.value())
+                    )
+                    / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
                 )
-                / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
-            )
-            / np.log(1.15)
+                / np.log(1.15)
             )
         except:
             npad = 0
@@ -2334,19 +2400,19 @@ class Tomofast_x:
         )
         try:
             npad = int(
-            np.log(
-                float(
-                    self.dlg.doubleSpinBox_fullDepth.value()
-                    - float(self.dlg.doubleSpinBox_coreDepth.value())
+                np.log(
+                    float(
+                        self.dlg.doubleSpinBox_fullDepth.value()
+                        - float(self.dlg.doubleSpinBox_coreDepth.value())
+                    )
+                    / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
                 )
-                / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
-            )
-            / np.log(1.15)
+                / np.log(1.15)
             )
         except:
             npad = 0
         nz = ncore + npad
-        #if not self.suffix_known:
+        # if not self.suffix_known:
         # Determine which input path to use based on experiment type
         if self.global_experimentType in {1, 3}:
             data_path = self.dlg.lineEdit_grav_data_path.text()
@@ -2522,7 +2588,6 @@ class Tomofast_x:
     def save_parameter_file(self):
         self.parse_parameters()
 
-
         self.dlg.lineEdit_2_parfilePath.setText(
             self.global_outputFolderPath + "/paramfile.txt"
         )
@@ -2561,7 +2626,7 @@ class Tomofast_x:
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
                 "global.magn.dataUnitsMultiplier     = {}\n".format(
-                     str(int(self.global_magn_dataUnitsMultiplier))
+                    str(int(self.global_magn_dataUnitsMultiplier))
                 )
             )
             self.f_params.write(
@@ -2718,10 +2783,9 @@ class Tomofast_x:
         else:
             self.f_params.write(
                 "sensit.folderPath                   = {}\n".format(
-                    self.kernelfiledirectory+"/"
+                    self.kernelfiledirectory + "/"
                 )
             )
-
 
         self.spacer("MATRIX COMPRESSION")
 
@@ -2739,22 +2803,23 @@ class Tomofast_x:
 
         self.spacer("INVERSION parameters")
 
-        if self.inversion_admm_grav_nLithologies > 0 or self.inversion_admm_magn_nLithologies > 0:
+        if (
+            self.inversion_admm_grav_nLithologies > 0
+            or self.inversion_admm_magn_nLithologies > 0
+        ):
             self.f_params.write(
-            "inversion.nMajorIterations          = {}\n".format(
-                "50"
+                "inversion.nMajorIterations          = {}\n".format("50")
             )
-        )
         else:
             self.f_params.write(
                 "inversion.nMajorIterations          = {}\n".format(
                     self.inversion_nMajorIterations
-                    )
+                )
             )
         self.f_params.write(
             "inversion.nMinorIterations          = {}\n".format(
                 self.inversion_nMinorIterations
-                )
+            )
         )
         self.f_params.write(
             "inversion.writeModelEveryNiter      = {}\n".format(
@@ -2815,16 +2880,12 @@ class Tomofast_x:
             )
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.dataCostThreshold      = {}\n".format(
-                        "0.1.e-3"
-                    )
+                    "inversion.admm.dataCostThreshold      = {}\n".format("0.1.e-3")
                 )
-            if self.inversion_admm_grav_nLithologies >0:
+            if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.weightMultiplier      = {}\n".format(
-                        "2.0"
-                    )
-                )            
+                    "inversion.admm.weightMultiplier      = {}\n".format("2.0")
+                )
             if self.inversion_admm_grav_bounds == "":
                 self.f_params.write(
                     "inversion.admm.grav.bounds          = {}\n".format("-1d-10 1d10")
@@ -2837,29 +2898,25 @@ class Tomofast_x:
                 )
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.grav.weight      = {}\n".format(
-                        "1000.0"
-                    )
-                )            
+                    "inversion.admm.grav.weight      = {}\n".format("1000.0")
+                )
             else:
                 self.f_params.write(
-                "inversion.admm.grav.weight          = {}\n".format(
-                    self.inversion_admm_grav_weight
-                )
+                    "inversion.admm.grav.weight          = {}\n".format(
+                        self.inversion_admm_grav_weight
+                    )
                 )
 
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.grav.weight      = {}\n".format(
-                        "1000.0"
-                    )
-                )            
-                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")            
+                    "inversion.admm.grav.weight      = {}\n".format("1000.0")
+                )
+                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
             else:
                 self.f_params.write(
-                "inversion.admm.grav.weight          = {}\n".format(
-                    self.inversion_admm_grav_weight
-                )
+                    "inversion.admm.grav.weight          = {}\n".format(
+                        self.inversion_admm_grav_weight
+                    )
                 )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
@@ -2873,17 +2930,13 @@ class Tomofast_x:
                     self.inversion_admm_magn_nLithologies
                 )
             )
-            if self.inversion_admm_magn_nLithologies >0:
+            if self.inversion_admm_magn_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.dataCostThreshold      = {}\n".format(
-                        "0.1e-3"
-                    )
+                    "inversion.admm.dataCostThreshold      = {}\n".format("0.1e-3")
                 )
-            if self.inversion_admm_magn_nLithologies >0:
+            if self.inversion_admm_magn_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.weightMultiplier      = {}\n".format(
-                        "2.0"
-                    )
+                    "inversion.admm.weightMultiplier      = {}\n".format("2.0")
                 )
             if self.inversion_admm_magn_bounds == "":
                 self.f_params.write(
@@ -2898,16 +2951,14 @@ class Tomofast_x:
 
             if self.inversion_admm_magn_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.magn.weight      = {}\n".format(
-                        "1000.0"
-                    )
+                    "inversion.admm.magn.weight      = {}\n".format("1000.0")
                 )
-                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")            
+                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
             else:
                 self.f_params.write(
-                "inversion.admm.magn.weight          = {}\n".format(
-                    self.inversion_admm_magn_weight
-                )
+                    "inversion.admm.magn.weight          = {}\n".format(
+                        self.inversion_admm_magn_weight
+                    )
                 )
 
         self.spacer("MESH")
@@ -3094,18 +3145,18 @@ class Tomofast_x:
         else:
             self.inversion_mag_depthWeighting = 2
 
-        self.inversion_admm_grav_nLithologies = (
-            int(self.dlg.spinBox_grav_number_ADMM_litho.value())
+        self.inversion_admm_grav_nLithologies = int(
+            self.dlg.spinBox_grav_number_ADMM_litho.value()
         )
-        if self.inversion_admm_grav_nLithologies >0:
+        if self.inversion_admm_grav_nLithologies > 0:
             self.inversion_admm_grav_enableADMM = 1
         else:
             self.inversion_admm_grav_enableADMM = 0
-        
-        self.inversion_admm_magn_nLithologies = (
-            int(self.dlg.spinBox_magn_ADMM_number_litho.value())
+
+        self.inversion_admm_magn_nLithologies = int(
+            self.dlg.spinBox_magn_ADMM_number_litho.value()
         )
-        if self.inversion_admm_magn_nLithologies >0:
+        if self.inversion_admm_magn_nLithologies > 0:
             self.inversion_admm_magn_enableADMM = 1
         else:
             self.inversion_admm_magn_enableADMM = 0
@@ -3123,14 +3174,14 @@ class Tomofast_x:
         if self.dlg.lineEdit_magn_ADMM_weight.text():
             self.inversion_admm_magn_weight = self.dlg.lineEdit_magn_ADMM_weight.text()
 
-        self.global_grav_dataUnitsMultiplier = (
-            float(self.dlg.lineEdit_grav_data_multiplier.text())
+        self.global_grav_dataUnitsMultiplier = float(
+            self.dlg.lineEdit_grav_data_multiplier.text()
         )
         self.global_grav_modelUnitsMultiplier = (
             self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.value()
         )
-        self.global_magn_dataUnitsMultiplier = (
-            float(self.dlg.lineEdit_magn_data_multiplier.text())
+        self.global_magn_dataUnitsMultiplier = float(
+            self.dlg.lineEdit_magn_data_multiplier.text()
         )
         self.global_magn_modelUnitsMultiplier = (
             self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.value()
@@ -3301,16 +3352,12 @@ class Tomofast_x:
 
     # update gui
     def enable_boxes(self):
-
-
-
         """if self.dataType == "raster":
-            self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
-            self.dlg.mQgsspinBox_grav_number_ADMM_litho.setEnabled(False)
-            self.dlg.mQgsSpinBox_13.setEnabled(False)"""
+        self.dlg.mQgsSpinBox_mesh_south.setEnabled(False)
+        self.dlg.mQgsspinBox_grav_number_ADMM_litho.setEnabled(False)
+        self.dlg.mQgsSpinBox_13.setEnabled(False)"""
 
         self.inversion_type_reset_gui()
-                
 
     # update elevation type based on gui
     def dtm_type(self):
@@ -3392,16 +3439,16 @@ class Tomofast_x:
 
     def define_tips(self):
         self.dlg.checkBox_read_sens_matrix.setToolTip(
-            "Load previously calculated sensistivity matrix"
+            "Load previously calculated sensistivity matrix\n\n[forward.sensit.readFromFiles]"
         )
         self.dlg.checkBox_use_compression.setToolTip(
-            "Use wavelet compression to speed calculations and reduce memory demands of inversion"
+            "Use wavelet compression to speed calculations and reduce memory demands of inversion\n\n[forward.matrixCompression.rate]"
         )
         self.dlg.checkBox_grav_depth_weighting.setToolTip(
-            "Enable depth weighting for gravity inversion"
+            "Enable depth weighting for gravity inversion\n\n[forward.depthWeighting.type]"
         )
         self.dlg.checkBox_magn_depth_weighting.setToolTip(
-            "Enable depth weighting for magnetic inversion"
+            "Enable depth weighting for magnetic inversion\n\n[forward.depthWeighting.type]"
         )
         self.dlg.comboBox_grav_field_x.setToolTip(
             "Define column in csv file that contains Longitude/Easting information"
@@ -3422,109 +3469,109 @@ class Tomofast_x:
             "Define column in csv file that contains Magnetic information"
         )
         self.dlg.lineEdit_grav_ADMM_weight.setToolTip(
-            "Define weighting of ADMM constraint"
+            "Define weighting of ADMM constraint\n\n[inversion.admm.grav.weight]"
         )
         self.dlg.lineEdit_magn_ADMM_weight.setToolTip(
-            "Define weighting of ADMM constraint"
+            "Define weighting of ADMM constraint\n\n[inversion.admm.magn.weight]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
-            "Index of power term for depth weighting [3 for magnetics]"
+            "Index of power term for depth weighting [3 for magnetics]\n\n[inversion.modelDamping.grav.weight]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.setToolTip(
-            "Index of power term for depth weighting [2 for gravity]"
+            "Index of power term for depth weighting [2 for gravity]\n\n[inversion.depthWeighting.grav.power]"
         )
         self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
-            "Amount of wavelt compression [smaller value means more compression]"
+            "Amount of wavelt compression [smaller value means more compression]\n\n[forward.matrixCompression.rate]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_model_multiplier.setToolTip(
-            "Multiplier for scaling of output models"
+            "Multiplier for scaling of output models\n\n[global.grav_modelUnitsMultiplier]"
         )
         self.dlg.lineEdit_grav_data_multiplier.setToolTip(
-            "Multiplier for input gravity data to convert it to SI units"
+            "Multiplier for input gravity data to convert it to SI units\n\n[global.grav_dataUnitsMultiplier]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power.setToolTip(
-            "Define power exponent of gravity model damping term"
+            "Define power exponent of gravity model damping term\n\n[inversion.modelDamping.normPower]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
-            "Define weight of gravity model damping term (m - m_prior)"
+            "Define weight of gravity model damping term (m - m_prior)\n\n[inversion.modelDamping.grav.weight]"
         )
         self.dlg.mQgsDoubleSpinBox_magn_model_multiplier.setToolTip(
-            "Multiplier for scaling of output models"
+            "Multiplier for scaling of output models\n\n[global.magn_modelUnitsMultiplier]"
         )
         self.dlg.lineEdit_magn_data_multiplier.setToolTip(
-            "Multiplier for input magnetic data to convert it to SI units"
+            "Multiplier for input magnetic data to convert it to SI units\n\n[global.magn_dataUnitsMultiplier]"
         )
         self.dlg.mQgsDoubleSpinBox_grav_weight.setToolTip(
-            "Relative weighting of gravity data for joint inversion"
+            "Relative weighting of gravity data for joint inversion\n\n[inversion.joint.grav.problemWeight]"
         )
         self.dlg.mQgsDoubleSpinBox_magn_weight.setToolTip(
-            "Relative weighting of magnetic data for joint inversion"
+            "Relative weighting of magnetic data for joint inversion\n\n[inversion.joint.magn.problemWeight]"
         )
         self.dlg.mQgsDoubleSpinBox_magn_model_norm_power.setToolTip(
-            "Define power exponent of magnetic model damping term"
+            "Define power exponent of magnetic model damping term\n\n[inversion.modelDamping.normPower]"
         )
         self.dlg.mQgsDoubleSpinBox_magn_model_weight.setToolTip(
-            "Define weight of magnetic model damping term (m - m_prior)"
+            "Define weight of magnetic model damping term (m - m_prior)\n\n[inversion.modelDamping.magn.weight]"
         )
         self.dlg.label_61.setToolTip(
-            "Define input gravity data projection system [EPSG:4326]"
+            "Define input gravity data projection system [EPSG:4326]\n\n[anomalies.grav.proj.in]"
         )
         self.dlg.label_62.setToolTip(
-            "Define processed gravity data projection system [EPSG:4326]"
+            "Define processed gravity data projection system [EPSG:4326]\n\n[anomalies.grav.proj.out]"
         )
         self.dlg.label_68.setToolTip(
-            "Define input magnetic data projection system [EPSG:4326]"
+            "Define input magnetic data projection system [EPSG:4326]\n\n[anomalies.magn.proj.in]"
         )
         self.dlg.label_71.setToolTip(
-            "Define processed magnetic data projection system [EPSG:4326]"
+            "Define processed magnetic data projection system [EPSG:4326]\n\n[anomalies.magn.proj.out]"
         )
         self.dlg.mQgsSpinBox_mesh_south.setToolTip(
-            "Define minimum Northing value for model grid (not taking into account the padding)"
+            "Define minimum Northing value for model grid (not taking into account the padding)\n\n[#mesh.south]"
         )
         self.dlg.mQgsSpinBox_mesh_east.setToolTip(
-            "Define minimum Easting value for model grid (not taking into account the padding)"
+            "Define minimum Easting value for model grid (not taking into account the padding)\n\n[#mesh.east]"
         )
         self.dlg.mQgsSpinBox_mesh_west.setToolTip(
-            "Define maximum Easting value for model grid (not taking into account the padding)"
+            "Define maximum Easting value for model grid (not taking into account the padding)\n\n[#mesh.west]"
         )
         self.dlg.mQgsSpinBox_mesh_north.setToolTip(
-            "Define maximum Northing value for model grid (not taking into account the padding)"
+            "Define maximum Northing value for model grid (not taking into account the padding)\n\n[#mesh.north]"
         )
         self.dlg.mQgsSpinBox_mesh_size_x.setToolTip(
-            "Define model grid x cell dimension"
+            "Define model grid x cell dimension\n\n[#mesh.cellx]"
         )
         self.dlg.mQgsSpinBox_mesh_size_y.setToolTip(
-            "Define model grid x cell dimension"
+            "Define model grid x cell dimension\n\n[#mesh.celly]"
         )
         self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
-            "Define uniform padding distance around model"
+            "Define uniform padding distance around model\n\n[#mesh.padding]"
         )
         self.dlg.nx_label.setToolTip(
-            "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)"
+            "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)\n\n[modelGrid.size]"
         )
         self.dlg.ny_label.setToolTip(
-            "Number of model grid cells in the y direction (this will be calculated from the cell dimensions and model extents)"
+            "Number of model grid cells in the y direction (this will be calculated from the cell dimensions and model extents)\n\n[modelGrid.size]"
         )
         self.dlg.nz_label.setToolTip(
-            "Number of model grid cells in the z direction (this will be calculated from the cell dimensions and model extents)"
+            "Number of model grid cells in the z direction (this will be calculated from the cell dimensions and model extents)\n\n[modelGrid.size]"
         )
         self.dlg.memory_label.setToolTip(
             "Estimate of the memory required in GB to run the inversion, based on: 8 * nx * ny * nz * ndata * compression"
         )
         self.dlg.mQgsSpinBox_major_iters.setToolTip(
-            "Number of major iterations of inversion to run, unless minimum residual value if data error is reached"
+            "Number of major iterations of inversion to run, unless minimum residual value if data error is reached\n\n[inversion.nMajorIterations]"
         )
         self.dlg.mQgsSpinBox_minor_iters.setToolTip(
-            "Number of minor iterations of inversion to run per major iteration"
+            "Number of minor iterations of inversion to run per major iteration\n\n[inversion.nMinorIterations]"
         )
         self.dlg.mQgsSpinBox_model_save_iters.setToolTip(
-            "spacing between major iterations to save model outputs (0 means only save final model)"
+            "spacing between major iterations to save model outputs (0 means only save final model)\n\n[inversion.writeModelEveryNiter]"
         )
         self.dlg.lineEdit_output_directory_path_select.setToolTip(
-            "Select or create directory that will store all data, model grid and parfiles, then process data, dtm and model grid files"
+            "Select or create directory that will store all data, model grid and parfiles, then process data, dtm and model grid files\n\n[global.outputFolderPath]"
         )
         self.dlg.pushButton_select_dtm_path.setToolTip(
-            "Load TIF format Digital Terrane Model"
+            "Load TIF format Digital Terrane Model\n\n[global.elevFilename]"
         )
         self.dlg.pushButton_param_load_path.setToolTip(
             "Optional: Load existing parfile as the basis for updating an experiment"
@@ -3532,16 +3579,18 @@ class Tomofast_x:
         self.dlg.pushButton_assign_magn_fields.setToolTip(
             "Assign x,y,data fields defined above"
         )
-        self.dlg.pushButton_load_grav_data.setToolTip("Load gravity data as QGIS Layer")
+        self.dlg.pushButton_load_grav_data.setToolTip(
+            "Load gravity data as QGIS Layer\n\n[anomalies.grav.data.file]"
+        )
 
         self.dlg.pushButton_load_magn_data.setToolTip(
-            "Load magnetic data as QGIS Layer"
+            "Load magnetic data as QGIS Layer\n\n[anomalies.magn.data_file]"
         )
         self.dlg.pushButton_grav_data_path.setToolTip(
-            "Select a gravity dataset in csv, tif or ers format"
+            "Select a gravity dataset in csv, tif or ers format\n\n[anomalies.grav.data.file]"
         )
         self.dlg.pushButton_magn_data_path.setToolTip(
-            "Select a magnetic dataset in csv, tif or ers format"
+            "Select a magnetic dataset in csv, tif or ers format\n\n[anomalies.magn.data_file]"
         )
         self.dlg.pushButton_assign_grav_fields.setToolTip(
             "Assign x,y,data fields defined above"
@@ -3562,42 +3611,42 @@ class Tomofast_x:
             "Define parameters for joint gravity-magnetic inversion experiemnt"
         )
         self.dlg.radioButton_magn_depth_based_weighting.setToolTip(
-            "Select depth-based ADMM constraints"
+            "Select depth-based ADMM constraints\n\n[inversion.admm.magn.enableADMM]"
         )
         self.dlg.radioButton_magn_dist_based_weighting.setToolTip(
             "Select distance-based ADMM constraints"
         )
         self.dlg.radioButton_grav_depth_based_weighting.setToolTip(
-            "Select depth-based ADMM constraints"
+            "Select depth-based ADMM constraints\n\n[inversion.admm.grav.enableADMM]"
         )
         self.dlg.radioButton_grav_dist_based_weighting.setToolTip(
             "Select distance-based ADMM constraints"
         )
         self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
-            "Number of distinct pairs of ADMM density upper and lower bounds"
+            "Number of distinct pairs of ADMM density upper and lower bounds\n\n[inversion.admm.grav.nLithologies]"
         )
         self.dlg.spinBox_magn_ADMM_number_litho.setToolTip(
-            "Number of distinct pairs of ADMM magnetic susceptibility upper and lower bounds"
+            "Number of distinct pairs of ADMM magnetic susceptibility upper and lower bounds\n\n[inversion.admm.magn.nLithologies]"
         )
         self.dlg.textEdit_experiment_description.setToolTip(
-            "Provide free-form metadata for experiment"
+            "Provide free-form metadata for experiment\n\n[global.description]"
         )
         self.dlg.textEdit_grav_ADMM_bounds.setToolTip(
-            "Space separated pairs of upper and lower ADMM density bounds"
+            "Space separated pairs of upper and lower ADMM density bounds\n\n[inversion.admm.grav.bounds]"
         )
         self.dlg.textEdit_min_residual.setToolTip(
-            "Residual data error threshold before inversion stops"
+            "Residual data error threshold before inversion stops\n\n[inversion.minResidual]"
         )
         self.dlg.textEdit_5_magn_ADMM_bounds.setToolTip(
-            "Space separated pairs of upper and lower ADMM magnetic susceptibility bounds"
+            "Space separated pairs of upper and lower ADMM magnetic susceptibility bounds\n\n[inversion.admm.magn.bounds]"
         )
 
         # ------------------------new tootips--------------------------------------------------
         self.dlg.doubleSpinBox_magn_sensor_height.setToolTip(
-            "Height of mag sensor above DTM, assumes draped survey at const height"
+            "Height of mag sensor above DTM, assumes draped survey at const height\n\n[global.magn_sensor_height]"
         )
         self.dlg.doubleSpinBox_grav_sensor_height.setToolTip(
-            "Height of grav sensor above DTM, assumes draped survey at const height"
+            "Height of grav sensor above DTM, assumes draped survey at const height\n\n[global.grav_sensor_height]"
         )
         self.dlg.dateEdit.setToolTip(
             "Date of Mag Survey, used for auto IGRF calculation"
@@ -3606,28 +3655,28 @@ class Tomofast_x:
             "Load a shapefile to define x,y limts of Mesh (converts max/min extents of shape into a rectangle)"
         )
         self.dlg.pushButton_calc_IGRF.setToolTip(
-            "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh"
+            "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh\n\n[]"
         )
         self.dlg.doubleSpinBox_mag_dec.setToolTip(
-            "Manual overide of Magnetic Declination"
+            "Manual overide of Magnetic Declination\n\n[forward.magneticField.declination]"
         )
         self.dlg.doubleSpinBox_mag_inc.setToolTip(
-            "Manual overide of Magnetic Inclination"
+            "Manual overide of Magnetic Inclination\n\n[forward.magneticField.inclination]"
         )
         self.dlg.doubleSpinBox_mag_int.setToolTip(
-            "Manual overide of Magnetic Intensity"
+            "Manual overide of Magnetic Intensity\n\n[forward.magneticField.intensity]"
         )
-        
+
         self.dlg.pushButton_select_tomoPath.setToolTip(
             "Select path to tomofast executable, e.g. '/opt/homebrew/bin/tomofastx'"
         )
         self.dlg.pushButton_2_select_parfilePath.setToolTip(
             "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
         )
-        self.dlg.lineEdit_2_mpirunPath_2.setToolTip(   
+        self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
             "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS Only)"
         )
-        self.dlg.lineEdit_pre_command.setToolTip(   
+        self.dlg.lineEdit_pre_command.setToolTip(
             "Pre-command to run before inversion, e.g. 'wsl -e' (Windows WSL only)"
         )
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
@@ -3644,8 +3693,9 @@ class Tomofast_x:
         )
 
         self.dlg.pushButton_kernel_path_select.setToolTip(
-            "Select path to directory containing prior sensitivity kernel to reuse"
+            "Select path to directory containing prior sensitivity kernel to reuse\n\n[sensit.folderPath]"
         )
+
     def show_version(self):
         metadata_path = os.path.dirname(os.path.realpath(__file__)) + "/metadata.txt"
 
