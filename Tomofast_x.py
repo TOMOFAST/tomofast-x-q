@@ -2324,7 +2324,7 @@ class Tomofast_x:
         # From Bruce et al. 2025 in prep.
         if nx * ny * nz > 0:
             ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr)
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr * 2)
             self.forward_matrixCompression_rate = ideal_cr * 2  # (just to be sure)
 
     def update_memory_size(self):
