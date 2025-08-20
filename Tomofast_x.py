@@ -2316,8 +2316,11 @@ class Tomofast_x:
         self.dlg.nx_label.setText(str(nx))
         self.dlg.ny_label.setText(str(ny))
         self.dlg.nz_label.setText(str(nz))
+
+        data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
+        data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
         self.update_memory_size()
-        self.update_ideal_compression_ratio(nx, ny, nz)
+        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
 
     def update_ideal_compression_ratio(self, nx, ny, nz):
         # Assumes Haar wavelet
@@ -2346,6 +2349,9 @@ class Tomofast_x:
             float(self.dlg.doubleSpinBox_coreDepth.value())
             / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
         )
+        data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
+        data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
+
         try:
             npad = int(
                 np.log(
@@ -2372,14 +2378,14 @@ class Tomofast_x:
         self.suffix_known = suffix
 
         if self.suffix_known != "csv":
-            self.nData = nx * ny
-
-        if self.global_experimentType == 1:
-            memory = 8 * compression * nx * ny * nz * self.nData
-        elif self.global_experimentType == 2:
-            memory = 8 * compression * nx * ny * nz * self.nData
+            local_nData = data_nx * data_ny
         else:
-            memory = 8 * compression * nx * ny * nz * self.nData * 2
+            local_nData = self.nData
+
+        if self.global_experimentType == 1 or self.global_experimentType == 2:
+            memory = 8 * compression * nx * ny * nz * local_nData
+        else:
+            memory = 8 * compression * nx * ny * nz * local_nData * 2
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))

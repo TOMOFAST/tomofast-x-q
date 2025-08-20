@@ -23,6 +23,7 @@ hasProcessingProvider=no
 changelog=0.2.8 Add paramfile parameter name to tooltips
     * Automatically set compression rate based on mesh parameters
     * Simplify GUI so CRS choices only for point data files
+    * FIx memory usage estimate using correct data size
     0.2.7 Allow users to modify parameters after files written
     0.2.6 Simplify GUI choices   
     * make safe for non-C drives for windows   
