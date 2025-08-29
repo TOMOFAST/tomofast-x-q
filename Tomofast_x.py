@@ -980,6 +980,7 @@ class Tomofast_x:
                     tpfile.write(mpirun_path + "\n")
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
+
             # Path to your executable
             if noProc == 1:
                 command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
@@ -1011,17 +1012,31 @@ class Tomofast_x:
                 kwargs.update(start_new_session=True)
 
             try:
-                # Open a subprocess to execute the command
+
+                wsl_debug_path = self.add_quotes_to_path(
+                    wsl_param_path.replace('"', "") + "_debug.txt"
+                )
+                # Build the actual command
+                if noProc == 1:
+                    base_command = f"{wsl_tomo_path} -j {wsl_param_path} 2>&1 | tee {wsl_debug_path}"
+                else:
+                    base_command = f"{mpirun_path} -np {str(noProc)} {wsl_tomo_path} -j {wsl_param_path} 2>&1 | tee {wsl_debug_path}"
+
+                # Use a simpler approach - let bash handle it
+                if platform.system() == "Windows":
+                    command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
+
+                else:  # Python 3.2+ and Unix
+                    command = f'bash -c "{base_command}"'
+
+                print("command - ", command)
+
                 process = subprocess.Popen(
-                    args,
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    stdin=subprocess.PIPE,  # Redirect standard input (optional)
-                    close_fds=True,
+                    command,
+                    shell=True,
                     **kwargs,
                 )
-                print("command ", command)
+
                 # Print the process ID for tracking
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
@@ -2319,8 +2334,8 @@ class Tomofast_x:
 
         data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
         data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
-        self.update_memory_size()
         self.update_ideal_compression_ratio(data_nx, data_ny, nz)
+        self.update_memory_size()
 
     def update_ideal_compression_ratio(self, nx, ny, nz):
         # Assumes Haar wavelet
@@ -2366,6 +2381,7 @@ class Tomofast_x:
         except:
             npad = 0
         nz = ncore + npad
+
         # if not self.suffix_known:
         # Determine which input path to use based on experiment type
         if self.global_experimentType in {1, 3}:
@@ -2381,11 +2397,21 @@ class Tomofast_x:
             local_nData = data_nx * data_ny
         else:
             local_nData = self.nData
-
         if self.global_experimentType == 1 or self.global_experimentType == 2:
             memory = 8 * compression * nx * ny * nz * local_nData
         else:
             memory = 8 * compression * nx * ny * nz * local_nData * 2
+        print(
+            "compression * nx * ny * nz * local_nData",
+            compression,
+            nx,
+            ny,
+            nz,
+            local_nData,
+        )
+        print("data_nx * data_ny", data_nx, data_ny)
+        print("ncore * npad", ncore, npad)
+        print("memory", memory)
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
