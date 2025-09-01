@@ -1950,6 +1950,9 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="value">
         <double>2.000000000000000</double>
        </property>
+       <property name="showClearButton">
+        <bool>false</bool>
+       </property>
       </widget>
      </widget>
      <widget class="QLabel" name="label_7">
@@ -2042,6 +2045,9 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="value">
         <double>1.000000000000000</double>
+       </property>
+       <property name="showClearButton">
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_grav_data_multiplier">
@@ -2180,6 +2186,9 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="value">
         <double>2.000000000000000</double>
        </property>
+       <property name="showClearButton">
+        <bool>false</bool>
+       </property>
       </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_23">
@@ -2252,6 +2261,9 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="value">
         <double>1.000000000000000</double>
+       </property>
+       <property name="showClearButton">
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_magn_data_multiplier">
@@ -3007,6 +3019,9 @@ Day/Month/Year</string>
        <property name="displayIntegerBase">
         <number>10</number>
        </property>
+       <property name="showClearButton">
+        <bool>false</bool>
+       </property>
       </widget>
       <widget class="QLabel" name="label_63">
        <property name="geometry">
@@ -3041,6 +3056,9 @@ Day/Month/Year</string>
        </property>
        <property name="displayIntegerBase">
         <number>10</number>
+       </property>
+       <property name="showClearButton">
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLabel" name="label_65">
@@ -3147,6 +3165,9 @@ Day/Month/Year</string>
          </property>
          <property name="value">
           <double>1.000000000000000</double>
+         </property>
+         <property name="showClearButton">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -3484,6 +3505,9 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="maximum">
           <number>200</number>
+         </property>
+         <property name="showClearButton">
+          <bool>false</bool>
          </property>
         </widget>
         <widget class="QLineEdit" name="lineEdit_pre_command_2_WSL_Distro">
