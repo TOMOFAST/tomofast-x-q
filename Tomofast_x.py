@@ -846,7 +846,6 @@ class Tomofast_x:
                 yfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
                 zfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
                 xyzfiles = [xfile, yfile, zfile]
-
                 display_voxet_files_clipped_qgis(
                     xyzfiles,
                     clip_percentile=95,
@@ -2594,7 +2593,7 @@ class Tomofast_x:
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
                 "global.grav.dataUnitsMultiplier     = {}\n".format(
-                    str(int(self.global_grav_dataUnitsMultiplier))
+                    str(self.global_grav_dataUnitsMultiplier)
                 )
             )
             self.f_params.write(
@@ -2606,7 +2605,7 @@ class Tomofast_x:
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
                 "global.magn.dataUnitsMultiplier     = {}\n".format(
-                    str(int(self.global_magn_dataUnitsMultiplier))
+                    str(self.global_magn_dataUnitsMultiplier)
                 )
             )
             self.f_params.write(
@@ -3754,7 +3753,7 @@ class Tomofast_x:
         self.global_elevType = 1
         self.global_elevFilename = ""
         self.modelGrid_size = [0, 0, 0]
-        self.global_grav_dataUnitsMultiplier = -6
+        self.global_grav_dataUnitsMultiplier = 0.00001
         self.global_magn_dataUnitsMultiplier = 1
         self.global_grav_modelUnitsMultiplier = 1
         self.global_magn_modelUnitsMultiplier = 1

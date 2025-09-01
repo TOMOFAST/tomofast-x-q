@@ -2049,15 +2049,15 @@ border-style: solid;border-width: 1px;border-color: black
         <rect>
          <x>100</x>
          <y>30</y>
-         <width>51</width>
+         <width>81</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
-        <string>1.0</string>
+        <string>0.00001</string>
        </property>
        <property name="placeholderText">
-        <string>1d-5</string>
+        <string>0.00001</string>
        </property>
       </widget>
      </widget>
@@ -2259,7 +2259,7 @@ border-style: solid;border-width: 1px;border-color: black
         <rect>
          <x>100</x>
          <y>30</y>
-         <width>51</width>
+         <width>81</width>
          <height>21</height>
         </rect>
        </property>
