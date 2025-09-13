@@ -2859,7 +2859,7 @@ class Tomofast_x:
             )
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
-                    "inversion.admm.dataCostThreshold      = {}\n".format("0.1.e-3")
+                    "inversion.admm.dataCostThreshold      = {}\n".format("0.1e-3")
                 )
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
