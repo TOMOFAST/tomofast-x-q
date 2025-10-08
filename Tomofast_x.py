@@ -785,6 +785,7 @@ class Tomofast_x:
 
             self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
 
+            self.dlg.pushButton_3_Export.clicked.connect(self.export_model)
             self.define_parameters()
             self.reset_params()
 
@@ -2993,6 +2994,81 @@ class Tomofast_x:
             duration=45,
         )
 
+    def export_model(self):
+
+        code = "grav"
+
+        paramfile_Dir = os.path.dirname(self.paramfile_Path)
+
+        # Path to input model grid (modelGrid.XXXX.file parameter in the Parfile).
+        filename_model_grid = os.path.join(paramfile_Dir, "model_grid.txt")
+        print("Reading model from: ", filename_model_grid)
+
+        # Path to the output model after inversion.
+        filename_model_final = os.path.join(
+            paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
+        )
+        if os.path.exists(filename_model_final) == False:
+            code = "mag"
+            filename_model_final = os.path.join(
+                paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
+            )
+
+        print("Reading grid from: ", filename_model_final)
+
+        # Path to exported model in csv format
+        filename_model_csv = os.path.join(
+            paramfile_Dir, "OUTPUT/" + code + "_final_model3D_full.csv"
+        )
+
+        # Reading the model grid.
+        model_grid = np.loadtxt(
+            filename_model_grid, dtype=float, usecols=(0, 1, 2, 3, 4, 5), skiprows=1
+        )
+
+        # Reading the final model.
+        model_values = np.loadtxt(filename_model_final, dtype=float, skiprows=1)
+
+        assert (
+            model_grid.shape[0] == model_values.shape[0]
+        ), "Inconsistent model dimensions!"
+
+        Ncells = model_grid.shape[0]
+        print("Ncells =", Ncells)
+
+        print(model_grid.shape)
+        print(model_values.shape)
+
+        # Positions of the model cell centers.
+        positions = np.ndarray((Ncells, 3), dtype=float)
+
+        # Calculate the cell centers.
+        positions[:, 0] = (model_grid[:, 0] + model_grid[:, 1]) / 2.0
+        positions[:, 1] = (model_grid[:, 2] + model_grid[:, 3]) / 2.0
+        positions[:, 2] = (model_grid[:, 4] + model_grid[:, 5]) / 2.0
+
+        # Revert Z-axis.
+        positions[:, 2] = -positions[:, 2]
+
+        # Combine the arrays
+        combined = np.column_stack((positions, model_values))
+        np.savetxt(
+            filename_model_csv,
+            combined,
+            delimiter=",",
+            header="x,y,z,data",
+            comments="",
+            fmt="%.6f",
+        )
+        self.iface.messageBar().pushMessage(
+            f"Model saved as "
+            + code
+            + "_final_model3D_full.csv in the OUTPUT directory",
+            "",
+            level=Qgis.Success,
+            duration=45,
+        )
+
     # display pints layer with colours
     def colour_points(self, layer, value_field, ramp_name, invert):
         # layer_name = 'Your_layer_name'
@@ -3684,6 +3760,7 @@ class Tomofast_x:
         self.dlg.pushButton_kernel_path_select.setToolTip(
             "Select path to directory containing prior sensitivity kernel to reuse\n\n[sensit.folderPath]"
         )
+        self.dlg.pushButton_3_Export.setToolTip("Export 3D model as csv file")
 
     def show_version(self):
         metadata_path = os.path.dirname(os.path.realpath(__file__)) + "/metadata.txt"
