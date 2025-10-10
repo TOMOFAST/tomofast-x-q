@@ -4,8 +4,8 @@
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; **<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.9
-    * Add export to csv option
+changelog=0.2.9   
+    * Add export to csv option   
     0.2.8 Add paramfile parameter name to tooltips    
     * Automatically set compression rate based on mesh parameters   
     * Simplify GUI so CRS choices only for point data files   
