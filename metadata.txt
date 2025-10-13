@@ -6,7 +6,7 @@
 name=tomofast_x_q
 qgisMinimumVersion=3.0
 description=Supprts Tomofast-x geophysical inversion code
-version=0.2.9
+version=0.2.10
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
 
@@ -20,8 +20,9 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.9   
-    * Add export to csv option   
+changelog=0.2.10   
+    0.2.9   
+    * Add export to csv option
     0.2.8 Add paramfile parameter name to tooltips
     * Automatically set compression rate based on mesh parameters
     * Simplify GUI so CRS choices only for point data files
