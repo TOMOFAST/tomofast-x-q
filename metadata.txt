@@ -20,8 +20,8 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.9
-    * Add export to csv option
+changelog=0.2.9   
+    * Add export to csv option   
     0.2.8 Add paramfile parameter name to tooltips
     * Automatically set compression rate based on mesh parameters
     * Simplify GUI so CRS choices only for point data files
