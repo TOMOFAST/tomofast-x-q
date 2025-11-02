@@ -1030,7 +1030,7 @@ class Tomofast_x:
                 kwargs.update(preexec_fn=os.setsid)
             else:  # Python 3.2+ and Unix
                 kwargs.update(start_new_session=True)
-
+     
             try:
 
                 wsl_debug_path = self.add_quotes_to_path(
@@ -1048,7 +1048,7 @@ class Tomofast_x:
 
                 else:  # Python 3.2+ and Unix
                     command = f'bash -c "{base_command}"'
-
+                
                 print("command - ", command)
 
                 process = subprocess.Popen(
@@ -1372,9 +1372,9 @@ class Tomofast_x:
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
             crs = layer.crs()
             crs.createFromId(int(target_crs.split(":")[1]))
+            QgsProject.instance().addMapLayer(result)
             result.setCrs(crs)
             result.renderer().symbol().setSize(0.25)
-            QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
             self.nData = result.featureCount()
@@ -1912,7 +1912,13 @@ class Tomofast_x:
 
             if layer.isValid():
                 QgsProject.instance().addMapLayer(layer)
-                layer.renderer().symbol().setSize(0.125)
+                
+                # Check if renderer and symbol exist before modifying
+                renderer = layer.renderer()
+                if renderer is not None:
+                    symbol = renderer.symbol()
+                    if symbol is not None:
+                        symbol.setSize(0.125)
                 self.colour_points(layer, dataName1, "Rocket", False)
                 layer.triggerRepaint()
 
