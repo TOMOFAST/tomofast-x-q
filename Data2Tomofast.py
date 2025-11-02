@@ -7,7 +7,7 @@ import pandas as pd
 from pyproj import Transformer
 import matplotlib.pyplot as plt
 import os
-from PyQt5.QtCore import QVariant
+from qgis.PyQt.QtCore import QVariant
 
 
 class Data2Tomofast:

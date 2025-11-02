@@ -66,6 +66,27 @@ from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtCore import Qt
+
+# Qt5/Qt6 Compatibility Layer
+try:
+    # Try Qt6 style first
+    _test = Qt.DockWidgetArea.RightDockWidgetArea
+    # Qt6 detected
+    QT6 = True
+
+    # Qt6 style enums are already available
+    RightDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
+
+
+except AttributeError:
+    # Qt5 detected
+    QT6 = False
+
+    # Qt5 style enums
+    RightDockWidgetArea = Qt.RightDockWidgetArea
+
 
 # import functions from scripts
 from .Data2Tomofast import Data2Tomofast
@@ -75,8 +96,7 @@ import numpy as np
 import pandas as pd
 from osgeo import gdal
 import processing
-from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtCore import Qt
+
 import os
 from pyproj import Transformer
 from .ppigrf import igrf, get_inclination_declination
@@ -657,12 +677,12 @@ class Tomofast_x:
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dlg)
+            self.iface.addDockWidget(RightDockWidgetArea, self.dlg)
             # Find existing dock widgets in the right area
             right_docks = [
                 d
                 for d in self.iface.mainWindow().findChildren(QDockWidget)
-                if self.iface.mainWindow().dockWidgetArea(d) == Qt.RightDockWidgetArea
+                if self.iface.mainWindow().dockWidgetArea(d) == RightDockWidgetArea
             ]
             # If there are other dock widgets, tab this one with the first one found
             if right_docks:

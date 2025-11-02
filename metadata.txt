@@ -4,9 +4,12 @@
 
 [general]
 name=tomofast_x_q
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.24
+qgisMaximumVersion=4.99
 description=Supprts Tomofast-x geophysical inversion code
 version=0.2.10
+supportsQt6=True
+
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
 
@@ -21,6 +24,7 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=0.2.10   
+      * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
     0.2.9   
     * Add export to csv option
     0.2.8 Add paramfile parameter name to tooltips
