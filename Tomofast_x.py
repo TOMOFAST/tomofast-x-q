@@ -66,6 +66,27 @@ from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtCore import Qt
+
+# Qt5/Qt6 Compatibility Layer
+try:
+    # Try Qt6 style first
+    _test = Qt.DockWidgetArea.RightDockWidgetArea
+    # Qt6 detected
+    QT6 = True
+
+    # Qt6 style enums are already available
+    RightDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
+
+
+except AttributeError:
+    # Qt5 detected
+    QT6 = False
+
+    # Qt5 style enums
+    RightDockWidgetArea = Qt.RightDockWidgetArea
+
 
 # import functions from scripts
 from .Data2Tomofast import Data2Tomofast
@@ -75,8 +96,7 @@ import numpy as np
 import pandas as pd
 from osgeo import gdal
 import processing
-from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtCore import Qt
+
 import os
 from pyproj import Transformer
 from .ppigrf import igrf, get_inclination_declination
@@ -657,12 +677,12 @@ class Tomofast_x:
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dlg)
+            self.iface.addDockWidget(RightDockWidgetArea, self.dlg)
             # Find existing dock widgets in the right area
             right_docks = [
                 d
                 for d in self.iface.mainWindow().findChildren(QDockWidget)
-                if self.iface.mainWindow().dockWidgetArea(d) == Qt.RightDockWidgetArea
+                if self.iface.mainWindow().dockWidgetArea(d) == RightDockWidgetArea
             ]
             # If there are other dock widgets, tab this one with the first one found
             if right_docks:
@@ -983,7 +1003,7 @@ class Tomofast_x:
 
             # Path to your executable
             if noProc == 1:
-                command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
+                command = pre_command + " " + wsl_tomo_path + " -p " + wsl_param_path
             else:
                 command = (
                     pre_command
@@ -1010,7 +1030,7 @@ class Tomofast_x:
                 kwargs.update(preexec_fn=os.setsid)
             else:  # Python 3.2+ and Unix
                 kwargs.update(start_new_session=True)
-
+     
             try:
 
                 wsl_debug_path = self.add_quotes_to_path(
@@ -1028,7 +1048,7 @@ class Tomofast_x:
 
                 else:  # Python 3.2+ and Unix
                     command = f'bash -c "{base_command}"'
-
+                
                 print("command - ", command)
 
                 process = subprocess.Popen(
@@ -1352,9 +1372,9 @@ class Tomofast_x:
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
             crs = layer.crs()
             crs.createFromId(int(target_crs.split(":")[1]))
+            QgsProject.instance().addMapLayer(result)
             result.setCrs(crs)
             result.renderer().symbol().setSize(0.25)
-            QgsProject.instance().addMapLayer(result)
             self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
             self.nData = result.featureCount()
@@ -1892,7 +1912,13 @@ class Tomofast_x:
 
             if layer.isValid():
                 QgsProject.instance().addMapLayer(layer)
-                layer.renderer().symbol().setSize(0.125)
+                
+                # Check if renderer and symbol exist before modifying
+                renderer = layer.renderer()
+                if renderer is not None:
+                    symbol = renderer.symbol()
+                    if symbol is not None:
+                        symbol.setSize(0.125)
                 self.colour_points(layer, dataName1, "Rocket", False)
                 layer.triggerRepaint()
 

@@ -5,6 +5,7 @@
 
 ## Recent changes
 changelog=0.2.10   
+      * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
     0.2.9   
     * Add export to csv option
     0.2.8 Add paramfile parameter name to tooltips    
@@ -30,7 +31,7 @@ changelog=0.2.10
     0.2 Converted to dockable window   
     
 ## Install
-Use QGIS Plugin Manager to load directly the Plugin Repository (experimental) or download the zip file of this repository and use Install from Zip file in the QGIS Plugin Manager.   
+Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
 - To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS.
 
 #### Windows
