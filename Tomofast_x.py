@@ -1003,7 +1003,7 @@ class Tomofast_x:
 
             # Path to your executable
             if noProc == 1:
-                command = pre_command + " " + wsl_tomo_path + " -j " + wsl_param_path
+                command = pre_command + " " + wsl_tomo_path + " -p " + wsl_param_path
             else:
                 command = (
                     pre_command
