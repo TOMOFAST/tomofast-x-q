@@ -987,10 +987,8 @@ class Tomofast_x:
                 pre_command = self.dlg.lineEdit_pre_command.text()
                 mpirun_path = " mpirun "
 
-
-                wsl_debug_path = self.add_quotes_to_path(
-                    wsl_param_path.replace('"', "") + "_debug.txt"
-                )
+                # Replace spaces with escaped spaces for WSL
+                wsl_param_path = wsl_param_path.replace('"', '')
 
             elif platform.system() == "Darwin":
                 wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
@@ -1042,6 +1040,8 @@ class Tomofast_x:
                 wsl_debug_path = self.add_quotes_to_path(
                     wsl_param_path.replace('"', "") + "_debug.txt"
                 )
+                wsl_debug_path = wsl_debug_path.replace('"', '')
+
                 print("mpirun_path - ", mpirun_path)
                 print("noProc - ", noProc)
                 print("wsl_tomo_path - ", wsl_tomo_path)
@@ -1050,9 +1050,9 @@ class Tomofast_x:
 
                 # Build the actual command
                 if noProc == 1:
-                    base_command = f"{wsl_tomo_path} -p {wsl_param_path} 2>&1 | tee {wsl_debug_path}"
+                    base_command = f"{wsl_tomo_path} -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
                 else:
-                    base_command = f"{mpirun_path} -np {str(noProc)} {wsl_tomo_path} -j {wsl_param_path} 2>&1 | tee {wsl_debug_path}"
+                    base_command = f"{mpirun_path} -np {str(noProc)} {wsl_tomo_path} -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
 
                 # Use a simpler approach - let bash handle it
                 if platform.system() == "Windows":
