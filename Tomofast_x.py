@@ -661,15 +661,12 @@ class Tomofast_x:
 
             if platform.system() == "Darwin":
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
-                self.dlg.lineEdit_pre_command.setEnabled(False)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
             elif platform.system() == "Windows":
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False)
-                self.dlg.lineEdit_pre_command.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
             else:  # Linux
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
-                self.dlg.lineEdit_pre_command.setEnabled(False)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
 
             # connect to provide cleanup on closing of dockwidget
@@ -823,7 +820,6 @@ class Tomofast_x:
                     self.dlg.lineEdit_pre_command_2_WSL_Distro.setText(line.rstrip())
 
                     line = tpfile.readline()
-                    self.dlg.lineEdit_pre_command.setText(line.rstrip())
 
                     line = tpfile.readline()
                     self.dlg.lineEdit_2_mpirunPath_2.setText(line.rstrip())
@@ -984,7 +980,6 @@ class Tomofast_x:
                 wsl_tomo_path = self.add_quotes_to_path(
                     self.tomo_Path.replace(wsl_path, "")
                 )
-                pre_command = self.dlg.lineEdit_pre_command.text()
                 mpirun_path = " mpirun "
 
                 # Replace spaces with escaped spaces for WSL
@@ -993,7 +988,6 @@ class Tomofast_x:
             elif platform.system() == "Darwin":
                 wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
                 wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
-                pre_command = ""
                 mpirun_path = self.add_quotes_to_path(
                     self.dlg.lineEdit_2_mpirunPath_2.text().strip()
                 )
@@ -1002,7 +996,6 @@ class Tomofast_x:
             else:
                 wsl_tomo_path = self.tomo_Path
                 wsl_param_path = self.paramfile_Path
-                pre_command = ""
                 mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()         
                 distro = " "
 
@@ -1014,7 +1007,7 @@ class Tomofast_x:
                 ) as tpfile:
                     tpfile.write(self.tomo_Path + "\n")
                     tpfile.write(distro + "\n")
-                    tpfile.write(pre_command + "\n")
+                    tpfile.write("\n")
                     tpfile.write(mpirun_path + "\n")
 
             noProc = self.dlg.mQgsSpinBox_noProc.value()
@@ -3781,9 +3774,7 @@ class Tomofast_x:
         self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
             "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS/Linux Only)"
         )
-        self.dlg.lineEdit_pre_command.setToolTip(
-            "Pre-command to run before inversion, e.g. 'wsl -e' (Windows WSL only)"
-        )
+
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
             "Name of WSL Distro to run the inversion in, e.g. 'Ubuntu-20.04' (Windows WSL only)\nIt will be the element after \\wsl.localhost\ in a windows path to the WSL disk"
         )

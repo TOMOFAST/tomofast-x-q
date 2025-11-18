@@ -5,6 +5,8 @@
 
 ## Recent changes
 changelog=0.2.10   
+    * Remove pre command widget for WSL (no longer needed)    
+    * Allow Linux definition of mpirun path   
     * Allow outputs to be stored on linux drive   
     * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
     0.2.9   
