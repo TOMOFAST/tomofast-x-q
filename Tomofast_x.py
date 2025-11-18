@@ -1000,12 +1000,10 @@ class Tomofast_x:
                 distro = " "
 
             else:
-                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
-                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
                 pre_command = ""
-                mpirun_path = self.add_quotes_to_path(
-                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
-                )                
+                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()         
                 distro = " "
 
             if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
@@ -1037,10 +1035,7 @@ class Tomofast_x:
      
             try:
 
-                wsl_debug_path = self.add_quotes_to_path(
-                    wsl_param_path.replace('"', "") + "_debug.txt"
-                )
-                wsl_debug_path = wsl_debug_path.replace('"', '')
+                wsl_debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
 
                 print("mpirun_path - ", mpirun_path)
                 print("noProc - ", noProc)
@@ -1050,9 +1045,9 @@ class Tomofast_x:
 
                 # Build the actual command
                 if noProc == 1:
-                    base_command = f"{wsl_tomo_path} -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+                    base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
                 else:
-                    base_command = f"{mpirun_path} -np {str(noProc)} {wsl_tomo_path} -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+                    base_command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
 
                 # Use a simpler approach - let bash handle it
                 if platform.system() == "Windows":
