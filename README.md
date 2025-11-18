@@ -5,7 +5,7 @@
 
 ## Recent changes
 changelog=0.2.10   
-    * Allow outputs to be stored on linux drive
+    * Allow outputs to be stored on linux drive   
     * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
     0.2.9   
     * Add export to csv option
