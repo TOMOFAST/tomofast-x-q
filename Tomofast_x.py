@@ -970,33 +970,34 @@ class Tomofast_x:
                         self.paramfile_Path_run,
                         wsl_path,
                         "",
-                    )      
-                    print("Adjusted wsl_param_path for linux stored paramfile - ", wsl_param_path)          
+                    )
+                    print(
+                        "Adjusted wsl_param_path for linux stored paramfile - ",
+                        wsl_param_path,
+                    )
 
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 wsl_path = "//wsl.localhost/" + distro
-                
-                
+
                 wsl_tomo_path = self.add_quotes_to_path(
                     self.tomo_Path.replace(wsl_path, "")
                 )
                 mpirun_path = " mpirun "
 
                 # Replace spaces with escaped spaces for WSL
-                wsl_param_path = wsl_param_path.replace('"', '')
+                wsl_param_path = wsl_param_path.replace('"', "")
 
             elif platform.system() == "Darwin":
-                wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
-                wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
-                mpirun_path = self.add_quotes_to_path(
-                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
-                )
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
+                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+
                 distro = " "
 
             else:
                 wsl_tomo_path = self.tomo_Path
                 wsl_param_path = self.paramfile_Path
-                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()         
+                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
                 distro = " "
 
             if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
@@ -1025,7 +1026,7 @@ class Tomofast_x:
                 kwargs.update(preexec_fn=os.setsid)
             else:  # Python 3.2+ and Unix
                 kwargs.update(start_new_session=True)
-     
+
             try:
 
                 wsl_debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
@@ -1053,7 +1054,7 @@ class Tomofast_x:
                     )
                 else:  # Python 3.2+ and Unix
                     command = base_command
-                
+
                     print("command: ", command)
                     env = os.environ.copy()  # Get the full environment
 
@@ -1919,7 +1920,7 @@ class Tomofast_x:
 
             if layer.isValid():
                 QgsProject.instance().addMapLayer(layer)
-                
+
                 # Check if renderer and symbol exist before modifying
                 renderer = layer.renderer()
                 if renderer is not None:
