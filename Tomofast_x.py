@@ -668,7 +668,7 @@ class Tomofast_x:
                 self.dlg.lineEdit_pre_command.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
             else:  # Linux
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False)
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
                 self.dlg.lineEdit_pre_command.setEnabled(False)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
 
@@ -1005,7 +1005,9 @@ class Tomofast_x:
                 wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path)
                 wsl_param_path = self.add_quotes_to_path(self.paramfile_Path)
                 pre_command = ""
-                mpirun_path = " mpirun "
+                mpirun_path = self.add_quotes_to_path(
+                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                )                
                 distro = " "
 
             if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
@@ -1055,17 +1057,24 @@ class Tomofast_x:
                 # Use a simpler approach - let bash handle it
                 if platform.system() == "Windows":
                     command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
-
+                    print("command: ", command)
+                    process = subprocess.Popen(
+                        command,
+                        shell=True,
+                        **kwargs,
+                    )
                 else:  # Python 3.2+ and Unix
-                    command = f'bash -c "{base_command}"'
+                    command = base_command
                 
-                print("command: ", command)
+                    print("command: ", command)
+                    env = os.environ.copy()  # Get the full environment
 
-                process = subprocess.Popen(
-                    command,
-                    shell=True,
-                    **kwargs,
-                )
+                    process = subprocess.Popen(
+                        command,
+                        shell=True,
+                        env=env,  # Pass the full environment
+                        **kwargs,
+                    )
 
                 # Print the process ID for tracking
                 self.iface.messageBar().pushMessage(
@@ -3775,7 +3784,7 @@ class Tomofast_x:
             "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
         )
         self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
-            "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS Only)"
+            "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS/Linux Only)"
         )
         self.dlg.lineEdit_pre_command.setToolTip(
             "Pre-command to run before inversion, e.g. 'wsl -e' (Windows WSL only)"
