@@ -6,7 +6,7 @@
 name=tomofast_x_q
 qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
-description=Supprts Tomofast-x geophysical inversion code
+description=Supports Tomofast-x geophysical inversion code
 version=0.2.10
 supportsQt6=True
 
