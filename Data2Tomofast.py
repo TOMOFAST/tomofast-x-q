@@ -193,7 +193,7 @@ class Data2Tomofast:
 
         nelements = nx * ny * nz
 
-        grid = np.zeros((nelements, 10))
+        grid = np.zeros((nelements, 9))  # Changed from 10 to 9 columns
         ind = 0
 
         # Pre-compute cumulative sums
@@ -226,10 +226,10 @@ class Data2Tomofast:
         grid[:, 3] = Y2_mesh.ravel("F")
         grid[:, 4] = Z1_mesh.ravel("F")
         grid[:, 5] = Z2_mesh.ravel("F")
-        grid[:, 6] = 0.0
-        grid[:, 7] = (I + 1).ravel("F")  # Add 1 for 1-based indexing
-        grid[:, 8] = (J + 1).ravel("F")
-        grid[:, 9] = (K + 1).ravel("F")
+        # Removed column 6 (model values column)
+        grid[:, 6] = (I + 1).ravel("F")  # i indices (1-based)
+        grid[:, 7] = (J + 1).ravel("F")  # j indices (1-based)
+        grid[:, 8] = (K + 1).ravel("F")  # k indices (1-based)
 
         model_grid_file_name = directory + "/model_grid.txt"
 
@@ -238,7 +238,7 @@ class Data2Tomofast:
             model_grid_file_name,
             grid,
             delimiter=" ",
-            fmt="%f %f %f %f %f %f %f %d %d %d",
+            fmt="%f %f %f %f %f %f %d %d %d",  # Changed format (removed one %f)
             header=str(nelements),
             comments="",
         )
@@ -257,9 +257,9 @@ class Data2Tomofast:
             elevation_grid_file, dtype=float, usecols=(2), skiprows=1, delimiter=","
         )
         # Extract nx, ny from the model grid file.
-        nx = int(model_grid[-1, 7])
-        ny = int(model_grid[-1, 8])
-        nz = int(model_grid[-1, 9])
+        nx = int(model_grid[-1, 6])  # Changed from column 7 to 6
+        ny = int(model_grid[-1, 7])  # Changed from column 8 to 7
+        nz = int(model_grid[-1, 8])  # Changed from column 9 to 8
 
         # Convert to 2D array.
         elevation_grid = elevation_grid.reshape((ny, nx))
@@ -293,7 +293,7 @@ class Data2Tomofast:
             model_grid_file,
             model_grid,
             delimiter=" ",
-            fmt="%f %f %f %f %f %f %f %d %d %d",
+            fmt="%f %f %f %f %f %f %d %d %d",  # Changed format (removed one %f)
             header=str(nelements),
             comments="",
         )
