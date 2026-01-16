@@ -252,18 +252,18 @@ class Tomofast_x:
                 str,
                 "path",
             ],
-            "forward.data.grav.dataValuesFile": [
-                self.forward_data_grav_dataValuesFile,
-                "",
-                str,
-                "path",
-            ],
-            "forward.data.magn.dataValuesFile": [
-                self.forward_data_magn_dataValuesFile,
-                "",
-                str,
-                "path",
-            ],
+            # "forward.data.grav.dataValuesFile": [
+            #     self.forward_data_grav_dataValuesFile,
+            #     "",
+            #     str,
+            #     "path",
+            # ],
+            # "forward.data.magn.dataValuesFile": [
+            #     self.forward_data_magn_dataValuesFile,
+            #     "",
+            #     str,
+            #     "path",
+            # ],
             "modelGrid.size": [
                 self.modelGrid_size,
                 self.dlg.nx_label,
@@ -2725,11 +2725,11 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
-            self.f_params.write(
-                "forward.data.grav.dataValuesFile    = {}\n".format(
-                    self.global_outputFolderPath + "/data_grav.csv"
-                )
-            )
+            # self.f_params.write(
+            #     "forward.data.grav.dataValuesFile    = {}\n".format(
+            #         self.global_outputFolderPath + "/data_grav.csv"
+            #     )
+            # )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -2743,22 +2743,23 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_magn.csv"
                 )
             )
-            self.f_params.write(
-                "forward.data.magn.dataValuesFile    = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn.csv"
-                )
-            )
+            # self.f_params.write(
+            #     "forward.data.magn.dataValuesFile    = {}\n".format(
+            #         self.global_outputFolderPath + "/data_magn.csv"
+            #     )
+            # )
             """else:
                 self.f_params.write(
                     "forward.data.magn.dataGridFile      = {}\n".format(
                         self.global_outputFolderPath + "/data_magn_topo.csv"
                     )
                 )
-                self.f_params.write(
-                    "forward.data.magn.dataValuesFile    = {}\n".format(
-                        self.global_outputFolderPath + "/data_magn_topo.csv"
-                    )
-                )"""
+                # self.f_params.write(
+                #     "forward.data.magn.dataValuesFile    = {}\n".format(
+                #         self.global_outputFolderPath + "/data_magn_topo.csv"
+                #     )
+                # )
+            """
 
         self.spacer("DEPTH WEIGHTING")
 
@@ -3162,15 +3163,15 @@ class Tomofast_x:
         self.forward_data_grav_dataGridFile = (
             self.global_outputFolderPath + "/data_grav.csv"
         )
-        self.forward_data_grav_dataValuesFile = (
-            self.global_outputFolderPath + "/grav_calc_read_data.txt"
-        )
+        # self.forward_data_grav_dataValuesFile = (
+        #     self.global_outputFolderPath + "/grav_calc_read_data.txt"
+        # )
         self.forward_data_magn_dataGridFile = (
             self.global_outputFolderPath + "/data_magn.csv"
         )
-        self.forward_data_magn_dataValuesFile = (
-            self.global_outputFolderPath + "/magn_calc_read_data.txt"
-        )
+        # self.forward_data_magn_dataValuesFile = (
+        #     self.global_outputFolderPath + "/magn_calc_read_data.txt"
+        # )
 
         if self.dlg.checkBox_grav_depth_weighting.isChecked():
             self.forward_depthWeighting_type = 2
@@ -3813,11 +3814,11 @@ class Tomofast_x:
         self.global_description = ""
         self.forward_data_grav_nData = 0
         self.forward_data_grav_dataGridFile = ""
-        self.forward_data_grav_dataValuesFile = ""
+        #self.forward_data_grav_dataValuesFile = ""
         self.modelGrid_magn_file = ""
         self.forward_data_magn_nData = 0
         self.forward_data_magn_dataGridFile = ""
-        self.forward_data_magn_dataValuesFile = ""
+        #self.forward_data_magn_dataValuesFile = ""
         self.forward_depthWeighting_grav_type = 1
         self.forward_depthWeighting_magn_type = 1
         self.forward_depthWeighting_grav_power = 2
