@@ -134,7 +134,10 @@ J. Modify parameters and then save out  File by clicking on Save Files button [D
 ![tomofast dialog tab 4](plugin4.png)    
 K. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
-Under Windows this can only be run via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which Linux Distribution is installed and use the predefined Command as provided. (Direct control has not been tested for Macs and under Linux doesn't seem to work...)   
+Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
+- For **Native Windows** use you will need to specify the paths to two bat files (tooltips give likely locations)
+- For **WSL** which Linux Distribution is installed and use the predefined Command as provided. 
+- For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    
 Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    
 - **data_magn.csv and/or data_grav.csv**: observed geophysical response   
