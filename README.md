@@ -17,9 +17,11 @@ changelog=0.2.11
     * Add export to csv option
  
     
-## Install
+## Plugin Install
 Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
-- To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS:
+
+## Tomofast-x Install
+To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS:
 
 #### Windows Native
 1) Install Visual Studio Build Tools and C++ Desktop Tools   
