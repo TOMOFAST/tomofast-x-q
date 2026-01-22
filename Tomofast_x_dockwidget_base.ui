@@ -3190,9 +3190,9 @@ font-size: 13px;
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>270</y>
+           <y>240</y>
            <width>571</width>
-           <height>391</height>
+           <height>421</height>
           </rect>
          </property>
          <property name="font">
@@ -3515,42 +3515,6 @@ p, li { white-space: pre-wrap; }
            <width>211</width>
            <height>20</height>
           </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_select_vcvars64">
-         <property name="geometry">
-          <rect>
-           <x>370</x>
-           <y>240</y>
-           <width>21</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEdit_vcvars6Path">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>240</y>
-           <width>211</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_43">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>240</y>
-           <width>111</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Path to vcvars64.bat</string>
          </property>
         </widget>
        </widget>

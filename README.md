@@ -135,7 +135,7 @@ J. Modify parameters and then save out  File by clicking on Save Files button [D
 K. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
-- For **Native Windows** use you will need to specify the paths to two bat files (tooltips give likely locations)
+- For **Native Windows** use you will need to specify the path to a bat file (tooltip give likely location)
 - For **WSL** which Linux Distribution is installed 
 - For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    
