@@ -50,7 +50,7 @@ To use this plugin to its full potential you may want to install Tomofast itself
 
 - https://github.com/TOMOFAST/Tomofast-x
 
-- ii.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
+- ii.	Open **x64 Native Tools** Command Prompt from Start Menu-> Visual Studio 2026 Directory
 
 - iii.	Once the console is open, copy or type (including quotes):
 
@@ -74,7 +74,7 @@ mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
 
 - https://tectonique.net/tomofast-x-q/tomofastx.exe
    
-i.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
+i.	Open a **Command Prompt** console from **Start Menu** (click on start icon then type **cmd** and the Command Prompt tool will be shown)
 
 ii.	Once the console is open, type (including quotes where shown):
 ``` 
@@ -85,7 +85,7 @@ iii.	Then change directory (linux command is cd) to downloaded tomofastx.exe dir
 mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
 ``` 
 #### Windows WSL
-First install Windows Subsytem for Linux (WSL): Open PowerShell or Windows Command Prompt in administrator mode by right-clicking and selecting **Run as administrator**, type in the following command on the command line  
+First install Windows Subsytem for Linux (WSL): Open **Windows PowerShell** or Windows **Command Prompt** in administrator mode by right-clicking and selecting **Run as administrator**, type in the following command on the command line  
 ``` 
     wsl --install   
 ```
