@@ -21,89 +21,9 @@ changelog=0.2.11
 Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
 
 ## Tomofast-x Install
-To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS:
+To use this plugin to its full potential you may want to install Tomofast-x itself on the same computer on which you are running QGIS.
 
-#### Windows Native
-1) Install Visual Studio Build Tools and C++ Desktop Tools   
-   
-- https://visualstudio.microsoft.com/downloads/?q=build+tools   
-   
-- Select to install BOTH Desktop development with C++ AND C++ Tools for Linux and Mac Development   
-    
-2) Install IntelOne API Toolkit   
-
-- https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html
-
-- Follow Instructions
-
-3) Optionally Install GNU Make for Windows [Optional, if you intend to compile tomofast-x rather than using a precompiled binary]   
-
-- https://gnuwin32.sourceforge.net/packages/make.htm
-
-- Follow Instructions
-
-
-4. Either compile code from scratch or download the precompiled executable.
-
-##### a)	To compile the source code from scratch:
-- i.	Download and unzip latest tomofast-x code from: 
-
-- https://github.com/TOMOFAST/Tomofast-x
-
-- ii.	Open **x64 Native Tools** Command Prompt from Start Menu-> Visual Studio 2026 Directory
-
-- iii.	Once the console is open, copy or type (including quotes):
-
-``` 
- “C:\Program Files (x86)\Intel\oneAPI\setvars.bat”
-``` 
-- iv.	Then copy or type:
-
-``` 
-set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
-``` 
-v.	Then change directory (linux command is cd so something like cd C:\Users\vogarko\Downloads\Tomofast-x-master) to unzipped Tomofast-x code directory, then copy or type:
-``` 
-make
-``` 
-vi.	If the code compiles without error, it will create a new tomofastx.exe file and then you can test the code with:
-``` 
-mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
-``` 
-##### b)	Alternatively, download the precompiled tomofastx.exe file from here:
-
-- https://tectonique.net/tomofast-x-q/tomofastx.exe
-   
-i.	Open a **Command Prompt** console from **Start Menu** (click on start icon then type **cmd** and the Command Prompt tool will be shown)
-
-ii.	Once the console is open, type (including quotes where shown):
-``` 
-“C:\Program Files (x86)\Intel\oneAPI\setvars.bat”
-``` 
-iii.	Then change directory (linux command is cd) to downloaded tomofastx.exe directory, then type:
-``` 
-mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
-``` 
-#### Windows WSL
-First install Windows Subsytem for Linux (WSL): Open **Windows PowerShell** or Windows **Command Prompt** in administrator mode by right-clicking and selecting **Run as administrator**, type in the following command on the command line  
-``` 
-    wsl --install   
-```
-then restart your machine. This will also install the Ubuntu operating system wihtin WSL (it will not affect your normal windows system). Now follow the steps below...   
-
-#### All systems
-1) Install **gfortran** on your system (WSL if you are using windows) using the relevant install commands: https://fortran-lang.org/learn/os_setup/install_gfortran/   
-2) Install **OpenMPI** on your system (WSL if you are using windows) using the relevant install commands: https://docs.open-mpi.org/en/v5.0.x/installing-open-mpi/quickstart.html   
-3) If not already installed, install **git** on your computer (WSL if you are using windows) using the relevant install commands: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git   
-4) Download **Tomofast-x** on your system (WSL if you are using windows) by entering: 
-```
-    git clone https://github.com/TOMOFAST/Tomofast-x.git  
-```
-
-5) Change to the tomofast-x directory and compile the code by entering the following command:   
-```
-     make
-```
+See the [Installation instructions](https://github.com/TOMOFAST/Tomofast-manual/blob/main/install.md) for detailed installation instructions.
 
 ## Simple instructions
 
