@@ -107,6 +107,7 @@ import platform
 import sys
 import shutil
 import time
+import re
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -252,18 +253,19 @@ class Tomofast_x:
                 str,
                 "path",
             ],
-            # "forward.data.grav.dataValuesFile": [
-            #     self.forward_data_grav_dataValuesFile,
-            #     "",
-            #     str,
-            #     "path",
-            # ],
-            # "forward.data.magn.dataValuesFile": [
-            #     self.forward_data_magn_dataValuesFile,
-            #     "",
-            #     str,
-            #     "path",
-            # ],
+            """
+            "forward.data.grav.dataValuesFile": [
+                self.forward_data_grav_dataValuesFile,
+                "",
+                str,
+                "path",
+            ],
+            "forward.data.magn.dataValuesFile": [
+                self.forward_data_magn_dataValuesFile,
+                "",
+                str,
+                "path",
+            ],"""
             "modelGrid.size": [
                 self.modelGrid_size,
                 self.dlg.nx_label,
@@ -794,7 +796,12 @@ class Tomofast_x:
             self.dlg.pushButton_2_select_parfilePath.clicked.connect(
                 self.select_paramfile_path
             )
-
+            self.dlg.pushButton_select_setvars.clicked.connect(
+                self.select_setvars_path
+            )
+            self.dlg.pushButton_select_vcvars64.clicked.connect(
+                self.select_vcvars64_path
+            )
             self.dlg.pushButton_3_visualise.clicked.connect(self.visualise_output)
             self.dlg.pushButton_kernel_path_select.clicked.connect(
                 self.select_kernel_path
@@ -823,6 +830,14 @@ class Tomofast_x:
 
                     line = tpfile.readline()
                     self.dlg.lineEdit_2_mpirunPath_2.setText(line.rstrip())
+
+                    line = tpfile.readline()
+                    self.dlg.lineEdit_setvarsPath.setText(line.rstrip())
+                    self.setvars_Path = line.rstrip()
+
+                    line = tpfile.readline()
+                    self.dlg.lineEdit_vcvars6Path.setText(line.rstrip())
+                    self.vcvars64_Path = line.rstrip()
 
             self.dlg.version_label.setText("v " + self.show_version())
 
@@ -910,24 +925,20 @@ class Tomofast_x:
     def replace_text_in_file(self, file_path, old_text, new_text):
         """
         Replace all occurrences of a specific text in a file with new text.
-
-        Parameters:
-            file_path (str): Path to the file.
-            old_text (str): Text to be replaced.
-            new_text (str): Replacement text.
-
-        Returns:
-            None
         """
         try:
-            # Open the file for reading
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
+            # Try UTF-8 first, fall back to latin-1 if that fails
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+            except UnicodeDecodeError:
+                with open(file_path, "r", encoding="latin-1") as file:
+                    content = file.read()
 
             # Replace all occurrences of old_text with new_text
             updated_content = content.replace(old_text, new_text)
 
-            # Open the file for writing and save the updated content
+            # Write back with UTF-8
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(updated_content)
 
@@ -935,9 +946,46 @@ class Tomofast_x:
             print(f"File not found: {file_path}")
         except Exception as e:
             print(f"An error occurred: {e}")
+            
 
     def add_quotes_to_path(self, path):
         return '"' + path + '"'
+
+    def convert_windows_wsl_path_to_linux(self, windows_path, distro):
+        """
+        Convert a Windows path pointing to WSL filesystem to a Linux path.
+        Handles backslash and forward slash WSL path formats.
+        Returns the Linux path like /home/user/file
+        """
+        # Normalize all backslashes to forward slashes
+        normalized = windows_path.replace("\\", "/")
+        
+        # Build the WSL path prefixes to look for (with various slash combinations)
+        prefixes_to_remove = [
+            "//wsl.localhost/" + distro,
+            "/wsl.localhost/" + distro,
+            "//wsl$/" + distro,
+            "/wsl$/" + distro,
+            "wsl.localhost/" + distro,
+            "wsl$/" + distro,
+        ]
+        
+        # Try to match and remove each prefix
+        normalized_lower = normalized.lower()
+        for prefix in prefixes_to_remove:
+            prefix_lower = prefix.lower()
+            if normalized_lower.startswith(prefix_lower):
+                # Remove the prefix, keep the rest (which should start with /)
+                linux_path = normalized[len(prefix):]
+                # Ensure it starts with /
+                if not linux_path.startswith("/"):
+                    linux_path = "/" + linux_path
+                print(f"Converted WSL path: {windows_path} -> {linux_path}")
+                return linux_path
+        
+        # If it doesn't match the WSL pattern, return as-is
+        print(f"Path not recognized as WSL, returning as-is: {normalized}")
+        return normalized
 
     def run_inversion(self):
         if (
@@ -946,7 +994,23 @@ class Tomofast_x:
             and os.path.exists(self.tomo_Path)
             and self.tomo_Path != ""
         ):
+            # Check if we're using native Windows mode
+            use_native_windows = True
             if platform.system() == "Windows":
+                use_native_windows = self.dlg.radioButton_windowsNative.isChecked()
+
+            if platform.system() == "Windows" and use_native_windows:
+                # Native Windows mode
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
+                mpiexec_path = self.dlg.lineEdit_mpiexec_path.text().strip() if hasattr(self.dlg, 'lineEdit_mpiexec_path') else "mpiexec"
+                distro = " "
+                
+                # Get paths for VS and Intel oneAPI
+                oneapi_path = self.dlg.lineEdit_setvarsPath.text().strip()
+                vcvars_path = self.dlg.lineEdit_vcvars6Path.text().strip()
+
+            elif platform.system() == "Windows":
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
                 self.paramfile_Path_run = self.paramfile_Path + "_run"
                 shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
@@ -981,6 +1045,256 @@ class Tomofast_x:
 
                 wsl_tomo_path = self.add_quotes_to_path(
                     self.tomo_Path.replace(wsl_path, "")
+                )
+                mpirun_path = " mpirun "
+
+                # Replace spaces with escaped spaces for WSL
+                wsl_param_path = wsl_param_path.replace('"', "")
+
+            elif platform.system() == "Darwin":
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
+                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                distro = " "
+
+            else:
+                wsl_tomo_path = self.tomo_Path
+                wsl_param_path = self.paramfile_Path
+                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                distro = " "
+
+            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
+                self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
+                with open(
+                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
+                    "w",
+                ) as tpfile:
+                    tpfile.write(self.tomo_Path + "\n")
+                    tpfile.write(distro + "\n")
+                    tpfile.write("\n")
+                    if platform.system() == "Windows" and use_native_windows:
+                        tpfile.write(mpiexec_path + "\n")
+                    else:
+                        tpfile.write(mpirun_path + "\n")
+                    tpfile.write(self.dlg.lineEdit_setvarsPath.text().strip() + "\n")
+                    tpfile.write(self.dlg.lineEdit_vcvars6Path.text().strip() + "\n")
+
+            noProc = self.dlg.mQgsSpinBox_noProc.value()
+
+            # set system/version dependent "start_new_session" analogs
+            kwargs = {}
+            if platform.system() == "Windows":
+                CREATE_NEW_PROCESS_GROUP = 0x00000200
+                DETACHED_PROCESS = 0x00000008
+                kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+            elif sys.version_info < (3, 2):
+                kwargs.update(preexec_fn=os.setsid)
+            else:
+                kwargs.update(start_new_session=True)
+
+            try:
+                debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
+
+                print("noProc - ", noProc)
+                print("tomo_path - ", wsl_tomo_path)
+                print("param_path - ", wsl_param_path)
+                print("debug_path - ", debug_path)
+
+                if platform.system() == "Windows" and use_native_windows:
+                    # Native Windows mode - create a batch file to set up environment and run
+                    print("mpiexec_path - ", mpiexec_path)
+                    print("vcvars_path - ", vcvars_path)
+                    print("oneapi_path - ", oneapi_path)
+                    
+                    # Escape any forward slashes to backslashes for Windows batch
+                    vcvars_path_bat = vcvars_path.replace("/", "\\")
+                    oneapi_path_bat = oneapi_path.replace("/", "\\")
+                    tomo_path_bat = wsl_tomo_path.replace("/", "\\")
+                    param_path_bat = wsl_param_path.replace("/", "\\")
+                    debug_path_bat = debug_path.replace("/", "\\")
+                    
+                    batch_content = '''@echo off
+                setlocal
+
+                '''
+                    # Build the command based on number of processors
+                    if noProc == 1:
+                        run_command = f'"{tomo_path_bat}" -p "{param_path_bat}"'
+                    else:
+                        run_command = f'"{mpiexec_path}" -n {noProc} "{tomo_path_bat}" -p "{param_path_bat}"'
+
+                    batch_content += f'''
+                call "{vcvars_path_bat}"
+                if errorlevel 1 (
+                    echo Failed to set up Visual Studio environment
+                    pause
+                    exit /b 1
+                )
+
+                call "{oneapi_path_bat}"
+                if errorlevel 1 (
+                    echo Failed to set up Intel oneAPI environment
+                    pause
+                    exit /b 1
+                )
+
+                echo Environment setup complete
+                echo Running TomoFast-x...
+
+                {run_command} > "{debug_path_bat}" 2>&1
+
+                echo.
+                echo Process completed. Press any key to close...
+                pause >nul
+                endlocal
+                '''
+                    # Write the batch file
+                    batch_file_path = os.path.join(os.path.dirname(self.paramfile_Path), "run_tomofastx.bat")
+                    with open(batch_file_path, 'w') as batch_file:
+                        batch_file.write(batch_content)
+                    
+                    print(f"Created batch file: {batch_file_path}")
+                    
+                    # Run the batch file in a new console window
+                    command = f'start "TomoFast-x Process" cmd /c "{batch_file_path}"'
+                    print("command: ", command)
+                    
+                    process = subprocess.Popen(
+                        command,
+                        shell=True,
+                        **kwargs,
+                    )
+
+                elif platform.system() == "Windows":
+                    wsl_debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
+
+                    print("mpirun_path - ", mpirun_path)
+                    print("noProc - ", noProc)
+                    print("wsl_tomo_path - ", wsl_tomo_path)
+                    print("wsl_param_path - ", wsl_param_path)
+                    print("wsl_debug_path - ", wsl_debug_path)
+
+                    # Build the actual command
+                    if noProc == 1:
+                        base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+                    else:
+                        base_command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+
+                    # Use a simpler approach - let bash handle it
+                    if platform.system() == "Windows":
+                        command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
+                        print("command: ", command)
+                        process = subprocess.Popen(
+                            command,
+                            shell=True,
+                            **kwargs,
+                        )
+                else:
+                    # Unix/macOS
+                    print("mpirun_path - ", mpirun_path)
+                    
+                    if noProc == 1:
+                        command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{debug_path}'"
+                    else:
+                        command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{debug_path}'"
+
+                    print("command: ", command)
+                    env = os.environ.copy()
+
+                    process = subprocess.Popen(
+                        command,
+                        shell=True,
+                        env=env,
+                        **kwargs,
+                    )
+
+                self.iface.messageBar().pushMessage(
+                    f"Process started with PID: {process.pid}",
+                    "Command is running in the background ",
+                    level=Qgis.Success,
+                    duration=45,
+                )
+            except Exception as e:
+                print(f"An error occurred: {e}")
+        else:
+            self.iface.messageBar().pushMessage(
+                f"Paths to tomofastx and paramfile must be defined",
+                level=Qgis.Warning,
+                duration=15,
+            )
+
+    # =================================================================================
+    def add_elevation(self, elevation, elevType, df_elev):
+        """
+        Adds constant elevation to data.
+        """
+        if elevType == 1:
+            # Line 1175 - FIXED:
+            self.data2tomofast.df["POINT_Z"] = np.zeros(self.data2tomofast.df["POINT_X"].values.shape) - elevation
+        else:
+            # self.df["POINT_Z"] = -df_elev["POINT_Z"]
+            # Function to safely extract numeric value from QVariant or a normal type
+            def get_numeric_value(val):
+                if isinstance(val, QVariant):
+                    if val.isValid() and not val.isNull():
+                        # Extracting the value as a double (returns a tuple, so we grab the first element)
+                        return (
+                            val.toDouble()[0]
+                            if isinstance(val.toDouble()[0], (int, float))
+                            else np.nan
+                        )
+                elif isinstance(val, (int, float)):
+                    return val
+                return np.nan
+
+            # Apply the function to the column to convert all values to their negative
+            self.data2tomofast.df["POINT_Z"] = (
+                -df_elev["POINT_Z"].apply(get_numeric_value) - elevation
+            )
+
+    def run_inversion_old(self):
+        if (
+            os.path.exists(self.paramfile_Path)
+            and self.paramfile_Path != ""
+            and os.path.exists(self.tomo_Path)
+            and self.tomo_Path != ""
+        ):
+            if platform.system() == "Windows":
+                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
+                self.paramfile_Path_run = self.paramfile_Path + "_run"
+                shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
+                drive = self.paramfile_Path_run[0:2]
+                self.replace_text_in_file(
+                        self.paramfile_Path_run,
+                        self.wsl_path_backslash,
+                    "= {}:/".format(drive[0]),
+                    "= /mnt/{}/".format(drive[0].lower()),
+                )
+
+                wsl_path = "//wsl.localhost/" + distro
+                wsl_param_path = self.add_quotes_to_path(
+                    self.paramfile_Path_run.replace(
+                        "{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())
+                    )
+                )
+                # if paramfile stored on linux path, remove wsl access info
+                if wsl_path in wsl_param_path:
+                    wsl_param_path = wsl_param_path.replace(wsl_path, "")
+                    self.replace_text_in_file(
+                        self.paramfile_Path_run,
+                        wsl_path,
+                        "",
+                    )
+                    print(
+                        "Adjusted wsl_param_path for linux stored paramfile - ",
+                        wsl_param_path,
+                    )
+
+                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
+                wsl_path = "//wsl.localhost/" + distro
+
+                wsl_tomo_path = self.add_quotes_to_path(
+                    self.tomo_path_normalized.replace(wsl_path, "")
                 )
                 mpirun_path = " mpirun "
 
@@ -1104,6 +1418,28 @@ class Tomofast_x:
         )
         if os.path.exists(self.paramfile_Path) and self.paramfile_Path != "":
             self.dlg.lineEdit_2_parfilePath.setText(self.paramfile_Path)
+
+    def select_setvars_path(self):
+
+        self.setvars_Path, _filter = QFileDialog.getOpenFileName(
+            None,
+            "Select tomofast paramfile",
+            ".",
+            "BAT (*.bat;*.BAT)",
+        )
+        if os.path.exists(self.setvars_Path) and self.setvars_Path != "":
+            self.dlg.lineEdit_setvarsPath.setText(self.setvars_Path)
+
+    def select_vcvars64_path(self):
+
+        self.vcvars64_Path, _filter = QFileDialog.getOpenFileName(
+            None,
+            "Select tomofast paramfile",
+            ".",
+            "BAT (*.bat;*.BAT)",
+        )
+        if os.path.exists(self.vcvars64_Path) and self.vcvars64_Path != "":
+            self.dlg.lineEdit_vcvars6Path.setText(self.vcvars64_Path)
 
     # load and parse existing paramfiel and set gui widgets accordingly
     def process_parameter_file(self):
@@ -1480,7 +1816,7 @@ class Tomofast_x:
         )
         df[0] = (df[0] + df[1]) / 2.0
         df[2] = (df[2] + df[3]) / 2.0
-        df = df.drop(axis=1, columns=[1, 3, 4, 5, 6, 7, 8, 9])
+        df = df.drop(axis=1, columns=[1, 3, 4, 5, 6, 7, 8 ]) #removed data column
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
         temp_data = temp.dataProvider()
@@ -2173,7 +2509,6 @@ class Tomofast_x:
 
     # convert point data to tomofast format
     def convert_point_data(self, dataFormat):
-
         # add elevation to data
         if self.global_experimentType == 1:  # grav
             if dataFormat == "points":
@@ -2197,12 +2532,12 @@ class Tomofast_x:
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:  # const elev
 
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, 0
                 )
             else:  # dtm
                 self.add_dtm(1)
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
@@ -2230,12 +2565,12 @@ class Tomofast_x:
                 )
                 self.datacol_magn = "data1"
             if self.global_elevType == 1:
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, 0
                 )
             else:
                 self.add_dtm(2)
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
@@ -2262,12 +2597,12 @@ class Tomofast_x:
                 )
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:  # const elev
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, 0
                 )
             else:  # dtm
                 self.add_dtm(1)
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
@@ -2294,12 +2629,12 @@ class Tomofast_x:
                 )
                 self.datacol_magn = "data1"
             if self.global_elevType == 1:
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, 0
                 )
             else:
                 self.add_dtm(1)
-                self.data2tomofast.add_elevation(
+                self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
             self.data2tomofast.write_data_tomofast(
@@ -2725,11 +3060,11 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
-            # self.f_params.write(
-            #     "forward.data.grav.dataValuesFile    = {}\n".format(
-            #         self.global_outputFolderPath + "/data_grav.csv"
-            #     )
-            # )
+            """self.f_params.write(
+                "forward.data.grav.dataValuesFile    = {}\n".format(
+                    self.global_outputFolderPath + "/data_grav.csv"
+                )
+            )"""
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -2743,23 +3078,22 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_magn.csv"
                 )
             )
-            # self.f_params.write(
-            #     "forward.data.magn.dataValuesFile    = {}\n".format(
-            #         self.global_outputFolderPath + "/data_magn.csv"
-            #     )
-            # )
-            """else:
-                self.f_params.write(
-                    "forward.data.magn.dataGridFile      = {}\n".format(
-                        self.global_outputFolderPath + "/data_magn_topo.csv"
-                    )
+            """self.f_params.write(
+                "forward.data.magn.dataValuesFile    = {}\n".format(
+                    self.global_outputFolderPath + "/data_magn.csv"
                 )
-                # self.f_params.write(
-                #     "forward.data.magn.dataValuesFile    = {}\n".format(
-                #         self.global_outputFolderPath + "/data_magn_topo.csv"
-                #     )
-                # )
-            """
+            )"""
+        else:
+            self.f_params.write(
+                "forward.data.magn.dataGridFile      = {}\n".format(
+                    self.global_outputFolderPath + "/data_magn_topo.csv"
+                )
+            )
+            """self.f_params.write(
+                "forward.data.magn.dataValuesFile    = {}\n".format(
+                    self.global_outputFolderPath + "/data_magn_topo.csv"
+                )
+            )"""
 
         self.spacer("DEPTH WEIGHTING")
 
@@ -3163,15 +3497,15 @@ class Tomofast_x:
         self.forward_data_grav_dataGridFile = (
             self.global_outputFolderPath + "/data_grav.csv"
         )
-        # self.forward_data_grav_dataValuesFile = (
-        #     self.global_outputFolderPath + "/grav_calc_read_data.txt"
-        # )
+        """self.forward_data_grav_dataValuesFile = (
+            self.global_outputFolderPath + "/grav_calc_read_data.txt"
+        )"""
         self.forward_data_magn_dataGridFile = (
             self.global_outputFolderPath + "/data_magn.csv"
         )
-        # self.forward_data_magn_dataValuesFile = (
-        #     self.global_outputFolderPath + "/magn_calc_read_data.txt"
-        # )
+        """self.forward_data_magn_dataValuesFile = (
+            self.global_outputFolderPath + "/magn_calc_read_data.txt"
+        )"""
 
         if self.dlg.checkBox_grav_depth_weighting.isChecked():
             self.forward_depthWeighting_type = 2
@@ -3773,6 +4107,12 @@ class Tomofast_x:
         self.dlg.pushButton_2_select_parfilePath.setToolTip(
             "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
         )
+        self.dlg.pushButton_select_setvars.setToolTip(
+            "Select setvars.bat file \n(usually at C:\Program Files (x86)\Intel\oneAPI\setvars.bat)"
+        )
+        self.dlg.pushButton_select_vcvars64.setToolTip(
+            "Select vcvars64.bat file \n(usually at C:\Program Files (x86)\Microsoft Visual Studio\ *SOME NUMBER* \BuildTools\VC\Auxiliary\Build\vcvars64.bat)"
+        )
         self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
             "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS/Linux Only)"
         )
@@ -3885,3 +4225,5 @@ class Tomofast_x:
         self.global_magn_sensor_height = 0
         self.paramfile_Path = ""
         self.suffix_known = False
+        self.setvars_Path = ""
+        self.vcvars64_Path = ""

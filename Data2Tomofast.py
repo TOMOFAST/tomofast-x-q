@@ -7,7 +7,6 @@ import pandas as pd
 from pyproj import Transformer
 import matplotlib.pyplot as plt
 import os
-from qgis.PyQt.QtCore import QVariant
 
 
 class Data2Tomofast:
@@ -48,34 +47,6 @@ class Data2Tomofast:
         self.nData = Ndata
 
         self.df = df
-
-    # =================================================================================
-    def add_elevation(self, elevation, elevType, df_elev):
-        """
-        Adds constant elevation to data.
-        """
-        if elevType == 1:
-            self.df["POINT_Z"] = np.zeros(self.df["POINT_X"].values.shape) - elevation
-        else:
-            # self.df["POINT_Z"] = -df_elev["POINT_Z"]
-            # Function to safely extract numeric value from QVariant or a normal type
-            def get_numeric_value(val):
-                if isinstance(val, QVariant):
-                    if val.isValid() and not val.isNull():
-                        # Extracting the value as a double (returns a tuple, so we grab the first element)
-                        return (
-                            val.toDouble()[0]
-                            if isinstance(val.toDouble()[0], (int, float))
-                            else np.nan
-                        )
-                elif isinstance(val, (int, float)):
-                    return val
-                return np.nan
-
-            # Apply the function to the column to convert all values to their negative
-            self.df["POINT_Z"] = (
-                -df_elev["POINT_Z"].apply(get_numeric_value) - elevation
-            )
 
     # =================================================================================
     def write_data_tomofast(self, data_column, out_file, eType):

@@ -7,7 +7,7 @@ name=tomofast_x_q
 qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
 description=Supports Tomofast-x geophysical inversion code
-version=0.2.10
+version=0.2.11
 supportsQt6=True
 
 author=mark jessell, vitaliy ogarko 
@@ -23,7 +23,11 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.10   
+changelog=0.2.11
+    * Add support for Native Windows tomofast-x 
+    * remove data field from mesh file
+    * minor GUI reorganisation
+    0.2.10   
     * Remove pre command widget for WSL (no longer needed)    
     * Allow Linux definition of mpirun path   
     * Allow outputs to be stored on linux drive   
@@ -59,7 +63,7 @@ homepage=https://github.com/TOMOFAST/
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False

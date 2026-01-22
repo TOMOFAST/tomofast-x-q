@@ -4,7 +4,11 @@
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.10   
+changelog=0.2.11
+    * Add support for Native Windows tomofast-x 
+    * remove data field from mesh file
+    * minor GUI reorganisation
+    0.2.10
     * Remove pre command widget for WSL (no longer needed)    
     * Allow Linux definition of mpirun path   
     * Allow outputs to be stored on linux drive   
@@ -35,9 +39,68 @@ changelog=0.2.10
     
 ## Install
 Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
-- To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS.
+- To use this plugin to its full potential you may want to install Tomofast itself on the same computer on which you are running QGIS:
 
-#### Windows
+#### Windows Native
+1) Install Visual Studio Build Tools and C++ Desktop Tools   
+   
+- https://visualstudio.microsoft.com/downloads/?q=build+tools   
+   
+- Select to install BOTH Desktop development with C++ AND C++ Tools for Linux and Mac Development   
+    
+2) Install IntelOne API Toolkit   
+
+- https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html
+
+- Follow Instructions
+
+3) Optionally Install GNU Make for Windows [Optional, if you intend to compile tomofast-x rather than using a precompiled binary]   
+
+- https://gnuwin32.sourceforge.net/packages/make.htm
+
+- Follow Instructions
+
+
+4. Either compile code from scratch or download the precompiled executable.
+
+##### a)	To compile the source code from scratch:
+- i.	Download and unzip latest tomofast-x code from: 
+
+- https://github.com/TOMOFAST/Tomofast-x
+
+- ii.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
+
+- iii.	Once the console is open, type (including quotes):
+
+``` 
+ “C:\Program Files (x86)\Intel\oneAPI\setvars.bat”
+``` 
+- iv.	Then type:
+
+``` 
+set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
+``` 
+v.	Then change directory (linux command is cd) to unzipped Tomofast-x code directory, then type:
+``` 
+Make
+``` 
+vi.	If the code compiles without error, it will create a new tomofastx.exe file and then you can test the code with:
+``` 
+mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
+``` 
+##### b)	Alternatively, download the precompiled tomofastx.exe file from here:
+URL of EXE File
+i.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
+
+ii.	Once the console is open, type (including quotes where shown):
+``` 
+“C:\Program Files (x86)\Intel\oneAPI\setvars.bat”
+``` 
+iii.	Then change directory (linux command is cd) to downloaded tomofastx.exe directory, then type:
+``` 
+mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
+``` 
+#### Windows WSL
 First install Windows Subsytem for Linux (WSL): Open PowerShell or Windows Command Prompt in administrator mode by right-clicking and selecting **Run as administrator**, type in the following command on the command line  
 ``` 
     wsl --install   
