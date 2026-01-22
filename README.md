@@ -136,7 +136,7 @@ K. If you have tomofast-x installed on your machine, you can run it directly fro
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
 - For **Native Windows** use you will need to specify the paths to two bat files (tooltips give likely locations)
-- For **WSL** which Linux Distribution is installed and use the predefined Command as provided. 
+- For **WSL** which Linux Distribution is installed 
 - For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    
 Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    
