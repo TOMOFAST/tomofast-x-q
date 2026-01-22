@@ -52,19 +52,19 @@ To use this plugin to its full potential you may want to install Tomofast itself
 
 - ii.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
 
-- iii.	Once the console is open, type (including quotes):
+- iii.	Once the console is open, copy or type (including quotes):
 
 ``` 
  “C:\Program Files (x86)\Intel\oneAPI\setvars.bat”
 ``` 
-- iv.	Then type:
+- iv.	Then copy or type:
 
 ``` 
 set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
 ``` 
-v.	Then change directory (linux command is cd) to unzipped Tomofast-x code directory, then type:
+v.	Then change directory (linux command is cd so something like cd C:\Users\vogarko\Downloads\Tomofast-x-master) to unzipped Tomofast-x code directory, then type:
 ``` 
-Make
+make
 ``` 
 vi.	If the code compiles without error, it will create a new tomofastx.exe file and then you can test the code with:
 ``` 
