@@ -1906,7 +1906,7 @@ border-style: solid;border-width: 1px;border-color: black
       <widget class="QLabel" name="label_31">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>20</x>
          <y>33</y>
          <width>65</width>
          <height>16</height>
@@ -1915,18 +1915,24 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="text">
         <string>Data </string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QLabel" name="label_34">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>28</x>
          <y>60</y>
-         <width>29</width>
-         <height>16</height>
+         <width>51</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="text">
         <string>Model</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_grav_model_multiplier">
@@ -2119,6 +2125,9 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="text">
         <string>Data</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QLabel" name="label_37">
        <property name="geometry">
@@ -2131,6 +2140,9 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="text">
         <string>Model</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QgsDoubleSpinBox" name="mQgsDoubleSpinBox_magn_model_multiplier">
@@ -2620,6 +2632,9 @@ Day/Month/Year</string>
        <property name="text">
         <string>Mag</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QDoubleSpinBox" name="doubleSpinBox_magn_sensor_height">
        <property name="enabled">
@@ -2651,6 +2666,9 @@ Day/Month/Year</string>
        </property>
        <property name="text">
         <string>Grav</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QDoubleSpinBox" name="doubleSpinBox_grav_sensor_height">
@@ -2879,6 +2897,9 @@ Day/Month/Year</string>
        <property name="text">
         <string>Major Iterations</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QgsSpinBox" name="mQgsSpinBox_major_iters">
        <property name="geometry">
@@ -2917,6 +2938,9 @@ Day/Month/Year</string>
        <property name="text">
         <string>Minor Iterations</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QgsSpinBox" name="mQgsSpinBox_minor_iters">
        <property name="geometry">
@@ -2948,12 +2972,15 @@ Day/Month/Year</string>
         <rect>
          <x>10</x>
          <y>49</y>
-         <width>73</width>
+         <width>101</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
         <string>Model save iter</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QgsSpinBox" name="mQgsSpinBox_model_save_iters">
@@ -2990,6 +3017,9 @@ Day/Month/Year</string>
        <property name="text">
         <string>min Residual</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QTextEdit" name="textEdit_min_residual">
        <property name="geometry">
@@ -3023,6 +3053,9 @@ Day/Month/Year</string>
          <property name="text">
           <string>Grav weight</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
@@ -3051,6 +3084,9 @@ Day/Month/Year</string>
         <widget class="QLabel" name="label_69">
          <property name="text">
           <string>Mag weight</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
