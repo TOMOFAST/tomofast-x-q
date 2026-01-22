@@ -15,27 +15,7 @@ changelog=0.2.11
     * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
     0.2.9   
     * Add export to csv option
-    0.2.8 Add paramfile parameter name to tooltips    
-    * Automatically set compression rate based on mesh parameters   
-    * Simplify GUI so CRS choices only for point data files   
-    * Fix memory usage estimate using correct data size   
-    * Automatically save output log    
-    0.2.7 Allow users to modify parameters after files written   
-    0.2.6 Simplify GUI choices   
-    * make safe for non-C drives for windows   
-    * make safe for spaces in paths   
-    * fix ERS import   
-    * Multiple GUI tweaks   
-    0.2.5 Fixes for DTM for grav and mag when smaller than mesh extent   
-    * Fixes for name of data file when DTM used   
-    * Fixes for depth weight values saved in paramfile   
-    * Add visualisation of end model (requires pyvista library to be installed)   
-    0.2.4 Fixes for MacOS when running inversions   
-    * GUI tweaks for MacOS   
-    0.2.3 Fix memory calc for points bug   
-    * Add demo movie link to repository   
-    0.2.2 Added variable hz and vt padding   
-    0.2 Converted to dockable window   
+ 
     
 ## Install
 Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
