@@ -62,7 +62,7 @@ To use this plugin to its full potential you may want to install Tomofast itself
 ``` 
 set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
 ``` 
-v.	Then change directory (linux command is cd so something like cd C:\Users\vogarko\Downloads\Tomofast-x-master) to unzipped Tomofast-x code directory, then type:
+v.	Then change directory (linux command is cd so something like cd C:\Users\vogarko\Downloads\Tomofast-x-master) to unzipped Tomofast-x code directory, then copy or type:
 ``` 
 make
 ``` 
