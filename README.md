@@ -69,7 +69,9 @@ vi.	If the code compiles without error, it will create a new tomofastx.exe file 
 mpiexec -n 4 tomofastx.exe -p parfiles\Parfile_mansf_slice.txt
 ``` 
 ##### b)	Alternatively, download the precompiled tomofastx.exe file from here:
-URL of EXE File
+
+- https://tectonique.net/tomofast-x-q/tomofastx.exe
+   
 i.	Open x64 Native Tools Command Prompt from Start Menu-> Visual Studio 2026 Directory
 
 ii.	Once the console is open, type (including quotes where shown):
