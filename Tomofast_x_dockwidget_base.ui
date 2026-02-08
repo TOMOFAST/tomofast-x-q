@@ -3359,7 +3359,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>140</y>
+           <y>210</y>
            <width>111</width>
            <height>16</height>
           </rect>
@@ -3372,7 +3372,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>140</x>
-           <y>140</y>
+           <y>210</y>
            <width>69</width>
            <height>20</height>
           </rect>
@@ -3416,9 +3416,9 @@ p, li { white-space: pre-wrap; }
         <widget class="QLineEdit" name="lineEdit_2_mpirunPath_2">
          <property name="geometry">
           <rect>
-           <x>150</x>
-           <y>110</y>
-           <width>211</width>
+           <x>190</x>
+           <y>140</y>
+           <width>171</width>
            <height>20</height>
           </rect>
          </property>
@@ -3427,13 +3427,13 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>110</y>
-           <width>91</width>
+           <y>140</y>
+           <width>161</width>
            <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Path to mpirun</string>
+          <string>Path to mpirun/mpiexec</string>
          </property>
         </widget>
         <widget class="QPushButton" name="pushButton_3_visualise">
@@ -3492,7 +3492,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>30</x>
-           <y>170</y>
+           <y>100</y>
            <width>181</width>
            <height>20</height>
           </rect>
@@ -3508,7 +3508,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>220</x>
-           <y>170</y>
+           <y>100</y>
            <width>141</width>
            <height>20</height>
           </rect>
@@ -3521,7 +3521,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>210</y>
+           <y>180</y>
            <width>111</width>
            <height>16</height>
           </rect>
@@ -3534,7 +3534,7 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>370</x>
-           <y>210</y>
+           <y>180</y>
            <width>21</width>
            <height>23</height>
           </rect>
@@ -3547,10 +3547,23 @@ p, li { white-space: pre-wrap; }
          <property name="geometry">
           <rect>
            <x>150</x>
-           <y>210</y>
+           <y>180</y>
            <width>211</width>
            <height>20</height>
           </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_select_mpirun_mipexec">
+         <property name="geometry">
+          <rect>
+           <x>370</x>
+           <y>140</y>
+           <width>21</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>...</string>
          </property>
         </widget>
        </widget>

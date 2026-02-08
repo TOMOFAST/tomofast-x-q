@@ -665,7 +665,7 @@ class Tomofast_x:
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
             elif platform.system() == "Windows":
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(False)
+                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
             else:  # Linux
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
@@ -795,6 +795,9 @@ class Tomofast_x:
 
             self.dlg.pushButton_2_select_parfilePath.clicked.connect(
                 self.select_paramfile_path
+            )
+            self.dlg.pushButton_select_mpirun_mipexec.clicked.connect(
+                self.select_mpirunexec_path
             )
             self.dlg.pushButton_select_setvars.clicked.connect(self.select_setvars_path)
 
@@ -995,9 +998,9 @@ class Tomofast_x:
                 wsl_tomo_path = self.tomo_Path
                 wsl_param_path = self.paramfile_Path
                 mpiexec_path = (
-                    self.dlg.lineEdit_mpiexec_path.text().strip()
-                    if hasattr(self.dlg, "lineEdit_mpiexec_path")
-                    else "mpiexec"
+                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                    if hasattr(self.dlg, "lineEdit_2_mpirunPath_2")
+                    else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
                 )
                 distro = " "
 
@@ -1408,6 +1411,17 @@ class Tomofast_x:
         )
         if os.path.exists(self.paramfile_Path) and self.paramfile_Path != "":
             self.dlg.lineEdit_2_parfilePath.setText(self.paramfile_Path)
+
+    def select_mpirunexec_path(self):
+
+        self.mpi_runexec_path, _filter = QFileDialog.getOpenFileName(
+            None,
+            "Select mpirun or mpiexec.exe path",
+            ".",
+            "All (*.*)",
+        )
+        if os.path.exists(self.mpi_runexec_path) and self.mpi_runexec_path != "":
+            self.dlg.lineEdit_2_mpirunPath_2.setText(self.mpi_runexec_path)
 
     def select_setvars_path(self):
 
@@ -4090,7 +4104,7 @@ class Tomofast_x:
             "Select setvars.bat file \n(usually at C:\Program Files (x86)\Intel\oneAPI\setvars.bat)"
         )
         self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
-            "Path to mpirun executable, if not in PATH, e.g. '/opt/homebrew/bin/mpirun' (MACOS/Linux Only)"
+            "Path to mpirun or mpiexec.exe executable, if not in PATH, \n e.g. for MacOS'/opt/homebrew/bin/mpirun' or \n Windows C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.17\\bin\\mpiexec.exe"
         )
 
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
