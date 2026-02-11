@@ -20,7 +20,28 @@ changelog=0.2.12
  
     
 ## Plugin Install
-Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
+Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager. 
+    
+#### Windows Native
+In the Run Inversion tab you will need to define the path to:
+- **tomofastx.exe** (wherever you downloaded it to!)
+- **mpiexec.exe** (something like C:/Program Files (x86)/Intel/oneAPI/mpi/2021.17/bin/mpiexec.exe) and
+- **setvars.bat** (something like C:/Program Files (x86)/Intel/oneAPI/setvars.bat)
+
+#### WSL
+In the Run Inversion tab you will need to define the path to:
+- **tomofastx** (wherever you compiled it)
+Also you will need to define:
+- **WSL Distro** (something like Ubuntu or Ubuntu-20.04) 
+
+#### Linux
+In the Run Inversion tab you will need to define the path to:
+- **tomofastx** (wherever you compiled it)
+
+#### MacOSX
+In the Run Inversion tab you will need to define the path to:
+- **tomofastx** (wherever you compiled it)
+- **mpirun** (If you used homebrew, something like /opt/homebrew/bin/mpirun) 
 
 ## Tomofast-x Install
 To use this plugin to its full potential you may want to install Tomofast-x itself on the same computer on which you are running QGIS.
