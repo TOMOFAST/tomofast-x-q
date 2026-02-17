@@ -1809,7 +1809,7 @@ class Tomofast_x:
         )
         df[0] = (df[0] + df[1]) / 2.0
         df[2] = (df[2] + df[3]) / 2.0
-        df = df.drop(axis=1, columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
+        df = df.drop( columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
         temp_data = temp.dataProvider()
@@ -2164,7 +2164,7 @@ class Tomofast_x:
         temp_data = pd.read_csv(
             temp_file_path1,
             na_values=["", " "],
-            delim_whitespace=True,  # Handles whitespace-separated data
+            sep=r'\s+',  # Handles whitespace-separated data
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
