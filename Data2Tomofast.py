@@ -1,6 +1,6 @@
 # Processing gravity data for Tomofast-x inversion.
 # Author: Vitaliy Ogarko
-# Version 1.5
+# Version 2.0
 
 import numpy as np
 import pandas as pd
@@ -117,15 +117,65 @@ class Data2Tomofast:
 
         return cell_sizes, curr_padding
 
+    # =================================================================================
+    def generate_depth_cell_sizes(self, depth_layers):
+        """
+        Generates cell sizes in the depth (Z) direction from a list of explicit layers.
+
+        Each entry in depth_layers is a dict with:
+            "cell_size"  : thickness of each cell in this layer (m)
+            "layer_thick": total thickness of this depth layer (m)
+
+        The number of cells in each layer is computed as:
+            n = round(layer_thick / cell_size)
+        so slight rounding is accepted to keep the interface clean.
+
+        Returns:
+            dz : 1-D numpy array of individual cell thicknesses (m)
+        """
+        cell_sizes = []
+        for layer in depth_layers:
+            cell_size  = float(layer["cell_size"])
+            layer_thick = float(layer["layer_thick"])
+            n = max(1, round(layer_thick / cell_size))
+            # Adjust the actual cell size so the layer thickness is exact.
+            actual_cell_size = layer_thick / n
+            cell_sizes.extend([actual_cell_size] * n)
+
+        dz = np.array(cell_sizes)
+        return dz
+
     # ========================================================================================
-    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, directory):
+    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, directory,
+                         depth_layers=None):
         """
         Writes the Tomofast-x model grid.
 
-        dx0, dy0, dz0: cell size in the model core area.
-        padding_size: horizontal padding size.
-        meshBox: defines the model core and depth.
-        directory: output folder.
+        dx0, dy0      : horizontal cell size in the model core area (m).
+        dz0           : vertical cell size used when depth_layers is None (legacy mode).
+        padding_size  : horizontal padding size (m).
+        meshBox       : dict defining the model core extent and depth:
+                            "west", "east", "south", "north" – horizontal bounds (m)
+                            "core_depth"  – bottom of the uniform-cell core (m)
+                            "full_depth"  – total model depth incl. padding (m)
+                            Only used in legacy mode (depth_layers=None).
+        directory     : output folder.
+        depth_layers  : optional list of dicts that fully specifies the Z layering.
+                        When provided, dz0, meshBox["core_depth"], and
+                        meshBox["full_depth"] are ignored for the Z direction.
+                        Each dict must contain:
+                            "cell_size"   – cell thickness for this layer (m)
+                            "layer_thick" – total thickness of this layer (m)
+                        Layers are ordered top-to-bottom; the model top is always Z=0.
+                        Example:
+                            depth_layers = [
+                                {"cell_size":   10, "layer_thick":    200},  #     0 –   200 m
+                                {"cell_size":   50, "layer_thick":   1800},  #   200 – 2 000 m
+                                {"cell_size":  100, "layer_thick":   3000},  # 2 000 – 5 000 m
+                                {"cell_size":  200, "layer_thick":   5000},  # 5 000 – 10 000 m
+                                {"cell_size":  500, "layer_thick":  20000},  # 10 000 – 30 000 m
+                                {"cell_size": 1000, "layer_thick":  50000},  # 30 000 – 80 000 m
+                            ]
         """
         xcore_min = meshBox["west"] - 1.0
         xcore_max = meshBox["east"] + 1.0
@@ -133,19 +183,24 @@ class Data2Tomofast:
         ycore_max = meshBox["north"] + 1.0
 
         zcore_min = 0.0
-        zcore_max = meshBox["core_depth"]
 
-        z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
+        if depth_layers is not None:
+            # --- New explicit-layer mode ---
+            dz = self.generate_depth_cell_sizes(depth_layers)
+        else:
+            # --- Legacy mode: uniform core + expanding padding ---
+            zcore_max = meshBox["core_depth"]
+            z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
+            dz, z_padding = self.generate_cell_sizes(
+                zcore_min, zcore_max, dz0, z_padding_size, False
+            )
 
-        # Define cell sizes for the mesh with expanding paddings.
+        # Define cell sizes for the horizontal dimensions with expanding paddings.
         dx, x_padding = self.generate_cell_sizes(
             xcore_min, xcore_max, dx0, padding_size, True
         )
         dy, y_padding = self.generate_cell_sizes(
             ycore_min, ycore_max, dy0, padding_size, True
-        )
-        dz, z_padding = self.generate_cell_sizes(
-            zcore_min, zcore_max, dz0, z_padding_size, False
         )
 
         # Grid with paddings.
@@ -290,7 +345,7 @@ def main():
     epsg_to = "epsg:28351"  # (GDA 94 MGA zone 51)
 
     # Data elevation (m).
-    elevation = 0.1
+    #elevation = 0.1
 
     # Horizontal model padding.
     padding_size = 10000.0
@@ -309,7 +364,7 @@ def main():
     )
 
     # Define data elevation (use constant for now).
-    data2tomofast.add_elevation(elevation)
+    #data2tomofast.add_elevation(elevation)
 
     # Write Tomofast-x data file.
     out_file = "o33"
