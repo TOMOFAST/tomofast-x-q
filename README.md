@@ -7,6 +7,7 @@
 changelog=0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation
+    * Update requirements
     0.2.12   
     * Allow simpler Windows runtime install   
     0.2.11   
