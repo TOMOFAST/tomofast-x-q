@@ -713,6 +713,7 @@ class Tomofast_x:
             self.dlg.pushButton_reset.setEnabled(True)
 
             self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
+
             self.dlg.pushButton_load_grav_data.clicked.connect(
                 lambda: self.confirm_data_file("grav")
             )
@@ -763,6 +764,12 @@ class Tomofast_x:
                 self.update_model_grid_size
             )
             self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.textEdit_z_cell_size_list.textChanged.connect(
+                self.update_model_grid_size
+            )
+            self.dlg.textEdit_z_layer_thickness_list.textChanged.connect(
                 self.update_model_grid_size
             )
             self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
@@ -1523,7 +1530,7 @@ class Tomofast_x:
 
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file(self, dataType):
-        self.process_data_file()
+        self.process_data_file(dataType)
         if dataType == "grav":
             suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
         else:
@@ -1604,7 +1611,11 @@ class Tomofast_x:
         self.magn_SurveyDay = date_split[2]
         self.magn_SurveyMonth = date_split[1]
         self.magn_SurveyYear = date_split[0]
-        date = datetime(2021, 3, 28)
+        date = datetime(
+            int(self.magn_SurveyYear),
+            int(self.magn_SurveyMonth),
+            int(self.magn_SurveyDay),
+        )
 
         # calculate midpoint of mesh
         midx = self.meshBox["west"] + (
@@ -1809,7 +1820,7 @@ class Tomofast_x:
         )
         df[0] = (df[0] + df[1]) / 2.0
         df[2] = (df[2] + df[3]) / 2.0
-        df = df.drop( columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
+        df = df.drop(columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
         temp_data = temp.dataProvider()
@@ -1959,7 +1970,7 @@ class Tomofast_x:
             )
 
     # load data
-    def process_data_file(self):
+    def process_data_file(self, dataType=None):
         if self.global_experimentType == 1:
             filename = self.dlg.lineEdit_grav_data_path.text()
             paths = os.path.split(filename)
@@ -1969,13 +1980,14 @@ class Tomofast_x:
             paths = os.path.split(filename)
             self.global_dataNameMagn = "".join(paths[1].split(".")[:-1])
         else:
-            filename = self.dlg.lineEdit_grav_data_path.text()
-            paths = os.path.split(filename)
-            self.global_dataNameGrav = "".join(paths[1].split(".")[:-1])
-
-            filename = self.dlg.lineEdit_magn_data_path.text()
-            paths = os.path.split(filename)
-            self.global_dataNameMagn = "".join(paths[1].split(".")[:-1])
+            if dataType == "grav":
+                filename_grav = self.dlg.lineEdit_grav_data_path.text()
+                paths = os.path.split(filename_grav)
+                self.global_dataNameGrav = "".join(paths[1].split(".")[:-1])
+            elif dataType == "magn":
+                filename_magn = self.dlg.lineEdit_magn_data_path.text()
+                paths = os.path.split(filename_magn)
+                self.global_dataNameMagn = "".join(paths[1].split(".")[:-1])
 
         suffix = paths[1].split(".")[-1]
 
@@ -2008,22 +2020,31 @@ class Tomofast_x:
             or suffix.lower() == "ers"
         ):
             # Load the TIFF file as a QgsRasterLayer
-            self.data_raster_layer = QgsRasterLayer(filename, "data")
+            if self.global_experimentType == 1 or self.global_experimentType == 2:
+                self.data_raster_layer = QgsRasterLayer(filename, "data")
+            else:
+                if dataType == "grav":
+                    self.data_raster_layer = QgsRasterLayer(filename_grav, "data_grav")
+                elif dataType == "magn":
+                    self.data_raster_layer = QgsRasterLayer(filename_magn, "data_magn")
+
             extent = self.data_raster_layer.extent()
 
             proj = self.data_raster_layer.crs().authid()
 
-            if self.global_experimentType == 1 or self.global_experimentType == 3:
+            if self.global_experimentType == 1:
                 self.grav_proj_in = proj
                 self.grav_proj_out = proj
             elif self.global_experimentType == 2:
                 self.magn_proj_in = proj
                 self.magn_proj_out = proj
-            else:
-                self.grav_proj_in = proj
-                self.grav_proj_out = proj
-                self.magn_proj_in = proj
-                self.magn_proj_out = proj
+            else:  # joint (experimentType == 3): use dataType to assign the correct proj
+                if dataType == "grav":
+                    self.grav_proj_in = proj
+                    self.grav_proj_out = proj
+                else:  # magn
+                    self.magn_proj_in = proj
+                    self.magn_proj_out = proj
 
             minx = extent.xMinimum()
             miny = extent.yMinimum()
@@ -2126,10 +2147,11 @@ class Tomofast_x:
                 self.convert_point_data(self.global_dataType)
 
             else:
+                # Both rasters must be converted BEFORE convert_point_data,
+                # because the joint branch reads both reproj CSVs in one call.
                 self.convert_raster_data(
                     self.dlg.lineEdit_grav_data_path.text(), self.grav_proj_out, 1
                 )
-                self.convert_point_data(self.global_dataType)
                 self.convert_raster_data(
                     self.dlg.lineEdit_magn_data_path.text(), self.magn_proj_out, 2
                 )
@@ -2164,7 +2186,7 @@ class Tomofast_x:
         temp_data = pd.read_csv(
             temp_file_path1,
             na_values=["", " "],
-            sep=r'\s+',  # Handles whitespace-separated data
+            sep=r"\s+",  # Handles whitespace-separated data
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
@@ -2299,11 +2321,35 @@ class Tomofast_x:
 
         self.iface.mapCanvas().refresh()
 
+    def extract_depth_layers(self, z_cell_size_list, z_layer_thickness_list):
+        z_cell_size_list = [float(x) for x in z_cell_size_list.split(",") if x.strip()]
+        z_layer_thickness_list = [
+            float(x) for x in z_layer_thickness_list.split(",") if x.strip()
+        ]
+
+        depth_layers = []
+        for cell_size, layer_thick in zip(z_cell_size_list, z_layer_thickness_list):
+            depth_layers.append({"cell_size": cell_size, "layer_thick": layer_thick})
+
+        return depth_layers
+
     # get mesh parameters from gui
     def setupMesh(self):
         self.cell_x = self.dlg.mQgsSpinBox_mesh_size_x.value()
         self.cell_y = self.dlg.mQgsSpinBox_mesh_size_y.value()
         self.padding = self.dlg.mQgsSpinBox_mesh_padding.value()
+
+        self.z_cell_size_list = self.dlg.textEdit_z_cell_size_list.toPlainText()
+        self.z_layer_thickness_list = (
+            self.dlg.textEdit_z_layer_thickness_list.toPlainText()
+        )
+        self.depth_layers = self.extract_depth_layers(
+            self.z_cell_size_list, self.z_layer_thickness_list
+        )
+        total_layers = 0
+        if self.depth_layers:
+            for layer in self.depth_layers:
+                total_layers += layer["layer_thick"] / layer["cell_size"]
 
         self.dz = self.dlg.mQgsSpinBox_mesh_size_z.value()
 
@@ -2327,6 +2373,7 @@ class Tomofast_x:
             "east": self.dlg.mQgsSpinBox_mesh_east.value(),
             "core_depth": self.dlg.doubleSpinBox_coreDepth.value(),
             "full_depth": self.dlg.doubleSpinBox_fullDepth.value(),
+            "total_layers": total_layers,
         }
 
         self.global_grav_sensor_height = (
@@ -2379,6 +2426,7 @@ class Tomofast_x:
             self.dz,
             meshBoxOffset,
             self.global_outputFolderPath,
+            self.depth_layers,
         )
 
         # read in top layer of mesh
@@ -2430,13 +2478,16 @@ class Tomofast_x:
 
         # Add the layer to the QGIS project
         QgsProject.instance().addMapLayer(mesh_layer)
-
-        data_layer = QgsProject.instance().mapLayersByName("data")[0]
+        # Determine source CRS directly from stored proj_in — avoids fragile layer name lookup
+        if dataType == 1:
+            source_crs = QgsCoordinateReferenceSystem(self.grav_proj_in)
+        else:
+            source_crs = QgsCoordinateReferenceSystem(self.magn_proj_in)
 
         # reproject raster data
         parameter = {
             "INPUT": filename,
-            "SOURCE_CRS": data_layer.crs(),
+            "SOURCE_CRS": source_crs,
             "TARGET_CRS": QgsCoordinateReferenceSystem(proj_out),
             "RESAMPLING": 0,
             "NODATA": None,
@@ -2642,6 +2693,7 @@ class Tomofast_x:
                 self.dz,
                 self.meshBox,
                 self.global_outputFolderPath,
+                self.depth_layers,
             )
 
         self.dlg.nx_label.setText(str(self.data2tomofast.nx))
@@ -2722,27 +2774,32 @@ class Tomofast_x:
             (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
             / self.cell_y
         )
-        ncore = int(
-            float(self.dlg.doubleSpinBox_coreDepth.value())
-            / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
-        )
+
         data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
         data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
 
-        try:
-            npad = int(
-                np.log(
-                    float(
-                        self.dlg.doubleSpinBox_fullDepth.value()
-                        - float(self.dlg.doubleSpinBox_coreDepth.value())
-                    )
-                    / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
-                )
-                / np.log(1.15)
+        if self.meshBox["total_layers"] > 0:
+            nz = int(self.meshBox["total_layers"])
+        else:
+            ncore = int(
+                float(self.dlg.doubleSpinBox_coreDepth.value())
+                / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
             )
-        except:
-            npad = 0
-        nz = ncore + npad
+
+            try:
+                npad = int(
+                    np.log(
+                        float(
+                            self.dlg.doubleSpinBox_fullDepth.value()
+                            - float(self.dlg.doubleSpinBox_coreDepth.value())
+                        )
+                        / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
+                    )
+                    / np.log(1.15)
+                )
+            except:
+                npad = 0
+            nz = ncore + npad
 
         # if not self.suffix_known:
         # Determine which input path to use based on experiment type
@@ -2763,20 +2820,11 @@ class Tomofast_x:
             memory = 8 * compression * nx * ny * nz * local_nData
         else:
             memory = 8 * compression * nx * ny * nz * local_nData * 2
-        print(
-            "compression * nx * ny * nz * local_nData",
-            compression,
-            nx,
-            ny,
-            nz,
-            local_nData,
-        )
-        print("data_nx * data_ny", data_nx, data_ny)
-        print("ncore * npad", ncore, npad)
-        print("memory", memory)
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
+        if self.meshBox["total_layers"] > 0:
+            self.dlg.nz_label.setText(str(nz))
 
     def reproj_raster(self, rasterInPath, targetCrs, dataType):
         parameter = {
@@ -3152,6 +3200,10 @@ class Tomofast_x:
             self.f_params.write(
                 "inversion.nMajorIterations          = {}\n".format("50")
             )
+        elif self.global_experimentType == 3:
+            self.f_params.write(
+                "inversion.nMajorIterations          = {}\n".format("15")
+            )
         else:
             self.f_params.write(
                 "inversion.nMajorIterations          = {}\n".format(
@@ -3176,11 +3228,6 @@ class Tomofast_x:
                     self.inversion_modelDamping_grav_weight
                 )
             )
-            self.f_params.write(
-                "inversion.modelDamping.normPower    = {}\n".format(
-                    self.inversion_modelDamping_grav_normPower
-                )
-            )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -3188,11 +3235,12 @@ class Tomofast_x:
                     self.inversion_modelDamping_magn_weight
                 )
             )
-            self.f_params.write(
-                "inversion.modelDamping.normPower    = {}\n".format(
-                    self.inversion_modelDamping_magn_normPower
-                )
+
+        self.f_params.write(
+            "inversion.modelDamping.normPower    = {}\n".format(
+                self.inversion_modelDamping_grav_normPower
             )
+        )
 
         self.spacer("JOINT INVERSION parameters")
 
@@ -3206,6 +3254,14 @@ class Tomofast_x:
                 self.inversion_joint_magn_problemWeight
             )
         )
+
+        if self.global_experimentType == 3:
+
+            self.spacer("CROSS-GRADIENT constraints")
+            self.f_params.write("inversion.crossGradient.weight  = {}\n".format(0.8e2))
+            self.f_params.write(
+                "inversion.crossGradient.derivativeType  = {}\n".format(1)
+            )
 
         self.spacer("ADMM constraints")
 
@@ -3970,6 +4026,12 @@ class Tomofast_x:
         self.dlg.mQgsSpinBox_mesh_size_y.setToolTip(
             "Define model grid x cell dimension\n\n[#mesh.celly]"
         )
+        self.dlg.textEdit_z_cell_size_list.setToolTip(
+            "Define model grid z cell size as comma separated list of cell z values for each layer thicknesses in the adjacent list\n\ne.g. 50,100,200\n\nLeave blank to use core/full depth system[#mesh.cellz_z_list]"
+        )
+        self.dlg.textEdit_z_layer_thickness_list.setToolTip(
+            "Define model grid layer thicknesses as comma separated list of thickness of layers for each z cell size in the adjacent list\n\ne.g. 200,400,800 \n\nLeave blank to use core/full depth system[#mesh.cellz_z_thickness_list]"
+        )
         self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
             "Define uniform padding distance around model\n\n[#mesh.padding]"
         )
@@ -4023,7 +4085,7 @@ class Tomofast_x:
             "Assign x,y,data fields defined above"
         )
         self.dlg.radioButton_grav_inv.setToolTip(
-            "Define parameters for gravity inversion experiemnt"
+            "Define parameters for gravity inversion experiment"
         )
         """self.dlg.radioButton_elev_const.setToolTip(
             "Assume constant elevaiton for ground surface"
@@ -4032,10 +4094,10 @@ class Tomofast_x:
             "Define ground topography by loading a TIF format Digital Terrane Model"
         )"""
         self.dlg.radioButton_magn_inv.setToolTip(
-            "Define parameters for magnetic inversion experiemnt"
+            "Define parameters for magnetic inversion experiment"
         )
         self.dlg.radioButton_joint_inv.setToolTip(
-            "Define parameters for joint gravity-magnetic inversion experiemnt"
+            "Define parameters for joint gravity-magnetic inversion experiment"
         )
         self.dlg.radioButton_magn_depth_based_weighting.setToolTip(
             "Select depth-based ADMM constraints\n\n[inversion.admm.magn.enableADMM]"
@@ -4103,7 +4165,7 @@ class Tomofast_x:
         self.dlg.pushButton_select_setvars.setToolTip(
             "Select setvars.bat file \n(usually at C:\Program Files (x86)\Intel\oneAPI\setvars.bat)"
         )
-        self.dlg.lineEdit_2_mpirunPath_2.setToolTip(
+        self.dlg.pushButton_select_mpirun_mipexec.setToolTip(
             "Path to mpirun or mpiexec.exe executable, if not in PATH, \n e.g. for MacOS'/opt/homebrew/bin/mpirun' or \n Windows C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.17\\bin\\mpiexec.exe"
         )
 
@@ -4169,7 +4231,7 @@ class Tomofast_x:
         self.inversion_modelDamping_magn_weight = 0
         self.inversion_modelDamping_magn_normPower = 2
         self.inversion_joint_grav_problemWeight = 1
-        self.inversion_joint_magn_problemWeight = 0
+        self.inversion_joint_magn_problemWeight = 2.5e-6
         self.inversion_admm_grav_enableADMM = 0
         self.inversion_admm_grav_nLithologies = 0
         self.inversion_admm_grav_bounds = ""
@@ -4216,3 +4278,5 @@ class Tomofast_x:
         self.paramfile_Path = ""
         self.suffix_known = False
         self.setvars_Path = ""
+        self.z_by_list = ""
+        self.depth_layers = []

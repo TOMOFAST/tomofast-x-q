@@ -24,9 +24,11 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=0.2.13
-    * Update calls for newer pandas compatibility
-    * Increase max depths for mesh generation
-    * Update requirements
+    * Update calls for newer pandas compatibility   
+    * Increase max depths for mesh generation   
+    * Update requirements   
+    * Fix IGRF calc
+    * Fix joint inversion workflow
     0.2.12
     * Allow simpler Windows runtime install
     0.2.11   

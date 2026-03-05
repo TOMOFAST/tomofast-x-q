@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1422</width>
+    <width>654</width>
     <height>1011</height>
    </rect>
   </property>
@@ -491,8 +491,8 @@ font-size: 12px;</string>
        <rect>
         <x>10</x>
         <y>440</y>
-        <width>591</width>
-        <height>221</height>
+        <width>601</width>
+        <height>261</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -514,8 +514,8 @@ font-size: 12px;</string>
       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_padding">
        <property name="geometry">
         <rect>
-         <x>140</x>
-         <y>130</y>
+         <x>470</x>
+         <y>100</y>
          <width>91</width>
          <height>20</height>
         </rect>
@@ -598,8 +598,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_33">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>130</y>
+         <x>340</x>
+         <y>100</y>
          <width>131</width>
          <height>20</height>
         </rect>
@@ -652,7 +652,7 @@ font-size: 13px;
       <widget class="QLabel" name="label_24">
        <property name="geometry">
         <rect>
-         <x>1</x>
+         <x>10</x>
          <y>64</y>
          <width>41</width>
          <height>20</height>
@@ -720,10 +720,10 @@ font-size: 13px;
       <widget class="QLabel" name="label_75">
        <property name="geometry">
         <rect>
-         <x>414</x>
+         <x>334</x>
          <y>20</y>
-         <width>151</width>
-         <height>16</height>
+         <width>221</width>
+         <height>20</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -746,7 +746,10 @@ font-size: 13px;
 </string>
        </property>
        <property name="text">
-        <string>Cell Dimensions</string>
+        <string>Horizontal Cell Dimensions</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QgsSpinBox" name="mQgsSpinBox_mesh_east">
@@ -838,8 +841,8 @@ font-size: 13px;
       <widget class="QLabel" name="nz_label">
        <property name="geometry">
         <rect>
-         <x>220</x>
-         <y>160</y>
+         <x>230</x>
+         <y>220</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -856,8 +859,8 @@ font-size: 13px;
       <widget class="QLabel" name="nx_label">
        <property name="geometry">
         <rect>
-         <x>80</x>
-         <y>160</y>
+         <x>90</x>
+         <y>220</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -874,8 +877,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_5">
        <property name="geometry">
         <rect>
-         <x>190</x>
-         <y>160</y>
+         <x>200</x>
+         <y>220</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -892,8 +895,8 @@ font-size: 13px;
       <widget class="QLabel" name="ny_label">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>160</y>
+         <x>160</x>
+         <y>220</y>
          <width>41</width>
          <height>16</height>
         </rect>
@@ -910,8 +913,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_3">
        <property name="geometry">
         <rect>
-         <x>50</x>
-         <y>160</y>
+         <x>60</x>
+         <y>220</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -928,8 +931,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_4">
        <property name="geometry">
         <rect>
-         <x>120</x>
-         <y>160</y>
+         <x>130</x>
+         <y>220</y>
          <width>16</width>
          <height>16</height>
         </rect>
@@ -947,7 +950,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>160</y>
+         <y>220</y>
          <width>47</width>
          <height>13</height>
         </rect>
@@ -966,8 +969,8 @@ font-size: 13px;
       <widget class="QDoubleSpinBox" name="mQgsSpinBox_mesh_size_z">
        <property name="geometry">
         <rect>
-         <x>480</x>
-         <y>100</y>
+         <x>130</x>
+         <y>140</y>
          <width>81</width>
          <height>22</height>
         </rect>
@@ -991,8 +994,8 @@ font-size: 13px;
       <widget class="QLabel" name="label_36">
        <property name="geometry">
         <rect>
-         <x>356</x>
-         <y>100</y>
+         <x>10</x>
+         <y>140</y>
          <width>101</width>
          <height>20</height>
         </rect>
@@ -1012,7 +1015,7 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>260</x>
          <y>30</y>
          <width>41</width>
          <height>23</height>
@@ -1037,7 +1040,7 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>4</x>
+         <x>14</x>
          <y>32</y>
          <width>240</width>
          <height>18</height>
@@ -1053,7 +1056,7 @@ border-style: solid;border-width: 1px;border-color: black
 </string>
        </property>
        <property name="placeholderText">
-        <string>Define Mesh Limits by shapefile</string>
+        <string>Define Mesh x,y Limits by shapefile</string>
        </property>
       </widget>
       <widget class="QDoubleSpinBox" name="doubleSpinBox_coreDepth">
@@ -1062,8 +1065,8 @@ border-style: solid;border-width: 1px;border-color: black
        </property>
        <property name="geometry">
         <rect>
-         <x>351</x>
-         <y>130</y>
+         <x>330</x>
+         <y>140</y>
          <width>62</width>
          <height>22</height>
         </rect>
@@ -1088,7 +1091,7 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="geometry">
         <rect>
          <x>500</x>
-         <y>130</y>
+         <y>140</y>
          <width>61</width>
          <height>22</height>
         </rect>
@@ -1113,7 +1116,7 @@ border-style: solid;border-width: 1px;border-color: black
        <property name="geometry">
         <rect>
          <x>420</x>
-         <y>130</y>
+         <y>140</y>
          <width>81</width>
          <height>21</height>
         </rect>
@@ -1133,8 +1136,8 @@ font-size: 13px;
        </property>
        <property name="geometry">
         <rect>
-         <x>270</x>
-         <y>130</y>
+         <x>249</x>
+         <y>140</y>
          <width>77</width>
          <height>21</height>
         </rect>
@@ -1152,7 +1155,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>188</y>
+         <y>238</y>
          <width>105</width>
          <height>17</height>
         </rect>
@@ -1168,7 +1171,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>129</x>
-         <y>187</y>
+         <y>237</y>
          <width>23</width>
          <height>16</height>
         </rect>
@@ -1181,7 +1184,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>480</x>
-         <y>190</y>
+         <y>240</y>
          <width>47</width>
          <height>16</height>
         </rect>
@@ -1197,7 +1200,7 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>160</x>
-         <y>187</y>
+         <y>237</y>
          <width>111</width>
          <height>20</height>
         </rect>
@@ -1219,13 +1222,116 @@ font-size: 13px;
        <property name="geometry">
         <rect>
          <x>290</x>
-         <y>190</y>
+         <y>240</y>
          <width>181</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
         <string>Estimated Memory Requirement (GB)</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_43">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+       </property>
+       <property name="text">
+        <string>z cell size list</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_z_cell_size_list">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>170</y>
+         <width>141</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>50,100,500</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_46">
+       <property name="geometry">
+        <rect>
+         <x>320</x>
+         <y>160</y>
+         <width>101</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font-family: Arial; 
+font-size: 13px;
+</string>
+       </property>
+       <property name="text">
+        <string>z cell layer
+thickness list</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_z_layer_thickness_list">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>170</y>
+         <width>141</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>200,500,800</string>
+       </property>
+      </widget>
+      <widget class="Line" name="line">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>551</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="Line" name="line_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>200</y>
+         <width>551</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </widget>
@@ -1702,8 +1808,8 @@ border-style: solid;border-width: 1px;border-color: black
      <widget class="QLabel" name="label_26">
       <property name="geometry">
        <rect>
-        <x>210</x>
-        <y>670</y>
+        <x>220</x>
+        <y>710</y>
         <width>381</width>
         <height>21</height>
        </rect>
@@ -1725,8 +1831,8 @@ border-style: solid;border-width: 1px;border-color: black
       </property>
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>670</y>
+        <x>20</x>
+        <y>710</y>
         <width>101</width>
         <height>23</height>
        </rect>
@@ -1738,8 +1844,8 @@ border-style: solid;border-width: 1px;border-color: black
      <widget class="QLabel" name="version_label">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>670</y>
+        <x>140</x>
+        <y>710</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -3064,7 +3170,7 @@ Day/Month/Year</string>
           <bool>true</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>6</number>
          </property>
          <property name="maximum">
           <double>1.000000000000000</double>
@@ -3096,7 +3202,7 @@ Day/Month/Year</string>
           <bool>true</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>7</number>
          </property>
          <property name="maximum">
           <double>1.000000000000000</double>
@@ -3105,7 +3211,7 @@ Day/Month/Year</string>
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>0.000000000000000</double>
+          <double>0.000002000000000</double>
          </property>
         </widget>
        </item>

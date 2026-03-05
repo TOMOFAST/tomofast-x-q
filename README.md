@@ -6,8 +6,10 @@
 ## Recent changes
 changelog=0.2.13   
     * Update calls for newer pandas compatibility   
-    * Increase max depths for mesh generation
-    * Update requirements
+    * Increase max depths for mesh generation   
+    * Update requirements   
+    * Fix IGRF calc   
+    * Fix joint inversion workflow   
     0.2.12   
     * Allow simpler Windows runtime install   
     0.2.11   

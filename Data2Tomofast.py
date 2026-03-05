@@ -135,7 +135,7 @@ class Data2Tomofast:
         """
         cell_sizes = []
         for layer in depth_layers:
-            cell_size  = float(layer["cell_size"])
+            cell_size = float(layer["cell_size"])
             layer_thick = float(layer["layer_thick"])
             n = max(1, round(layer_thick / cell_size))
             # Adjust the actual cell size so the layer thickness is exact.
@@ -146,8 +146,9 @@ class Data2Tomofast:
         return dz
 
     # ========================================================================================
-    def write_model_grid(self, padding_size, dx0, dy0, dz0, meshBox, directory,
-                         depth_layers=None):
+    def write_model_grid(
+        self, padding_size, dx0, dy0, dz0, meshBox, directory, depth_layers=None
+    ):
         """
         Writes the Tomofast-x model grid.
 
@@ -155,26 +156,26 @@ class Data2Tomofast:
         dz0           : vertical cell size used when depth_layers is None (legacy mode).
         padding_size  : horizontal padding size (m).
         meshBox       : dict defining the model core extent and depth:
-                            "west", "east", "south", "north" – horizontal bounds (m)
-                            "core_depth"  – bottom of the uniform-cell core (m)
-                            "full_depth"  – total model depth incl. padding (m)
+                            "west", "east", "south", "north" : horizontal bounds (m)
+                            "core_depth"  : bottom of the uniform-cell core (m)
+                            "full_depth"  : total model depth incl. padding (m)
                             Only used in legacy mode (depth_layers=None).
         directory     : output folder.
         depth_layers  : optional list of dicts that fully specifies the Z layering.
                         When provided, dz0, meshBox["core_depth"], and
                         meshBox["full_depth"] are ignored for the Z direction.
                         Each dict must contain:
-                            "cell_size"   – cell thickness for this layer (m)
-                            "layer_thick" – total thickness of this layer (m)
+                            "cell_size"  : cell thickness for this layer (m)
+                            "layer_thick" : total thickness of this layer (m)
                         Layers are ordered top-to-bottom; the model top is always Z=0.
                         Example:
                             depth_layers = [
-                                {"cell_size":   10, "layer_thick":    200},  #     0 –   200 m
-                                {"cell_size":   50, "layer_thick":   1800},  #   200 – 2 000 m
-                                {"cell_size":  100, "layer_thick":   3000},  # 2 000 – 5 000 m
-                                {"cell_size":  200, "layer_thick":   5000},  # 5 000 – 10 000 m
-                                {"cell_size":  500, "layer_thick":  20000},  # 10 000 – 30 000 m
-                                {"cell_size": 1000, "layer_thick":  50000},  # 30 000 – 80 000 m
+                                {"cell_size":   10, "layer_thick":    200},  #     0 :   200 m
+                                {"cell_size":   50, "layer_thick":   1800},  #   200 : 2 000 m
+                                {"cell_size":  100, "layer_thick":   3000},  # 2 000 : 5 000 m
+                                {"cell_size":  200, "layer_thick":   5000},  # 5 000 : 10 000 m
+                                {"cell_size":  500, "layer_thick":  20000},  # 10 000 : 30 000 m
+                                {"cell_size": 1000, "layer_thick":  50000},  # 30 000 : 80 000 m
                             ]
         """
         xcore_min = meshBox["west"] - 1.0
@@ -184,7 +185,7 @@ class Data2Tomofast:
 
         zcore_min = 0.0
 
-        if depth_layers is not None:
+        if depth_layers:
             # --- New explicit-layer mode ---
             dz = self.generate_depth_cell_sizes(depth_layers)
         else:
@@ -345,7 +346,7 @@ def main():
     epsg_to = "epsg:28351"  # (GDA 94 MGA zone 51)
 
     # Data elevation (m).
-    #elevation = 0.1
+    # elevation = 0.1
 
     # Horizontal model padding.
     padding_size = 10000.0
@@ -364,7 +365,7 @@ def main():
     )
 
     # Define data elevation (use constant for now).
-    #data2tomofast.add_elevation(elevation)
+    # data2tomofast.add_elevation(elevation)
 
     # Write Tomofast-x data file.
     out_file = "o33"
