@@ -10,6 +10,7 @@ changelog=0.2.13
     * Update requirements   
     * Fix IGRF calc   
     * Fix joint inversion workflow   
+    * Add multiple z cell thicknesses   
     0.2.12   
     * Allow simpler Windows runtime install   
     0.2.11   
