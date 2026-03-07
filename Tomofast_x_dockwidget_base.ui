@@ -492,7 +492,7 @@ font-size: 12px;</string>
         <x>10</x>
         <y>440</y>
         <width>601</width>
-        <height>261</height>
+        <height>265</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -3635,9 +3635,9 @@ p, li { white-space: pre-wrap; }
         <widget class="QPushButton" name="pushButton_plugin_manual">
          <property name="geometry">
           <rect>
-           <x>40</x>
+           <x>10</x>
            <y>680</y>
-           <width>191</width>
+           <width>151</width>
            <height>23</height>
           </rect>
          </property>
@@ -3648,9 +3648,9 @@ p, li { white-space: pre-wrap; }
         <widget class="QPushButton" name="pushButton_tomofast_manual">
          <property name="geometry">
           <rect>
-           <x>320</x>
+           <x>390</x>
            <y>680</y>
-           <width>211</width>
+           <width>191</width>
            <height>23</height>
           </rect>
          </property>
@@ -3747,6 +3747,19 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="text">
           <string>...</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_plugin_cheat_sheat">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>680</y>
+           <width>201</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Download Plugin Cheat Sheet</string>
          </property>
         </widget>
        </widget>

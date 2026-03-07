@@ -850,6 +850,13 @@ class Tomofast_x:
                     )
                 )
             )
+            self.dlg.pushButton_plugin_cheat_sheat.clicked.connect(
+                lambda: QDesktopServices.openUrl(
+                    QUrl(
+                        "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf"
+                    )
+                )
+            )
             self.dlg.pushButton_tomofast_manual.clicked.connect(
                 lambda: QDesktopServices.openUrl(
                     QUrl(
