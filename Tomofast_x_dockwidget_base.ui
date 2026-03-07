@@ -969,7 +969,7 @@ font-size: 13px;
       <widget class="QDoubleSpinBox" name="mQgsSpinBox_mesh_size_z">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>160</x>
          <y>140</y>
          <width>81</width>
          <height>22</height>
@@ -994,7 +994,7 @@ font-size: 13px;
       <widget class="QLabel" name="label_36">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>40</x>
          <y>140</y>
          <width>101</width>
          <height>20</height>
@@ -1234,10 +1234,10 @@ font-size: 13px;
       <widget class="QLabel" name="label_43">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>170</y>
-         <width>111</width>
-         <height>20</height>
+         <x>70</x>
+         <y>160</y>
+         <width>91</width>
+         <height>41</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1246,13 +1246,17 @@ font-size: 13px;
 </string>
        </property>
        <property name="text">
-        <string>z cell size list</string>
+        <string>z cell size 
+list</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QTextEdit" name="textEdit_z_cell_size_list">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>170</x>
          <y>170</y>
          <width>141</width>
          <height>31</height>
@@ -1272,7 +1276,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLabel" name="label_46">
        <property name="geometry">
         <rect>
-         <x>320</x>
+         <x>310</x>
          <y>160</y>
          <width>101</width>
          <height>41</height>
@@ -1286,6 +1290,9 @@ font-size: 13px;
        <property name="text">
         <string>z cell layer
 thickness list</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QTextEdit" name="textEdit_z_layer_thickness_list">
@@ -1332,6 +1339,76 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_76">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>140</y>
+         <width>21</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>-1</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font-family: Arial; 
+font-size: 15px;
+</string>
+       </property>
+       <property name="text">
+        <string>z</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_79">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>170</y>
+         <width>31</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>-1</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font-family: Arial; 
+font-size: 15px;
+</string>
+       </property>
+       <property name="text">
+        <string>OR</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
      </widget>
