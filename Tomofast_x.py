@@ -1748,22 +1748,17 @@ class Tomofast_x:
 
         self.colour_points(elev, "elevation", "Greys", True)
 
-        # Start an edit session
         elev.startEditing()
-
-        # Get the index of the field to be modified (e.g., 'Log MS')
         field_index = elev.fields().indexOf("elevation")
         noneFlag = False
-        # Iterate over the features and set the negative values
+
         for feature in elev.getFeatures():
             original_value = feature[field_index]
-
             if original_value is not None:
                 negative_value = -original_value
             else:
-                negative_value = 0
+                negative_value = 0  # fill missing DTM coverage with zero
                 noneFlag = True
-            # Update the field with the negative value
             elev.changeAttributeValue(feature.id(), field_index, negative_value)
 
         elev.commitChanges()
@@ -1775,12 +1770,31 @@ class Tomofast_x:
             driverName="CSV",
         )
 
-        self.iface.messageBar().pushMessage(
-            "The DTM does not cover the full extent of the mesh includiing padding.",
-            "Outside elevations set to zero",
-            level=Qgis.Warning,
-            duration=45,
-        )
+        # Fill any empty elevation values left by QgsVectorFileWriter with 0
+        elev_csv_path = self.global_outputFolderPath + "/elevation_grid.csv"
+        elev_df = pd.read_csv(elev_csv_path)
+
+        # Find the elevation column - it may be named 'elevation' or 'elevation1'
+        elev_col = None
+        for col in elev_df.columns:
+            if "elevation" in col.lower():
+                elev_col = col
+                break
+
+        if elev_col:
+            elev_df[elev_col] = pd.to_numeric(
+                elev_df[elev_col], errors="coerce"
+            ).fillna(0)
+
+        elev_df.to_csv(elev_csv_path, index=False)
+
+        if noneFlag:
+            self.iface.messageBar().pushMessage(
+                "The DTM does not cover the full extent of the mesh including padding.",
+                "Outside elevations set to zero",
+                level=Qgis.Warning,
+                duration=45,
+            )
 
     # rename layer field name
     def rename_dp_field(self, rlayer, oldname, newname):
