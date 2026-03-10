@@ -27,7 +27,6 @@ from qgis.PyQt.QtWidgets import QAction
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
     QgsVectorLayer,
     QgsProject,
     QgsRasterLayer,
@@ -35,6 +34,17 @@ from qgis.core import (
     QgsField,
     QgsVectorFileWriter,
     QgsPoint,
+    QgsMarkerSymbol,
+    QgsSingleSymbolRenderer,
+    QgsVectorLayer,
+    QgsField,
+    QgsPointXY,
+    QgsGeometry,
+    QgsFields,
+    QgsRendererRangeLabelFormat,
+    QgsStyle,
+    QgsGraduatedSymbolRenderer,
+    QgsClassificationEqualInterval,
 )
 from qgis.PyQt.QtCore import (
     QSettings,
@@ -45,23 +55,7 @@ from qgis.PyQt.QtCore import (
     Qt,
     QUrl,
 )
-from qgis.core import (
-    QgsProject,
-    QgsVectorLayer,
-    QgsField,
-    QgsPointXY,
-    QgsGeometry,
-    QgsFeature,
-    QgsFields,
-    QgsRasterLayer,
-)
-from qgis.core import (
-    QgsRendererRangeLabelFormat,
-    QgsStyle,
-    QgsGraduatedSymbolRenderer,
-    QgsClassificationEqualInterval,
-    QgsSymbol,
-)
+
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
@@ -660,6 +654,144 @@ class Tomofast_x:
             if self.dlg == None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dlg = Tomofast_xDockWidget()
+                self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
+
+                self.dlg.pushButton_load_grav_data.clicked.connect(
+                    lambda: self.confirm_data_file("grav")
+                )
+                self.dlg.pushButton_load_magn_data.clicked.connect(
+                    lambda: self.confirm_data_file("magn")
+                )
+                self.dlg.pushButton_grav_data_path.clicked.connect(
+                    lambda: self.select_data_file("grav")
+                )
+                self.dlg.pushButton_magn_data_path.clicked.connect(
+                    lambda: self.select_data_file("magn")
+                )
+                self.dlg.pushButton_assign_grav_fields.clicked.connect(
+                    self.process_data_fields_grav
+                )
+                self.dlg.pushButton_assign_magn_fields.clicked.connect(
+                    self.process_data_fields_magn
+                )
+                self.dlg.lineEdit_output_directory_path_select.clicked.connect(
+                    self.select_ouput_directory
+                )
+                self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
+                self.dlg.pushButton_param_load_path.clicked.connect(
+                    self.process_parameter_file
+                )
+                self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
+
+                self.dlg.radioButton_grav_inv.toggled.connect(
+                    self.inversion_type_reset_gui
+                )
+                self.dlg.radioButton_magn_inv.toggled.connect(
+                    self.inversion_type_reset_gui
+                )
+                self.dlg.radioButton_joint_inv.toggled.connect(
+                    self.inversion_type_reset_gui
+                )
+
+                self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
+                self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
+
+                # updating model grid size
+                self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_north.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_east.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_west.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.textEdit_z_cell_size_list.textChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.textEdit_z_layer_thickness_list.textChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_size_z.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+                self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(
+                    self.update_model_grid_size
+                )
+
+                self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
+                    self.update_memory_size
+                )
+                self.dlg.checkBox_use_compression.toggled.connect(
+                    self.update_memory_size
+                )
+
+                self.dlg.pushButton_reset.clicked.connect(self.reset_params)
+
+                self.dlg.pushButton_select_tomoPath.clicked.connect(
+                    self.select_tomo_Path
+                )
+
+                self.dlg.pushButton_2_select_parfilePath.clicked.connect(
+                    self.select_paramfile_path
+                )
+                self.dlg.pushButton_select_mpirun_mipexec.clicked.connect(
+                    self.select_mpirunexec_path
+                )
+                self.dlg.pushButton_select_setvars.clicked.connect(
+                    self.select_setvars_path
+                )
+
+                self.dlg.pushButton_3_visualise.clicked.connect(self.visualise_output)
+                self.dlg.pushButton_kernel_path_select.clicked.connect(
+                    self.select_kernel_path
+                )
+
+                self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
+
+                self.dlg.pushButton_3_Export.clicked.connect(self.export_model)
+                # connect to provide cleanup on closing of dockwidget
+                self.dlg.closingPlugin.connect(self.onClosePlugin)
+
+                self.dlg.pushButton_plugin_manual.clicked.connect(
+                    lambda: QDesktopServices.openUrl(
+                        QUrl(
+                            "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf"
+                        )
+                    )
+                )
+                self.dlg.pushButton_plugin_cheat_sheat.clicked.connect(
+                    lambda: QDesktopServices.openUrl(
+                        QUrl(
+                            "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf"
+                        )
+                    )
+                )
+                self.dlg.pushButton_tomofast_manual.clicked.connect(
+                    lambda: QDesktopServices.openUrl(
+                        QUrl(
+                            "https://github.com/TOMOFAST/Tomofast-x/raw/refs/heads/master/docs/Tomofast-x%20User%20Manual.docx"
+                        )
+                    )
+                )
 
             if platform.system() == "Darwin":
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
@@ -670,9 +802,6 @@ class Tomofast_x:
             else:  # Linux
                 self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
                 self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
-
-            # connect to provide cleanup on closing of dockwidget
-            self.dlg.closingPlugin.connect(self.onClosePlugin)
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
@@ -712,110 +841,6 @@ class Tomofast_x:
             self.dlg.radioButton_magn_inv.setChecked(False)
             self.dlg.pushButton_reset.setEnabled(True)
 
-            self.dlg.pushButton_calc_IGRF.clicked.connect(self.update_mag_field)
-
-            self.dlg.pushButton_load_grav_data.clicked.connect(
-                lambda: self.confirm_data_file("grav")
-            )
-            self.dlg.pushButton_load_magn_data.clicked.connect(
-                lambda: self.confirm_data_file("magn")
-            )
-            self.dlg.pushButton_grav_data_path.clicked.connect(
-                lambda: self.select_data_file("grav")
-            )
-            self.dlg.pushButton_magn_data_path.clicked.connect(
-                lambda: self.select_data_file("magn")
-            )
-            self.dlg.pushButton_assign_grav_fields.clicked.connect(
-                self.process_data_fields_grav
-            )
-            self.dlg.pushButton_assign_magn_fields.clicked.connect(
-                self.process_data_fields_magn
-            )
-            self.dlg.lineEdit_output_directory_path_select.clicked.connect(
-                self.select_ouput_directory
-            )
-            self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
-            self.dlg.pushButton_param_load_path.clicked.connect(
-                self.process_parameter_file
-            )
-            self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
-
-            self.dlg.radioButton_grav_inv.toggled.connect(self.inversion_type_reset_gui)
-            self.dlg.radioButton_magn_inv.toggled.connect(self.inversion_type_reset_gui)
-            self.dlg.radioButton_joint_inv.toggled.connect(
-                self.inversion_type_reset_gui
-            )
-
-            self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
-            self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
-
-            # updating model grid size
-            self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_north.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_east.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_west.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_size_x.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.textEdit_z_cell_size_list.textChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.textEdit_z_layer_thickness_list.textChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_size_y.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_size_z.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.mQgsSpinBox_mesh_padding.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(
-                self.update_model_grid_size
-            )
-            self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(
-                self.update_model_grid_size
-            )
-
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
-                self.update_memory_size
-            )
-            self.dlg.checkBox_use_compression.toggled.connect(self.update_memory_size)
-
-            self.dlg.pushButton_reset.clicked.connect(self.reset_params)
-
-            self.dlg.pushButton_select_tomoPath.clicked.connect(self.select_tomo_Path)
-
-            self.dlg.pushButton_2_select_parfilePath.clicked.connect(
-                self.select_paramfile_path
-            )
-            self.dlg.pushButton_select_mpirun_mipexec.clicked.connect(
-                self.select_mpirunexec_path
-            )
-            self.dlg.pushButton_select_setvars.clicked.connect(self.select_setvars_path)
-
-            self.dlg.pushButton_3_visualise.clicked.connect(self.visualise_output)
-            self.dlg.pushButton_kernel_path_select.clicked.connect(
-                self.select_kernel_path
-            )
-
-            self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
-
-            self.dlg.pushButton_3_Export.clicked.connect(self.export_model)
             self.define_parameters()
             self.reset_params()
 
@@ -842,28 +867,6 @@ class Tomofast_x:
                     self.setvars_Path = line.rstrip()
 
             self.dlg.version_label.setText("v " + self.show_version())
-
-            self.dlg.pushButton_plugin_manual.clicked.connect(
-                lambda: QDesktopServices.openUrl(
-                    QUrl(
-                        "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf"
-                    )
-                )
-            )
-            self.dlg.pushButton_plugin_cheat_sheat.clicked.connect(
-                lambda: QDesktopServices.openUrl(
-                    QUrl(
-                        "https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf"
-                    )
-                )
-            )
-            self.dlg.pushButton_tomofast_manual.clicked.connect(
-                lambda: QDesktopServices.openUrl(
-                    QUrl(
-                        "https://github.com/TOMOFAST/Tomofast-x/raw/refs/heads/master/docs/Tomofast-x%20User%20Manual.docx"
-                    )
-                )
-            )
 
     def select_kernel_path(self):
         self.kernelfiledirectory = QFileDialog.getExistingDirectory(
@@ -1259,149 +1262,6 @@ class Tomofast_x:
                 -df_elev["POINT_Z"].apply(get_numeric_value) - elevation
             )
 
-    def run_inversion_old(self):
-        if (
-            os.path.exists(self.paramfile_Path)
-            and self.paramfile_Path != ""
-            and os.path.exists(self.tomo_Path)
-            and self.tomo_Path != ""
-        ):
-            if platform.system() == "Windows":
-                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-                self.paramfile_Path_run = self.paramfile_Path + "_run"
-                shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
-                drive = self.paramfile_Path_run[0:2]
-                self.replace_text_in_file(
-                    self.paramfile_Path_run,
-                    self.wsl_path_backslash,
-                    "= {}:/".format(drive[0]),
-                    "= /mnt/{}/".format(drive[0].lower()),
-                )
-
-                wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = self.add_quotes_to_path(
-                    self.paramfile_Path_run.replace(
-                        "{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())
-                    )
-                )
-                # if paramfile stored on linux path, remove wsl access info
-                if wsl_path in wsl_param_path:
-                    wsl_param_path = wsl_param_path.replace(wsl_path, "")
-                    self.replace_text_in_file(
-                        self.paramfile_Path_run,
-                        wsl_path,
-                        "",
-                    )
-                    print(
-                        "Adjusted wsl_param_path for linux stored paramfile - ",
-                        wsl_param_path,
-                    )
-
-                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-                wsl_path = "//wsl.localhost/" + distro
-
-                wsl_tomo_path = self.add_quotes_to_path(
-                    self.tomo_path_normalized.replace(wsl_path, "")
-                )
-                mpirun_path = " mpirun "
-
-                # Replace spaces with escaped spaces for WSL
-                wsl_param_path = wsl_param_path.replace('"', "")
-
-            elif platform.system() == "Darwin":
-                wsl_tomo_path = self.tomo_Path
-                wsl_param_path = self.paramfile_Path
-                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
-
-                distro = " "
-
-            else:
-                wsl_tomo_path = self.tomo_Path
-                wsl_param_path = self.paramfile_Path
-                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
-                distro = " "
-
-            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
-                self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
-                with open(
-                    os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
-                    "w",
-                ) as tpfile:
-                    tpfile.write(self.tomo_Path + "\n")
-                    tpfile.write(distro + "\n")
-                    tpfile.write("\n")
-                    tpfile.write(mpirun_path + "\n")
-
-            noProc = self.dlg.mQgsSpinBox_noProc.value()
-
-            # set system/version dependent "start_new_session" analogs
-            kwargs = {}
-            if platform.system() == "Windows":
-                # from msdn [1]
-                CREATE_NEW_PROCESS_GROUP = (
-                    0x00000200  # note: could get it from subprocess
-                )
-                DETACHED_PROCESS = 0x00000008  # 0x8 | 0x200 == 0x208
-                kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
-            elif sys.version_info < (3, 2):  # assume posix
-                kwargs.update(preexec_fn=os.setsid)
-            else:  # Python 3.2+ and Unix
-                kwargs.update(start_new_session=True)
-
-            try:
-
-                wsl_debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
-
-                print("mpirun_path - ", mpirun_path)
-                print("noProc - ", noProc)
-                print("wsl_tomo_path - ", wsl_tomo_path)
-                print("wsl_param_path - ", wsl_param_path)
-                print("wsl_debug_path - ", wsl_debug_path)
-
-                # Build the actual command
-                if noProc == 1:
-                    base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
-                else:
-                    base_command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
-
-                # Use a simpler approach - let bash handle it
-                if platform.system() == "Windows":
-                    command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
-                    print("command: ", command)
-                    process = subprocess.Popen(
-                        command,
-                        shell=True,
-                        **kwargs,
-                    )
-                else:  # Python 3.2+ and Unix
-                    command = base_command
-
-                    print("command: ", command)
-                    env = os.environ.copy()  # Get the full environment
-
-                    process = subprocess.Popen(
-                        command,
-                        shell=True,
-                        env=env,  # Pass the full environment
-                        **kwargs,
-                    )
-
-                # Print the process ID for tracking
-                self.iface.messageBar().pushMessage(
-                    f"Process started with PID: {process.pid}",
-                    "Command is running in the background ",
-                    level=Qgis.Success,
-                    duration=45,
-                )
-            except Exception as e:
-                print(f"An error occurred: {e}")
-        else:
-            self.iface.messageBar().pushMessage(
-                f"Paths to tomofastx and paramfile must be defined",
-                level=Qgis.Warning,
-                duration=15,
-            )
-
     def select_tomo_Path(self):
 
         self.tomo_Path, _filter = QFileDialog.getOpenFileName(
@@ -1486,7 +1346,7 @@ class Tomofast_x:
             parameter = {
                 "INPUT": layer,
                 "TARGET_CRS": proj,
-                "OUTPUT": "memory:{}_Reprojected".format("ROI"),
+                "OUTPUT": "TEMPORARY_OUTPUT",
             }
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
 
@@ -1722,7 +1582,7 @@ class Tomofast_x:
             parameter = {
                 "INPUT": layer,
                 "TARGET_CRS": target_crs,
-                "OUTPUT": "memory:{}_Reprojected".format(baseName + suffix),
+                "OUTPUT": "TEMPORARY_OUTPUT",
             }
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
             crs = layer.crs()
@@ -1759,7 +1619,7 @@ class Tomofast_x:
             parameter = {
                 "INPUT": layer,
                 "TARGET_CRS": target_crs,
-                "OUTPUT": "memory:{}_Reprojected".format(baseName + suffix),
+                "OUTPUT": "TEMPORARY_OUTPUT",
             }
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
             crs = layer.crs()
@@ -1986,15 +1846,25 @@ class Tomofast_x:
             filename = self.dlg.lineEdit_magn_data_path.text()
             paths = os.path.split(filename)
             self.global_dataNameMagn = "".join(paths[1].split(".")[:-1])
-        else:
+        else:  # joint
             if dataType == "grav":
-                filename_grav = self.dlg.lineEdit_grav_data_path.text()
-                paths = os.path.split(filename_grav)
+                filename = (
+                    self.dlg.lineEdit_grav_data_path.text()
+                )  # assign to filename too
+                paths = os.path.split(filename)
                 self.global_dataNameGrav = "".join(paths[1].split(".")[:-1])
             elif dataType == "magn":
-                filename_magn = self.dlg.lineEdit_magn_data_path.text()
-                paths = os.path.split(filename_magn)
+                filename = (
+                    self.dlg.lineEdit_magn_data_path.text()
+                )  # assign to filename too
+                paths = os.path.split(filename)
                 self.global_dataNameMagn = "".join(paths[1].split(".")[:-1])
+            else:
+                # dataType was neither grav nor magn, bail out safely
+                self.iface.messageBar().pushMessage(
+                    "Unknown data type", level=Qgis.Warning, duration=15
+                )
+                return
 
         suffix = paths[1].split(".")[-1]
 
@@ -2031,9 +1901,13 @@ class Tomofast_x:
                 self.data_raster_layer = QgsRasterLayer(filename, "data")
             else:
                 if dataType == "grav":
-                    self.data_raster_layer = QgsRasterLayer(filename_grav, "data_grav")
+                    self.data_raster_layer = QgsRasterLayer(
+                        self.filename_grav, "data_grav"
+                    )
                 elif dataType == "magn":
-                    self.data_raster_layer = QgsRasterLayer(filename_magn, "data_magn")
+                    self.data_raster_layer = QgsRasterLayer(
+                        self.filename_magn, "data_magn"
+                    )
 
             extent = self.data_raster_layer.extent()
 
@@ -2216,32 +2090,6 @@ class Tomofast_x:
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
         # reset project CRS
-        """if self.global_experimentType == 1 or self.global_experimentType == 3:
-            QgsProject.instance().setCrs(
-                QgsCoordinateReferenceSystem(self.grav_proj_out)
-            )
-        else:
-            QgsProject.instance().setCrs(
-                QgsCoordinateReferenceSystem(self.magn_proj_out)
-            )
-
-        # close temp layers
-        if self.global_dataType == "points":
-            if self.global_elevType == 1:
-                layers = []
-            else:
-                layers = ["elevation_grid"]
-
-        else:
-            if self.global_elevType == 1:
-                layers = ["Extracted Data"]
-            else:
-                layers = ["Extracted Data", "elevation_grid"]
-
-        for layer in layers:
-            layer = QgsProject.instance().mapLayersByName(layer)[0]
-            if layer.isValid():
-                QgsProject.instance().removeMapLayer(layer)"""
 
         if self.global_dataType != "points":
             # open reprojected data layers
@@ -2515,7 +2363,7 @@ class Tomofast_x:
             "INPUT": mesh_layer,
             "RASTERCOPY": self.global_outputFolderPath + reprojDataName,
             "COLUMN_PREFIX": "data",
-            "OUTPUT": "memory:",
+            "OUTPUT": "TEMPORARY_OUTPUT",
         }
         # Get the layer ID from runAndLoadResults
         layer_id = processing.runAndLoadResults("native:rastersampling", parameter)[
@@ -2837,7 +2685,7 @@ class Tomofast_x:
         parameter = {
             "INPUT": rasterInPath,
             "TARGET_CRS": targetCrs,
-            "OUTPUT": "memory:{}_Reprojected".format(dataType),
+            "OUTPUT": "TEMPORARY_OUTPUT",
         }
         result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
 
@@ -2927,11 +2775,13 @@ class Tomofast_x:
             "INPUT": layer,
             "RASTERCOPY": reprojDTM,
             "COLUMN_PREFIX": "elevation",
-            "OUTPUT": "memory",
+            "OUTPUT": "TEMPORARY_OUTPUT",
         }
         processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
 
-        new_data_layer = QgsProject.instance().mapLayersByName("memory")[0]
+        result = processing.runAndLoadResults("native:rastersampling", parameter)
+        layer_id = result["OUTPUT"]
+        new_data_layer = QgsProject.instance().mapLayer(layer_id)
 
         # convert to pandas
         data = []
@@ -2960,7 +2810,8 @@ class Tomofast_x:
             }
 
         data_df = data_df.rename(columns=column_list)
-        data_df = data_df.drop(columns=["fid"])
+        if "fid" in data_df.columns:
+            data_df = data_df.drop(columns=["fid"])
 
         new_column_order = ["POINT_X", "POINT_Y", "POINT_Z", "data1"]
         data_df = data_df[new_column_order]
@@ -3108,11 +2959,6 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
-            """self.f_params.write(
-                "forward.data.grav.dataValuesFile    = {}\n".format(
-                    self.global_outputFolderPath + "/data_grav.csv"
-                )
-            )"""
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -3126,11 +2972,7 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_magn.csv"
                 )
             )
-            """self.f_params.write(
-                "forward.data.magn.dataValuesFile    = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn.csv"
-                )
-            )"""
+
         else:
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
@@ -3301,28 +3143,18 @@ class Tomofast_x:
                         self.inversion_admm_grav_bounds
                     )
                 )
-            if self.inversion_admm_grav_nLithologies > 0:
-                self.f_params.write(
-                    "inversion.admm.grav.weight      = {}\n".format("1000.0")
-                )
-            else:
-                self.f_params.write(
-                    "inversion.admm.grav.weight          = {}\n".format(
-                        self.inversion_admm_grav_weight
-                    )
-                )
 
-            if self.inversion_admm_grav_nLithologies > 0:
-                self.f_params.write(
-                    "inversion.admm.grav.weight      = {}\n".format("1000.0")
+        if self.inversion_admm_grav_nLithologies > 0:
+            self.f_params.write(
+                "inversion.admm.grav.weight      = {}\n".format("1000.0")
+            )
+            self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
+        else:
+            self.f_params.write(
+                "inversion.admm.grav.weight          = {}\n".format(
+                    self.inversion_admm_grav_weight
                 )
-                self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
-            else:
-                self.f_params.write(
-                    "inversion.admm.grav.weight          = {}\n".format(
-                        self.inversion_admm_grav_weight
-                    )
-                )
+            )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -3421,78 +3253,83 @@ class Tomofast_x:
 
     def export_model(self):
 
-        code = "grav"
-
         paramfile_Dir = os.path.dirname(self.paramfile_Path)
-
-        # Path to input model grid (modelGrid.XXXX.file parameter in the Parfile).
         filename_model_grid = os.path.join(paramfile_Dir, "model_grid.txt")
         print("Reading model from: ", filename_model_grid)
 
-        # Path to the output model after inversion.
-        filename_model_final = os.path.join(
-            paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
-        )
-        if os.path.exists(filename_model_final) == False:
-            code = "mag"
+        # Determine which codes to export based on experiment type
+        if self.global_experimentType == 1:
+            codes = ["grav"]
+        elif self.global_experimentType == 2:
+            codes = ["mag"]
+        else:  # joint - export both
+            codes = ["grav", "mag"]
+
+        for code in codes:
+            # Path to the output model after inversion
             filename_model_final = os.path.join(
                 paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
             )
 
-        print("Reading grid from: ", filename_model_final)
+            if not os.path.exists(filename_model_final):
+                self.iface.messageBar().pushMessage(
+                    f"Model file not found for {code}: {filename_model_final}",
+                    level=Qgis.Warning,
+                    duration=15,
+                )
+                continue
 
-        # Path to exported model in csv format
-        filename_model_csv = os.path.join(
-            paramfile_Dir, "OUTPUT/" + code + "_final_model3D_full.csv"
-        )
+            print("Reading grid from: ", filename_model_final)
 
-        # Reading the model grid.
-        model_grid = np.loadtxt(
-            filename_model_grid, dtype=float, usecols=(0, 1, 2, 3, 4, 5), skiprows=1
-        )
+            # Path to exported model in csv format
+            filename_model_csv = os.path.join(
+                paramfile_Dir, "OUTPUT/" + code + "_final_model3D_full.csv"
+            )
 
-        # Reading the final model.
-        model_values = np.loadtxt(filename_model_final, dtype=float, skiprows=1)
+            # Reading the model grid
+            model_grid = np.loadtxt(
+                filename_model_grid, dtype=float, usecols=(0, 1, 2, 3, 4, 5), skiprows=1
+            )
 
-        assert (
-            model_grid.shape[0] == model_values.shape[0]
-        ), "Inconsistent model dimensions!"
+            # Reading the final model
+            model_values = np.loadtxt(filename_model_final, dtype=float, skiprows=1)
 
-        Ncells = model_grid.shape[0]
-        print("Ncells =", Ncells)
+            if model_grid.shape[0] != model_values.shape[0]:
+                self.iface.messageBar().pushMessage(
+                    f"Inconsistent model dimensions for {code}!",
+                    level=Qgis.Warning,
+                    duration=15,
+                )
+                continue
 
-        print(model_grid.shape)
-        print(model_values.shape)
+            Ncells = model_grid.shape[0]
+            print(f"Ncells ({code}) =", Ncells)
 
-        # Positions of the model cell centers.
-        positions = np.ndarray((Ncells, 3), dtype=float)
+            # Positions of the model cell centers
+            positions = np.ndarray((Ncells, 3), dtype=float)
+            positions[:, 0] = (model_grid[:, 0] + model_grid[:, 1]) / 2.0
+            positions[:, 1] = (model_grid[:, 2] + model_grid[:, 3]) / 2.0
+            positions[:, 2] = (model_grid[:, 4] + model_grid[:, 5]) / 2.0
 
-        # Calculate the cell centers.
-        positions[:, 0] = (model_grid[:, 0] + model_grid[:, 1]) / 2.0
-        positions[:, 1] = (model_grid[:, 2] + model_grid[:, 3]) / 2.0
-        positions[:, 2] = (model_grid[:, 4] + model_grid[:, 5]) / 2.0
+            # Revert Z-axis
+            positions[:, 2] = -positions[:, 2]
 
-        # Revert Z-axis.
-        positions[:, 2] = -positions[:, 2]
-
-        # Combine the arrays
-        combined = np.column_stack((positions, model_values))
-        np.savetxt(
-            filename_model_csv,
-            combined,
-            delimiter=",",
-            header="x,y,z,data",
-            comments="",
-            fmt="%.6f",
-        )
-        self.iface.messageBar().pushMessage(
-            f"Model saved as "
-            + code
-            + "_final_model3D_full.csv in the OUTPUT directory",
-            "",
-            level=Qgis.Success,
-            duration=45,
-        )
+            # Combine and save
+            combined = np.column_stack((positions, model_values))
+            np.savetxt(
+                filename_model_csv,
+                combined,
+                delimiter=",",
+                header="x,y,z,data",
+                comments="",
+                fmt="%.6f",
+            )
+            self.iface.messageBar().pushMessage(
+                f"Model saved as {code}_final_model3D_full.csv in the OUTPUT directory",
+                "",
+                level=Qgis.Success,
+                duration=45,
+            )
 
     # display pints layer with colours
     def colour_points(self, layer, value_field, ramp_name, invert):
@@ -4287,3 +4124,8 @@ class Tomofast_x:
         self.setvars_Path = ""
         self.z_by_list = ""
         self.depth_layers = []
+        self.nData = 0
+        self.tomo_Path = ""
+        self.paramfile_Path = ""
+        self.kernelfiledirectory = ""
+        self.parfilename = ""
