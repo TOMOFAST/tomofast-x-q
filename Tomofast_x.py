@@ -2919,7 +2919,7 @@ class Tomofast_x:
         new_column_order = ["POINT_X", "POINT_Y", "POINT_Z", "data1"]
         data_df = data_df[new_column_order]
 
-        data_df.to_csv(self.global_outputFolderPath + dataFileName, index=False)
+        # data_df.to_csv(self.global_outputFolderPath + dataFileName, index=False)
 
         self.data_df = data_df.copy(deep=True)
         QgsProject.instance().removeMapLayer(new_data_layer)
