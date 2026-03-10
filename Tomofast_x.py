@@ -1725,8 +1725,97 @@ class Tomofast_x:
         if self.global_elevType == 2:
             self.sample_elevation()
 
-    # extract dtm values based on mesh locaitons
+    # extract dtm values based on mesh locations
+
     def sample_elevation(self):
+        mesh = QgsProject.instance().mapLayersByName("model_grid")[0]
+        dtm = QgsProject.instance().mapLayersByName("Reprojected DTM")[0]
+
+        parameter = {
+            "INPUT": mesh,
+            "RASTERCOPY": dtm,
+            "COLUMN_PREFIX": "elevation",
+            "OUTPUT": "TEMPORARY_OUTPUT",
+        }
+        processing.runAndLoadResults("native:rastersampling", parameter)
+
+        elev = QgsProject.instance().mapLayersByName("Sampled")[0]
+        elev.setName("elevation_grid")
+
+        # Extract sampled points into a dataframe keyed by coordinates
+        sampled_data = {}
+        for feature in elev.getFeatures():
+            pt = feature.geometry().asPoint()
+            key = (round(pt.x(), 2), round(pt.y(), 2))
+            val = feature["elevation1"]
+            sampled_data[key] = val if val is not None else 0.0
+
+        # Read the model grid to get the exact nx*ny points in the correct order
+        model_grid_df = pd.read_csv(
+            self.global_outputFolderPath + "/model_grid.txt",
+            sep=" ",
+            skiprows=1,
+            header=None,
+            nrows=self.data2tomofast.nx * self.data2tomofast.ny,
+            names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
+        )
+
+        # Calculate cell centres
+        model_grid_df["cx"] = (model_grid_df["x1"] + model_grid_df["x2"]) / 2.0
+        model_grid_df["cy"] = (model_grid_df["y1"] + model_grid_df["y2"]) / 2.0
+
+        # Build elevation column by looking up each model grid point in the
+        # sampled data, falling back to 0 if the DTM didn't cover that point
+        elevations = []
+        missing = 0
+        for _, row in model_grid_df.iterrows():
+            key = (round(row["cx"], 2), round(row["cy"], 2))
+            val = sampled_data.get(key, None)
+            if val is None:
+                # Try nearest key within a small tolerance in case of float precision
+                val = 0.0
+                for k, v in sampled_data.items():
+                    if abs(k[0] - key[0]) < 1.0 and abs(k[1] - key[1]) < 1.0:
+                        val = v
+                        break
+                else:
+                    missing += 1
+            elevations.append(-val)  # negate to convert DTM height to depth
+
+        if missing > 0:
+            self.iface.messageBar().pushMessage(
+                f"{missing} mesh points had no DTM coverage.",
+                "Elevations set to zero for those points.",
+                level=Qgis.Warning,
+                duration=45,
+            )
+
+        # Write elevation grid with exactly nx*ny rows in model grid order
+        output_df = pd.DataFrame(
+            {
+                "x": model_grid_df["cx"].values,
+                "y": model_grid_df["cy"].values,
+                "elevation": elevations,
+            }
+        )
+        output_df.to_csv(
+            self.global_outputFolderPath + "/elevation_grid.csv",
+            index=False,
+        )
+
+        # Also update the QGIS layer for display purposes
+        self.rename_dp_field(elev, "elevation1", "elevation")
+        elev.renderer().symbol().setSize(0.25)
+        self.colour_points(elev, "elevation", "Greys", True)
+        elev.triggerRepaint()
+
+        (
+            QgsProject.instance().addMapLayer(elev)
+            if not QgsProject.instance().mapLayersByName("elevation_grid")
+            else None
+        )
+
+    def sample_elevation_old(self):
         mesh = QgsProject.instance().mapLayersByName("model_grid")[0]
         dtm = QgsProject.instance().mapLayersByName("Reprojected DTM")[0]
 
