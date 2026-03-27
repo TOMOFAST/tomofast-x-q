@@ -1690,7 +1690,6 @@ class Tomofast_x:
         df = df.drop(columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
-        temp_data = temp.dataProvider()
         # Start of the edition
         temp.startEditing()
 

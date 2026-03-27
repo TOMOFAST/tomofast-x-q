@@ -8,7 +8,6 @@ qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
 description=Supports Tomofast-x geophysical inversion code
 version=0.2.13
-supportsQt6=True
 
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
