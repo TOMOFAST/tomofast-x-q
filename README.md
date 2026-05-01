@@ -2,7 +2,7 @@
  QGIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/">View Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast-x-q.mp4">Ctrl-click on link to watch demo video</a>**
-https://tectonique.net/tomofast-x-q/tomofast-x-q.mp4
+
 ## Recent changes
 changelog=0.2.13   
     * Update calls for newer pandas compatibility   
