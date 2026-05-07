@@ -997,6 +997,13 @@ class Tomofast_x:
         # If it doesn't match the WSL pattern, return as-is
         print(f"Path not recognized as WSL, returning as-is: {normalized}")
         return normalized
+    
+    def _validate_path(self, path: str) -> str:
+        """Raise if path contains shell metacharacters."""
+        # Allow only safe path characters
+        if re.search(r'[;&|`$<>!]', path):
+            raise ValueError(f"Unsafe characters in path: {path}")
+        return path
 
     def run_inversion(self):
         if (
@@ -1012,21 +1019,21 @@ class Tomofast_x:
 
             if platform.system() == "Windows" and use_native_windows:
                 # Native Windows mode
-                wsl_tomo_path = self.tomo_Path
-                wsl_param_path = self.paramfile_Path
+                wsl_tomo_path = self._validate_path(self.tomo_Path)
+                wsl_param_path = self._validate_path(self.paramfile_Path)
                 mpiexec_path = (
-                    self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                    self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
                     if hasattr(self.dlg, "lineEdit_2_mpirunPath_2")
                     else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
                 )
                 distro = " "
 
                 # Get paths for VS and Intel oneAPI
-                oneapi_path = self.dlg.lineEdit_setvarsPath.text().strip()
+                oneapi_path = self._validate_path(self.dlg.lineEdit_setvarsPath.text().strip())
 
             elif platform.system() == "Windows":
                 distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-                self.paramfile_Path_run = self.paramfile_Path + "_run"
+                self.paramfile_Path_run = self._validate_path(self.paramfile_Path + "_run")
                 shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
                 drive = self.paramfile_Path_run[0:2]
                 self.replace_text_in_file(
@@ -1066,15 +1073,15 @@ class Tomofast_x:
                 wsl_param_path = wsl_param_path.replace('"', "")
 
             elif platform.system() == "Darwin":
-                wsl_tomo_path = self.tomo_Path
-                wsl_param_path = self.paramfile_Path
-                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                wsl_tomo_path = self._validate_path(self.tomo_Path)
+                wsl_param_path = self._validate_path(self.paramfile_Path)
+                mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
                 distro = " "
 
             else:
-                wsl_tomo_path = self.tomo_Path
-                wsl_param_path = self.paramfile_Path
-                mpirun_path = self.dlg.lineEdit_2_mpirunPath_2.text().strip()
+                wsl_tomo_path = self._validate_path(self.tomo_Path)
+                wsl_param_path = self._validate_path(self.paramfile_Path)
+                mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
                 distro = " "
 
             if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
@@ -1169,7 +1176,7 @@ class Tomofast_x:
 
                     process = subprocess.Popen(
                         command,
-                        shell=True,
+                        shell=True,   # nosec B602 - shell required for `start` built-in and pipe operators
                         **kwargs,
                     )
 
@@ -1194,7 +1201,7 @@ class Tomofast_x:
                         print("command: ", command)
                         process = subprocess.Popen(
                             command,
-                            shell=True,
+                            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
                             **kwargs,
                         )
                 else:
@@ -1211,7 +1218,7 @@ class Tomofast_x:
 
                     process = subprocess.Popen(
                         command,
-                        shell=True,
+                        shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
                         env=env,
                         **kwargs,
                     )
