@@ -1392,7 +1392,7 @@ class Tomofast_x:
     # select existing point or raster magn data
     def select_dtm(self):
         self.dtm_filename, _filter = QFileDialog.getOpenFileName(
-            None, "Select DTM File", ".", "TIFF (*.tif)"
+            None, "Select DTM File", ".", "TIFF (*.tif *.tiff *.TIF *.TIFF)"
         )
 
         self.dlg.lineEdit_dtm_path.setText(self.dtm_filename)
