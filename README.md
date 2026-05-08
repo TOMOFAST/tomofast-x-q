@@ -5,7 +5,7 @@
 
 ## Recent changes
 changelog=0.2.14   
-    * Allow tiff and tif inputs   
+    * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   
     * Fix untested path usage   
     * Add link to new help page and update video to latest GUI   
