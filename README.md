@@ -1,10 +1,15 @@
-# Tomofast-x QGIS Plugin
+# Tomofast-x QGIS Plugin v0.2.14
  QGIS Plugin to help Tomofast-x usage
 
- **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/">View Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast-x-q.mp4">Ctrl-click on link to watch demo video</a>**
+ **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.13   
+changelog=0.2.14   
+    * Allow tiff and tif inputs   
+    * Remove Upload_plugin.py script   
+    * Fix untested path usage   
+    * Add link to new help page and update video to latest GUI   
+    0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
     * Update requirements   

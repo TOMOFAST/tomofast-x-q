@@ -7,7 +7,7 @@ name=tomofast_x_q
 qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
 description=Supports Tomofast-x geophysical inversion code
-version=0.2.13
+version=0.2.14
 
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
@@ -22,7 +22,12 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.13   
+changelog=0.2.14   
+    * Allow tiff and tif inputs   
+    * Remove Upload_plugin.py script   
+    * Fix untested path usage   
+    * Add link to new help page and update video to latest GUI   
+    0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
     * Update requirements   
