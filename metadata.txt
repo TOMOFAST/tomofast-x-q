@@ -29,6 +29,7 @@ changelog=0.2.14
     * Add link to new help page and update video to latest GUI   
     * Split run_inversion into os-specific codes  
     * Full load of data layers when loading old parfile    
+    * Add built-in display of tomofast output to plugin GUI   
     0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
