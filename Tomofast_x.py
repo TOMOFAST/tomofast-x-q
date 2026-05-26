@@ -21,9 +21,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QTranslator,
+    QCoreApplication,
+    QFileInfo,
+    QVariant,
+    QUrl,
+    QTimer,
+    Qt,
+)
+from qgis.PyQt.QtGui import QIcon, QDesktopServices, QTextCursor
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QDockWidget
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
@@ -36,8 +45,6 @@ from qgis.core import (
     QgsPoint,
     QgsMarkerSymbol,
     QgsSingleSymbolRenderer,
-    QgsVectorLayer,
-    QgsField,
     QgsPointXY,
     QgsGeometry,
     QgsFields,
@@ -46,22 +53,6 @@ from qgis.core import (
     QgsGraduatedSymbolRenderer,
     QgsClassificationEqualInterval,
 )
-from qgis.PyQt.QtCore import (
-    QSettings,
-    QTranslator,
-    QCoreApplication,
-    QFileInfo,
-    QVariant,
-    Qt,
-    QUrl,
-)
-
-from qgis.PyQt.QtWidgets import QDockWidget
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon, QDesktopServices
-from qgis.PyQt.QtWidgets import QAction, QFileDialog
-from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtCore import Qt
 
 # Qt5/Qt6 Compatibility Layer
 try:
@@ -152,6 +143,11 @@ class Tomofast_x:
         self.dlg = None
 
         self.initialise_variables()
+
+        self._debug_log_timer = QTimer()
+        self._debug_log_timer.timeout.connect(self._poll_debug_log)
+        self._debug_log_path = ""
+        self._debug_log_pos = 0
 
     def define_parameters(self):
 
@@ -888,6 +884,16 @@ class Tomofast_x:
                     self.dlg.lineEdit_setvarsPath.setText(line.rstrip())
                     self.setvars_Path = line.rstrip()
 
+                    line = tpfile.readline().rstrip()
+                    if line in ("0", "1"):
+                        native = line == "1"
+                        self.dlg.radioButton_windowsNative.setChecked(native)
+                        self.dlg.radioButton_windowsWSL.setChecked(not native)
+
+                    line = tpfile.readline().rstrip()
+                    if line.isdigit():
+                        self.dlg.mQgsSpinBox_noProc.setValue(int(line))
+
             self.dlg.version_label.setText("v " + self.show_version())
 
     def select_kernel_path(self):
@@ -1027,6 +1033,21 @@ class Tomofast_x:
             raise ValueError(f"Unsafe characters in path: {path}")
         return path
 
+    def _poll_debug_log(self):
+        if not self._debug_log_path or not os.path.exists(self._debug_log_path):
+            return
+        try:
+            with open(self._debug_log_path, "r", errors="replace") as fh:
+                fh.seek(self._debug_log_pos)
+                new_text = fh.read()
+                if new_text:
+                    self._debug_log_pos = fh.tell()
+                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
+                    self.dlg.textEdit_inversion_log.insertPlainText(new_text)
+                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
+        except Exception:
+            pass
+
     def run_inversion(self):
         if (
             os.path.exists(self.paramfile_Path)
@@ -1043,12 +1064,25 @@ class Tomofast_x:
             try:
                 if use_native_windows:
                     process, distro, mpi_path = self._run_windows_native(noProc)
+                    self._debug_log_path = self.paramfile_Path + "_debug.txt"
                 elif platform.system() == "Windows":
                     process, distro, mpi_path = self._run_windows_wsl(noProc)
+                    # WSL runs against paramfile_Path_run (the _run copy); debug file lands beside it
+                    self._debug_log_path = self.paramfile_Path_run + "_debug.txt"
                 elif platform.system() == "Darwin":
                     process, distro, mpi_path = self._run_macos(noProc)
+                    self._debug_log_path = self.paramfile_Path + "_debug.txt"
                 else:
                     process, distro, mpi_path = self._run_linux(noProc)
+                    self._debug_log_path = self.paramfile_Path + "_debug.txt"
+                try:
+                    if os.path.exists(self._debug_log_path):
+                        os.remove(self._debug_log_path)
+                except Exception:
+                    pass
+                self._debug_log_pos = 0
+                self.dlg.textEdit_inversion_log.clear()
+                self._debug_log_timer.start(500)
 
                 self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
                 with open(
@@ -1060,6 +1094,8 @@ class Tomofast_x:
                     tpfile.write("\n")
                     tpfile.write(mpi_path + "\n")
                     tpfile.write(self.dlg.lineEdit_setvarsPath.text().strip() + "\n")
+                    tpfile.write(("1" if use_native_windows else "0") + "\n")
+                    tpfile.write(str(noProc) + "\n")
 
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
@@ -2240,6 +2276,9 @@ endlocal
                     )
                     self.update_memory_size()
                     self.save_parameter_file()
+                    for name in ("Sampled", "elevation_grid", "Extracted Data"):
+                        for lyr in QgsProject.instance().mapLayersByName(name):
+                            QgsProject.instance().removeMapLayer(lyr.id())
                 """except:
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
