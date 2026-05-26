@@ -185,16 +185,22 @@ class Tomofast_x:
                 int,
                 "radio",
             ],
-            """"global.elevType": [
-                self.global_elevType,
-                self.dlg.radioButton_elev_const,
-                self.dlg.radioButton_elev_dtm,
-                int,
-                "radio",
-            ],"""
+            # "global.elevType": [
+            #     self.global_elevType,
+            #     self.dlg.radioButton_elev_const,
+            #     self.dlg.radioButton_elev_dtm,
+            #     int,
+            #     "radio",
+            # ],
             "global.elevFilename": [
                 self.global_elevFilename,
                 self.dlg.lineEdit_dtm_path,
+                str,
+                "text",
+            ],
+            "roi.filename": [
+                self.ROIFileName,
+                self.dlg.lineEdit_ROI_path,
                 str,
                 "text",
             ],
@@ -347,7 +353,12 @@ class Tomofast_x:
                 int,
                 "value",
             ],
-            # "inversion.minResidual" : [self.inversion_minResidual,self.dlg.textEdit_min_residual,str,'plainText'],
+            "inversion.minResidual": [
+                self.inversion_minResidual,
+                self.dlg.textEdit_min_residual,
+                str,
+                "plainText",
+            ],
             # MODEL DAMPING (m - m_prior)
             "inversion.modelDamping.grav.weight": [
                 self.inversion_modelDamping_grav_weight,
@@ -456,6 +467,12 @@ class Tomofast_x:
                 str,
                 "text",
             ],
+            "global.magn.modelUnitsMultiplier": [
+                self.global_magn_modelUnitsMultiplier,
+                self.dlg.mQgsDoubleSpinBox_magn_model_multiplier,
+                float,
+                "value",
+            ],
             "global.grav.sensor_height": [
                 self.global_grav_sensor_height,
                 self.dlg.doubleSpinBox_grav_sensor_height,
@@ -490,6 +507,11 @@ class Tomofast_x:
                 int,
                 "value",
             ],
+            # Mesh bounding box (plugin-only, saved with # prefix)
+            "mesh.south": [self.meshBox["south"], self.dlg.mQgsSpinBox_mesh_south, int, "value"],
+            "mesh.west": [self.meshBox["west"], self.dlg.mQgsSpinBox_mesh_west, int, "value"],
+            "mesh.north": [self.meshBox["north"], self.dlg.mQgsSpinBox_mesh_north, int, "value"],
+            "mesh.east": [self.meshBox["east"], self.dlg.mQgsSpinBox_mesh_east, int, "value"],
             # Mag Field
             "forward.magneticField.declination": [
                 self.forward_magneticField_declination,
@@ -1326,10 +1348,119 @@ endlocal
             self.load_parfile()
             self.enable_boxes()
             self.parse_parameters()
+            self._load_layers_from_parfile()
 
             self.iface.messageBar().pushMessage(
                 "Parfile loaded ", "OK ", level=Qgis.Success, duration=45
             )
+
+    def _load_layers_from_parfile(self):
+        """Auto-load any data files referenced in the parfile as QGIS layers and enable downstream widgets."""
+        # Read CRS from widgets (load_parfile already populated them via d_params)
+        grav_crs = self.dlg.mQgsProjectionSelectionWidget_grav_in.crs().authid()
+        if grav_crs:
+            self.grav_proj_in = grav_crs
+        grav_crs_out = self.dlg.mQgsProjectionSelectionWidget_grav_out.crs().authid()
+        if grav_crs_out:
+            self.grav_proj_out = grav_crs_out
+        magn_crs = self.dlg.mQgsProjectionSelectionWidget_magn_in.crs().authid()
+        if magn_crs:
+            self.magn_proj_in = magn_crs
+        magn_crs_out = self.dlg.mQgsProjectionSelectionWidget_magn_out.crs().authid()
+        if magn_crs_out:
+            self.magn_proj_out = magn_crs_out
+
+        grav_loaded = False
+        magn_loaded = False
+
+        # --- Gravity data ---
+        try:
+            if (
+                self.global_experimentType in (1, 3)
+                and self.filename_grav
+                and os.path.exists(self.filename_grav)
+            ):
+                dataType = "grav" if self.global_experimentType == 3 else None
+                suffix = self.filename_grav.split(".")[-1].lower()
+                self.process_data_file(dataType)
+                if suffix == "csv":
+                    self.xcol_grav = self.dlg.comboBox_grav_field_x.currentText()
+                    self.ycol_grav = self.dlg.comboBox_grav_field_y.currentText()
+                    self.datacol_grav = self.dlg.comboBox_grav_field_data.currentText()
+                    self.load_csv_vector_grav(
+                        self.filename_grav, self.xcol_grav, self.ycol_grav, self.datacol_grav
+                    )
+                    self.dlg.comboBox_grav_field_x.setEnabled(True)
+                    self.dlg.comboBox_grav_field_y.setEnabled(True)
+                    self.dlg.comboBox_grav_field_data.setEnabled(True)
+                    self.dlg.pushButton_assign_grav_fields.setEnabled(True)
+                self.dlg.pushButton_load_grav_data.setEnabled(True)
+                grav_loaded = True
+        except Exception as e:
+            print(f"Warning: could not load grav data layer: {e}")
+
+        # --- Magnetic data ---
+        try:
+            if (
+                self.global_experimentType in (2, 3)
+                and self.filename_magn
+                and os.path.exists(self.filename_magn)
+            ):
+                dataType = "magn" if self.global_experimentType == 3 else None
+                suffix = self.filename_magn.split(".")[-1].lower()
+                self.process_data_file(dataType)
+                if suffix == "csv":
+                    self.xcol_magn = self.dlg.comboBox_magn_field_x.currentText()
+                    self.ycol_magn = self.dlg.comboBox_magn_field_y.currentText()
+                    self.datacol_magn = self.dlg.comboBox_magn_field_data.currentText()
+                    self.load_csv_vector_magn(
+                        self.filename_magn, self.xcol_magn, self.ycol_magn, self.datacol_magn
+                    )
+                    self.dlg.comboBox_magn_field_x.setEnabled(True)
+                    self.dlg.comboBox_magn_field_y.setEnabled(True)
+                    self.dlg.comboBox_magn_field_data.setEnabled(True)
+                    self.dlg.pushButton_assign_magn_fields.setEnabled(True)
+                self.dlg.pushButton_load_magn_data.setEnabled(True)
+                magn_loaded = True
+        except Exception as e:
+            print(f"Warning: could not load magn data layer: {e}")
+
+        # --- DTM ---
+        try:
+            if self.global_elevFilename and os.path.exists(self.global_elevFilename):
+                self.dtm_filename = self.global_elevFilename
+                self.load_dtm()
+                self.global_elevType = 2
+        except Exception as e:
+            print(f"Warning: could not load DTM layer: {e}")
+
+        # --- ROI polygon — reproject, add as layer, and update mesh S/E/N/W spinboxes ---
+        try:
+            if self.ROIFileName and os.path.exists(self.ROIFileName):
+                layer = QgsVectorLayer(self.ROIFileName, "ROI", "ogr")
+                if layer.isValid():
+                    proj = (
+                        self.grav_proj_out
+                        if self.global_experimentType in (1, 3)
+                        else self.magn_proj_out
+                    )
+                    parameter = {
+                        "INPUT": layer,
+                        "TARGET_CRS": proj,
+                        "OUTPUT": "TEMPORARY_OUTPUT",
+                    }
+                    result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
+                    QgsProject.instance().addMapLayer(result)
+                    self.data_extents(result)
+                    self._move_layer_to_top(result)
+        except Exception as e:
+            print(f"Warning: could not load ROI layer: {e}")
+
+        # --- Enable downstream widget groups now that data is present ---
+        if grav_loaded or magn_loaded:
+            self.update_widgets()
+            self.dlg.groupBox_2.setEnabled(True)
+            self.dlg.groupBox_3.setEnabled(True)
 
     # select existing parfile
     def select_parfile(self):
@@ -1364,6 +1495,7 @@ endlocal
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
+            self._move_layer_to_top(result)
 
     def select_data_file(self, dataType):
 
@@ -1668,6 +1800,14 @@ endlocal
         }
 
     # rearrange layers so points ontop of rasters
+    def _move_layer_to_top(self, layer):
+        root = QgsProject.instance().layerTreeRoot()
+        node = root.findLayer(layer.id())
+        if node:
+            cloned = node.clone()
+            root.insertChildNode(0, cloned)
+            root.removeChildNode(node)
+
     def rearrange(self):
         from collections import OrderedDict
 
@@ -1937,8 +2077,16 @@ endlocal
             temppath = result["OUTPUT"]
             gd = gdal.Open(temppath)
             self.dtm_array = gd.ReadAsArray()
+            # Rename the reprojected layer — try the canonical name first, then fall
+            # back to matching by output path so a QGIS version rename doesn't break this.
             layers = QgsProject.instance().mapLayersByName("Reprojected")
-            layers[0].setName("Reprojected DTM")
+            if not layers:
+                layers = [
+                    lyr for lyr in QgsProject.instance().mapLayers().values()
+                    if hasattr(lyr, "source") and lyr.source() == temppath
+                ]
+            if layers:
+                layers[0].setName("Reprojected DTM")
             self.rearrange()
         else:
             self.iface.messageBar().pushMessage(
@@ -3050,7 +3198,7 @@ endlocal
                 )
             )
             self.f_params.write(
-                "forward.magneticField.intensity_nT                = {}\n".format(
+                "forward.magneticField.intensity                   = {}\n".format(
                     self.forward_magneticField_intensity  # .item()
                 )
             )
@@ -3099,12 +3247,12 @@ endlocal
 
         self.spacer("DEPTH WEIGHTING")
 
-        self.f_params.write(
-            "forward.depthWeighting.type         = {}\n".format(
-                self.forward_depthWeighting_type
-            )
-        )
         if self.global_experimentType == 1 or self.global_experimentType == 3:
+            self.f_params.write(
+                "forward.depthWeighting.grav.type    = {}\n".format(
+                    self.forward_depthWeighting_grav_type
+                )
+            )
             self.f_params.write(
                 "forward.depthWeighting.grav.power   = {}\n".format(
                     self.forward_depthWeighting_grav_power
@@ -3112,6 +3260,11 @@ endlocal
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
+            self.f_params.write(
+                "forward.depthWeighting.magn.type    = {}\n".format(
+                    self.forward_depthWeighting_magn_type
+                )
+            )
             self.f_params.write(
                 "forward.depthWeighting.magn.power   = {}\n".format(
                     self.forward_depthWeighting_magn_power
@@ -3181,6 +3334,11 @@ endlocal
                 self.inversion_writeModelEveryNiter
             )
         )
+        self.f_params.write(
+            "#inversion.minResidual               = {}\n".format(
+                self.inversion_minResidual
+            )
+        )
 
         self.spacer("MODEL DAMPING (m - m_prior)")
         if self.global_experimentType == 1 or self.global_experimentType == 3:
@@ -3197,11 +3355,18 @@ endlocal
                 )
             )
 
-        self.f_params.write(
-            "inversion.modelDamping.normPower    = {}\n".format(
-                self.inversion_modelDamping_grav_normPower
+        if self.global_experimentType == 1 or self.global_experimentType == 3:
+            self.f_params.write(
+                "inversion.modelDamping.grav.normPower = {}\n".format(
+                    self.inversion_modelDamping_grav_normPower
+                )
             )
-        )
+        if self.global_experimentType == 2 or self.global_experimentType == 3:
+            self.f_params.write(
+                "inversion.modelDamping.magn.normPower = {}\n".format(
+                    self.inversion_modelDamping_magn_normPower
+                )
+            )
 
         self.spacer("JOINT INVERSION parameters")
 
@@ -3228,12 +3393,12 @@ endlocal
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
-                "inversion.admm.enableADMM           = {}\n".format(
+                "inversion.admm.grav.enableADMM      = {}\n".format(
                     self.inversion_admm_grav_enableADMM
                 )
             )
             self.f_params.write(
-                "inversion.admm.nLithologies         = {}\n".format(
+                "inversion.admm.grav.nLithologies    = {}\n".format(
                     self.inversion_admm_grav_nLithologies
                 )
             )
@@ -3270,12 +3435,12 @@ endlocal
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
-                "inversion.admm.enableADMM           = {}\n".format(
+                "inversion.admm.magn.enableADMM      = {}\n".format(
                     self.inversion_admm_magn_enableADMM
                 )
             )
             self.f_params.write(
-                "inversion.admm.nLithologies         = {}\n".format(
+                "inversion.admm.magn.nLithologies    = {}\n".format(
                     self.inversion_admm_magn_nLithologies
                 )
             )
@@ -3330,8 +3495,27 @@ endlocal
         self.f_params.write(
             "#mesh.z.fullDepth                  = {}\n".format(self.z_fullDepth)
         )
+        self.f_params.write(
+            "#mesh.south                          = {}\n".format(self.meshBox["south"])
+        )
+        self.f_params.write(
+            "#mesh.west                           = {}\n".format(self.meshBox["west"])
+        )
+        self.f_params.write(
+            "#mesh.north                          = {}\n".format(self.meshBox["north"])
+        )
+        self.f_params.write(
+            "#mesh.east                           = {}\n".format(self.meshBox["east"])
+        )
 
         self.spacer("ANOMALIES")
+
+        self.f_params.write(
+            "#global.elevFilename                 = {}\n".format(self.global_elevFilename)
+        )
+        self.f_params.write(
+            "#roi.filename                        = {}\n".format(self.ROIFileName)
+        )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
@@ -3346,7 +3530,7 @@ endlocal
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
-                "#anomalies.magn.data_file            = {}\n".format(self.filename_magn)
+                "#anomalies.magn.data.file            = {}\n".format(self.filename_magn)
             )
             self.f_params.write(
                 "#anomalies.magn.proj.in              = {}\n".format(self.magn_proj_in)
@@ -3627,6 +3811,7 @@ endlocal
         self.filename_magn = self.dlg.lineEdit_magn_data_path.text()
 
         self.global_elevFilename = self.dlg.lineEdit_dtm_path.text()
+        self.ROIFileName = self.dlg.lineEdit_ROI_path.text()
 
         self.meshBox = {
             "south": self.dlg.mQgsSpinBox_mesh_south.value(),
@@ -4210,6 +4395,7 @@ endlocal
         self.magn_proj_out = "EPSG:4326"
         self.global_elevType = 1
         self.global_elevFilename = ""
+        self.ROIFileName = ""
         self.modelGrid_size = [0, 0, 0]
         self.global_grav_dataUnitsMultiplier = 0.00001
         self.global_magn_dataUnitsMultiplier = 1

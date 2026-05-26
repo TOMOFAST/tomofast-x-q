@@ -27,7 +27,8 @@ changelog=0.2.14
     * Remove Upload_plugin.py script   
     * Fix untested path usage   
     * Add link to new help page and update video to latest GUI   
-    * Split run_inversion into os-specific codes   
+    * Split run_inversion into os-specific codes  
+    * Full load of data layers when loading old parfile    
     0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
