@@ -1012,79 +1012,22 @@ class Tomofast_x:
             and os.path.exists(self.tomo_Path)
             and self.tomo_Path != ""
         ):
-            # Check if we're using native Windows mode
-            use_native_windows = True
-            if platform.system() == "Windows":
-                use_native_windows = self.dlg.radioButton_windowsNative.isChecked()
+            use_native_windows = (
+                platform.system() == "Windows"
+                and self.dlg.radioButton_windowsNative.isChecked()
+            )
+            noProc = self.dlg.mQgsSpinBox_noProc.value()
 
-            if platform.system() == "Windows" and use_native_windows:
-                # Native Windows mode
-                wsl_tomo_path = self._validate_path(self.tomo_Path)
-                wsl_param_path = self._validate_path(self.paramfile_Path)
-                mpiexec_path = (
-                    self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
-                    if hasattr(self.dlg, "lineEdit_2_mpirunPath_2")
-                    else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
-                )
-                distro = " "
+            try:
+                if use_native_windows:
+                    process, distro, mpi_path = self._run_windows_native(noProc)
+                elif platform.system() == "Windows":
+                    process, distro, mpi_path = self._run_windows_wsl(noProc)
+                elif platform.system() == "Darwin":
+                    process, distro, mpi_path = self._run_macos(noProc)
+                else:
+                    process, distro, mpi_path = self._run_linux(noProc)
 
-                # Get paths for VS and Intel oneAPI
-                oneapi_path = self._validate_path(self.dlg.lineEdit_setvarsPath.text().strip())
-
-            elif platform.system() == "Windows":
-                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-                self.paramfile_Path_run = self._validate_path(self.paramfile_Path + "_run")
-                shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
-                drive = self.paramfile_Path_run[0:2]
-                self.replace_text_in_file(
-                    self.paramfile_Path_run,
-                    "= {}:/".format(drive[0]),
-                    "= /mnt/{}/".format(drive[0].lower()),
-                )
-
-                wsl_path = "//wsl.localhost/" + distro
-                wsl_param_path = self.add_quotes_to_path(
-                    self.paramfile_Path_run.replace(
-                        "{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())
-                    )
-                )
-                # if paramfile stored on linux path, remove wsl access info
-                if wsl_path in wsl_param_path:
-                    wsl_param_path = wsl_param_path.replace(wsl_path, "")
-                    self.replace_text_in_file(
-                        self.paramfile_Path_run,
-                        wsl_path,
-                        "",
-                    )
-                    print(
-                        "Adjusted wsl_param_path for linux stored paramfile - ",
-                        wsl_param_path,
-                    )
-
-                distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
-                wsl_path = "//wsl.localhost/" + distro
-
-                wsl_tomo_path = self.add_quotes_to_path(
-                    self.tomo_Path.replace(wsl_path, "")
-                )
-                mpirun_path = " mpirun "
-
-                # Replace spaces with escaped spaces for WSL
-                wsl_param_path = wsl_param_path.replace('"', "")
-
-            elif platform.system() == "Darwin":
-                wsl_tomo_path = self._validate_path(self.tomo_Path)
-                wsl_param_path = self._validate_path(self.paramfile_Path)
-                mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
-                distro = " "
-
-            else:
-                wsl_tomo_path = self._validate_path(self.tomo_Path)
-                wsl_param_path = self._validate_path(self.paramfile_Path)
-                mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
-                distro = " "
-
-            if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
                 self.dlg.lineEdit_tomoPath.setText(self.tomo_Path)
                 with open(
                     os.path.dirname(os.path.realpath(__file__)) + "/tomoconfig.txt",
@@ -1093,135 +1036,8 @@ class Tomofast_x:
                     tpfile.write(self.tomo_Path + "\n")
                     tpfile.write(distro + "\n")
                     tpfile.write("\n")
-                    if platform.system() == "Windows" and use_native_windows:
-                        tpfile.write(mpiexec_path + "\n")
-                    else:
-                        tpfile.write(mpirun_path + "\n")
+                    tpfile.write(mpi_path + "\n")
                     tpfile.write(self.dlg.lineEdit_setvarsPath.text().strip() + "\n")
-
-            noProc = self.dlg.mQgsSpinBox_noProc.value()
-
-            # set system/version dependent "start_new_session" analogs
-            kwargs = {}
-            if platform.system() == "Windows":
-                CREATE_NEW_PROCESS_GROUP = 0x00000200
-                DETACHED_PROCESS = 0x00000008
-                kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
-            elif sys.version_info < (3, 2):
-                kwargs.update(preexec_fn=os.setsid)
-            else:
-                kwargs.update(start_new_session=True)
-
-            try:
-                debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
-
-                print("noProc - ", noProc)
-                print("tomo_path - ", wsl_tomo_path)
-                print("param_path - ", wsl_param_path)
-                print("debug_path - ", debug_path)
-
-                if platform.system() == "Windows" and use_native_windows:
-                    # Native Windows mode - create a batch file to set up environment and run
-                    print("mpiexec_path - ", mpiexec_path)
-                    print("oneapi_path - ", oneapi_path)
-
-                    # Escape any forward slashes to backslashes for Windows batch
-                    oneapi_path_bat = oneapi_path.replace("/", "\\")
-                    tomo_path_bat = wsl_tomo_path.replace("/", "\\")
-                    param_path_bat = wsl_param_path.replace("/", "\\")
-                    debug_path_bat = debug_path.replace("/", "\\")
-
-                    batch_content = """@echo off
-                setlocal
-
-                """
-                    # Build the command based on number of processors
-                    if noProc == 1:
-                        run_command = f'"{tomo_path_bat}" -p "{param_path_bat}"'
-                    else:
-                        run_command = f'"{mpiexec_path}" -n {noProc} "{tomo_path_bat}" -p "{param_path_bat}"'
-
-                    batch_content += f"""
-
-
-                call "{oneapi_path_bat}"
-                if errorlevel 1 (
-                    echo Failed to set up Intel oneAPI environment
-                    pause
-                    exit /b 1
-                )
-
-                echo Environment setup complete
-                echo Running TomoFast-x...
-
-                {run_command} > "{debug_path_bat}" 2>&1
-
-                echo.
-                echo Process completed. Press any key to close...
-                pause >nul
-                endlocal
-                """
-                    # Write the batch file
-                    batch_file_path = os.path.join(
-                        os.path.dirname(self.paramfile_Path), "run_tomofastx.bat"
-                    )
-                    with open(batch_file_path, "w") as batch_file:
-                        batch_file.write(batch_content)
-
-                    print(f"Created batch file: {batch_file_path}")
-
-                    # Run the batch file in a new console window
-                    command = f'start "TomoFast-x Process" cmd /c "{batch_file_path}"'
-                    print("command: ", command)
-
-                    process = subprocess.Popen(
-                        command,
-                        shell=True,   # nosec B602 - shell required for `start` built-in and pipe operators
-                        **kwargs,
-                    )
-
-                elif platform.system() == "Windows":
-                    wsl_debug_path = wsl_param_path.replace('"', "") + "_debug.txt"
-
-                    print("mpirun_path - ", mpirun_path)
-                    print("noProc - ", noProc)
-                    print("wsl_tomo_path - ", wsl_tomo_path)
-                    print("wsl_param_path - ", wsl_param_path)
-                    print("wsl_debug_path - ", wsl_debug_path)
-
-                    # Build the actual command
-                    if noProc == 1:
-                        base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
-                    else:
-                        base_command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
-
-                    # Use a simpler approach - let bash handle it
-                    if platform.system() == "Windows":
-                        command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
-                        print("command: ", command)
-                        process = subprocess.Popen(
-                            command,
-                            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
-                            **kwargs,
-                        )
-                else:
-                    # Unix/macOS
-                    print("mpirun_path - ", mpirun_path)
-
-                    if noProc == 1:
-                        command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{debug_path}'"
-                    else:
-                        command = f"{mpirun_path} -np {str(noProc)} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{debug_path}'"
-
-                    print("command: ", command)
-                    env = os.environ.copy()
-
-                    process = subprocess.Popen(
-                        command,
-                        shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
-                        env=env,
-                        **kwargs,
-                    )
 
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
@@ -1233,10 +1049,197 @@ class Tomofast_x:
                 print(f"An error occurred: {e}")
         else:
             self.iface.messageBar().pushMessage(
-                f"Paths to tomofastx and paramfile must be defined",
+                "Paths to tomofastx and paramfile must be defined",
                 level=Qgis.Warning,
                 duration=15,
             )
+
+    def _run_windows_native(self, noProc):
+        """Launch inversion using the native Windows executable via a batch file."""
+        tomo_path = self._validate_path(self.tomo_Path)
+        param_path = self._validate_path(self.paramfile_Path)
+        mpiexec_path = (
+            self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
+            if hasattr(self.dlg, "lineEdit_2_mpirunPath_2")
+            else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
+        )
+        oneapi_path = self._validate_path(self.dlg.lineEdit_setvarsPath.text().strip())
+        distro = " "
+
+        debug_path = param_path.replace('"', "") + "_debug.txt"
+
+        print("noProc - ", noProc)
+        print("tomo_path - ", tomo_path)
+        print("param_path - ", param_path)
+        print("debug_path - ", debug_path)
+        print("mpiexec_path - ", mpiexec_path)
+        print("oneapi_path - ", oneapi_path)
+
+        oneapi_path_bat = oneapi_path.replace("/", "\\")
+        tomo_path_bat = tomo_path.replace("/", "\\")
+        param_path_bat = param_path.replace("/", "\\")
+        debug_path_bat = debug_path.replace("/", "\\")
+
+        if noProc == 1:
+            run_command = f'"{tomo_path_bat}" -p "{param_path_bat}"'
+        else:
+            run_command = f'"{mpiexec_path}" -n {noProc} "{tomo_path_bat}" -p "{param_path_bat}"'
+
+        batch_content = f"""@echo off
+setlocal
+
+call "{oneapi_path_bat}"
+if errorlevel 1 (
+    echo Failed to set up Intel oneAPI environment
+    pause
+    exit /b 1
+)
+
+echo Environment setup complete
+echo Running TomoFast-x...
+
+{run_command} > "{debug_path_bat}" 2>&1
+
+echo.
+echo Process completed. Press any key to close...
+pause >nul
+endlocal
+"""
+        batch_file_path = os.path.join(
+            os.path.dirname(self.paramfile_Path), "run_tomofastx.bat"
+        )
+        with open(batch_file_path, "w") as batch_file:
+            batch_file.write(batch_content)
+
+        print(f"Created batch file: {batch_file_path}")
+
+        command = f'start "TomoFast-x Process" cmd /c "{batch_file_path}"'
+        print("command: ", command)
+
+        CREATE_NEW_PROCESS_GROUP = 0x00000200
+        DETACHED_PROCESS = 0x00000008
+        process = subprocess.Popen(
+            command,
+            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
+            creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+        )
+        return process, distro, mpiexec_path
+
+    def _run_windows_wsl(self, noProc):
+        """Launch inversion inside a WSL distribution from Windows."""
+        distro = self.dlg.lineEdit_pre_command_2_WSL_Distro.text()
+        self.paramfile_Path_run = self._validate_path(self.paramfile_Path + "_run")
+        shutil.copyfile(self.paramfile_Path, self.paramfile_Path_run)
+        drive = self.paramfile_Path_run[0:2]
+        self.replace_text_in_file(
+            self.paramfile_Path_run,
+            "= {}:/".format(drive[0]),
+            "= /mnt/{}/".format(drive[0].lower()),
+        )
+
+        wsl_path = "//wsl.localhost/" + distro
+        wsl_param_path = self.add_quotes_to_path(
+            self.paramfile_Path_run.replace(
+                "{}:/".format(drive[0]), "/mnt/{}/".format(drive[0].lower())
+            )
+        )
+        # if paramfile stored on linux path, remove wsl access info
+        if wsl_path in wsl_param_path:
+            wsl_param_path = wsl_param_path.replace(wsl_path, "")
+            self.replace_text_in_file(self.paramfile_Path_run, wsl_path, "")
+            print(
+                "Adjusted wsl_param_path for linux stored paramfile - ",
+                wsl_param_path,
+            )
+
+        wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path.replace(wsl_path, ""))
+        mpirun_path = " mpirun "
+        wsl_param_path = wsl_param_path.replace('"', "")
+
+        wsl_debug_path = wsl_param_path + "_debug.txt"
+
+        print("mpirun_path - ", mpirun_path)
+        print("noProc - ", noProc)
+        print("wsl_tomo_path - ", wsl_tomo_path)
+        print("wsl_param_path - ", wsl_param_path)
+        print("wsl_debug_path - ", wsl_debug_path)
+
+        if noProc == 1:
+            base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+        else:
+            base_command = f"{mpirun_path} -np {noProc} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+
+        command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
+        print("command: ", command)
+
+        CREATE_NEW_PROCESS_GROUP = 0x00000200
+        DETACHED_PROCESS = 0x00000008
+        process = subprocess.Popen(
+            command,
+            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
+            creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+        )
+        return process, distro, mpirun_path
+
+    def _run_macos(self, noProc):
+        """Launch inversion on macOS."""
+        tomo_path = self._validate_path(self.tomo_Path)
+        param_path = self._validate_path(self.paramfile_Path)
+        mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
+        distro = " "
+
+        debug_path = param_path.replace('"', "") + "_debug.txt"
+
+        print("noProc - ", noProc)
+        print("tomo_path - ", tomo_path)
+        print("param_path - ", param_path)
+        print("debug_path - ", debug_path)
+        print("mpirun_path - ", mpirun_path)
+
+        if noProc == 1:
+            command = f"'{tomo_path}' -p '{param_path}' 2>&1 | tee '{debug_path}'"
+        else:
+            command = f"{mpirun_path} -np {noProc} '{tomo_path}' -j '{param_path}' 2>&1 | tee '{debug_path}'"
+
+        print("command: ", command)
+        kwargs = {"preexec_fn": os.setsid} if sys.version_info < (3, 2) else {"start_new_session": True}
+        process = subprocess.Popen(
+            command,
+            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
+            env=os.environ.copy(),
+            **kwargs,
+        )
+        return process, distro, mpirun_path
+
+    def _run_linux(self, noProc):
+        """Launch inversion on Linux."""
+        tomo_path = self._validate_path(self.tomo_Path)
+        param_path = self._validate_path(self.paramfile_Path)
+        mpirun_path = self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
+        distro = " "
+
+        debug_path = param_path.replace('"', "") + "_debug.txt"
+
+        print("noProc - ", noProc)
+        print("tomo_path - ", tomo_path)
+        print("param_path - ", param_path)
+        print("debug_path - ", debug_path)
+        print("mpirun_path - ", mpirun_path)
+
+        if noProc == 1:
+            command = f"'{tomo_path}' -p '{param_path}' 2>&1 | tee '{debug_path}'"
+        else:
+            command = f"{mpirun_path} -np {noProc} '{tomo_path}' -j '{param_path}' 2>&1 | tee '{debug_path}'"
+
+        print("command: ", command)
+        kwargs = {"preexec_fn": os.setsid} if sys.version_info < (3, 2) else {"start_new_session": True}
+        process = subprocess.Popen(
+            command,
+            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
+            env=os.environ.copy(),
+            **kwargs,
+        )
+        return process, distro, mpirun_path
 
     # =================================================================================
     def add_elevation(self, elevation, elevType, df_elev):

@@ -8,7 +8,8 @@ changelog=0.2.14
     * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   
     * Fix untested path usage   
-    * Add link to new help page and update video to latest GUI   
+    * Add link to new help page and update video to latest GUI  
+        * Split run_inversion into os-specific codes    
     0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
