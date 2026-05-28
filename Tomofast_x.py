@@ -4662,6 +4662,7 @@ endlocal
         self.dlg.doubleSpinBox_grav_sensor_height.setToolTip(
             "Height of grav sensor above DTM, assumes draped survey at const height\n\n[global.grav_sensor_height]"
         )
+        self.dlg.dateEdit.setDisplayFormat("dd/MM/yyyy")
         self.dlg.dateEdit.setToolTip(
             "Date of Mag Survey, used for auto IGRF calculation"
         )
