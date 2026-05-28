@@ -1628,7 +1628,7 @@ endlocal
         except Exception as e:
             print(f"Warning: could not load DTM layer: {e}")
 
-        # --- ROI polygon — reproject, add as layer, and update mesh S/E/N/W spinboxes ---
+        # --- ROI polygon or 2D profile line — reproject, add as layer ---
         try:
             if self.ROIFileName and os.path.exists(self.ROIFileName):
                 layer = QgsVectorLayer(self.ROIFileName, "ROI", "ogr")
@@ -1645,7 +1645,25 @@ endlocal
                     }
                     result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
                     QgsProject.instance().addMapLayer(result)
-                    self.data_extents(result)
+                    if self.is_2d:
+                        # Restore profile line endpoints and disable rectangular mesh spinboxes
+                        features = list(result.getFeatures())
+                        if features:
+                            pts = list(features[0].geometry().vertices())
+                            if len(pts) == 2:
+                                self.profile_line_pts = [
+                                    (pts[0].x(), pts[0].y()),
+                                    (pts[1].x(), pts[1].y()),
+                                ]
+                                for w in (
+                                    self.dlg.mQgsSpinBox_mesh_south,
+                                    self.dlg.mQgsSpinBox_mesh_west,
+                                    self.dlg.mQgsSpinBox_mesh_north,
+                                    self.dlg.mQgsSpinBox_mesh_east,
+                                ):
+                                    w.setEnabled(False)
+                    else:
+                        self.data_extents(result)
                     self._move_layer_to_top(result)
         except Exception as e:
             print(f"Warning: could not load ROI layer: {e}")
