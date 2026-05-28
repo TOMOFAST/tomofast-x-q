@@ -2939,29 +2939,39 @@ endlocal
         else:
             source_crs = QgsCoordinateReferenceSystem(self.magn_proj_in)
 
-        # reproject raster data
-        parameter = {
-            "INPUT": filename,
-            "SOURCE_CRS": source_crs,
-            "TARGET_CRS": QgsCoordinateReferenceSystem(proj_out),
-            "RESAMPLING": 0,
-            "NODATA": None,
-            "TARGET_RESOLUTION": None,
-            "OPTIONS": "",
-            "DATA_TYPE": 0,
-            "TARGET_EXTENT": None,
-            "TARGET_EXTENT_CRS": None,
-            "MULTITHREADING": False,
-            "EXTRA": "",
-            "OUTPUT": self.global_outputFolderPath + reprojDataName,
-        }
-        # Run the processing algorithm
-        processing.run("gdal:warpreproject", parameter)
+        # Reproject raster using GDAL Python bindings directly.
+        # gdal:warpreproject spawns a subprocess on macOS whose GDAL environment is
+        # broken, so it silently produces no output. Using gdal.Warp in-process avoids
+        # that entirely.
+        reproj_raster_path = self.global_outputFolderPath + reprojDataName
+        src_ds = gdal.Open(filename)
+        if src_ds is None:
+            raise RuntimeError(f"Could not open input raster: {filename}")
+        warp_options = gdal.WarpOptions(
+            srcSRS=source_crs.toWkt(),
+            dstSRS=QgsCoordinateReferenceSystem(proj_out).toWkt(),
+            resampleAlg=gdal.GRA_NearestNeighbour,
+        )
+        out_ds = gdal.Warp(reproj_raster_path, src_ds, options=warp_options)
+        if out_ds is None:
+            raise RuntimeError(
+                f"gdal.Warp failed for input: {filename}"
+            )
+        out_ds = None  # flush and close
+        src_ds = None
+
+        # Load the reprojected raster as a layer object — native:rastersampling requires
+        # a QgsRasterLayer for RASTERCOPY, not a file path string.
+        reproj_raster_layer = QgsRasterLayer(reproj_raster_path, "reproj_data_temp")
+        if not reproj_raster_layer.isValid():
+            raise RuntimeError(
+                f"Could not load reprojected raster: {reproj_raster_path}"
+            )
 
         # sample raster data based on mesh locations
         parameter = {
             "INPUT": mesh_layer,
-            "RASTERCOPY": self.global_outputFolderPath + reprojDataName,
+            "RASTERCOPY": reproj_raster_layer,
             "COLUMN_PREFIX": "data",
             "OUTPUT": "TEMPORARY_OUTPUT",
         }
@@ -4727,6 +4737,7 @@ endlocal
         self.forward_data_magn_nData = 0
         self.forward_data_magn_dataGridFile = ""
         # self.forward_data_magn_dataValuesFile = ""
+        self.forward_depthWeighting_type = 1
         self.forward_depthWeighting_grav_type = 1
         self.forward_depthWeighting_magn_type = 1
         self.forward_depthWeighting_grav_power = 2
