@@ -36,6 +36,7 @@ from qgis.PyQt.QtWidgets import QAction, QFileDialog, QDockWidget
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
     QgsVectorLayer,
     QgsProject,
     QgsRasterLayer,
@@ -84,7 +85,6 @@ from osgeo import gdal
 import processing
 
 import os
-from pyproj import Transformer
 from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
 import subprocess
@@ -1862,12 +1862,13 @@ endlocal
             (self.meshBox["north"] - self.meshBox["south"]) / 2.0
         )
 
-        # convert midpoint to lat/long
-        magn_proj = int(self.magn_proj_out.split(":")[1])
-
-        proj = Transformer.from_crs(magn_proj, 4326, always_xy=True)
-        x, y = (midx, midy)
-        long, lat = proj.transform(x, y)
+        # convert midpoint to lat/long using QGIS coordinate transform
+        # (avoids pyproj PROJ database context errors on Linux/Mac)
+        source_crs = QgsCoordinateReferenceSystem(self.magn_proj_out)
+        dest_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
+        pt = transform.transform(midx, midy)
+        long, lat = pt.x(), pt.y()
 
         # calculate IGRF compnents and  convert to Inc, Dec, Int
         Be, Bn, Bu = igrf(
