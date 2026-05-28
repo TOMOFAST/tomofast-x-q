@@ -1341,6 +1341,10 @@ endlocal
         native = is_windows and self.dlg.radioButton_windowsNative.isChecked()
         wsl = is_windows and self.dlg.radioButton_windowsWSL.isChecked()
 
+        # Windows-only radio buttons are hidden from non-Windows users
+        for w in (self.dlg.radioButton_windowsNative, self.dlg.radioButton_windowsWSL):
+            w.setEnabled(is_windows)
+
         for w in (self.dlg.label_32, self.dlg.lineEdit_pre_command_2_WSL_Distro):
             w.setEnabled(wsl)
         for w in (self.dlg.label_18, self.dlg.lineEdit_setvarsPath,
