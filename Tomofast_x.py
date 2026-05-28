@@ -31,7 +31,7 @@ from qgis.PyQt.QtCore import (
     QTimer,
     Qt,
 )
-from qgis.PyQt.QtGui import QIcon, QDesktopServices, QTextCursor
+from qgis.PyQt.QtGui import QIcon, QDesktopServices, QTextCursor, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QDockWidget
 from qgis.core import (
     Qgis,
@@ -52,6 +52,7 @@ from qgis.core import (
     QgsStyle,
     QgsGraduatedSymbolRenderer,
     QgsClassificationEqualInterval,
+    QgsWkbTypes,
 )
 
 # Qt5/Qt6 Compatibility Layer
@@ -285,31 +286,6 @@ class Tomofast_x:
                 str,
                 "text",
             ],
-            # DEPTH WEIGHTING
-            "forward.depthWeighting.grav.type": [
-                self.forward_depthWeighting_grav_type,
-                self.dlg.checkBox_grav_depth_weighting,
-                int,
-                "check",
-            ],
-            "forward.depthWeighting.magn.type": [
-                self.forward_depthWeighting_magn_type,
-                self.dlg.checkBox_magn_depth_weighting,
-                int,
-                "check",
-            ],
-            "forward.depthWeighting.grav.power": [
-                self.forward_depthWeighting_grav_power,
-                self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power,
-                float,
-                "value",
-            ],
-            "forward.depthWeighting.magn.power": [
-                self.forward_depthWeighting_magn_power,
-                self.dlg.mQgsDoubleSpinBox_mag_depth_weighting,
-                float,
-                "value",
-            ],
             # SENSITIVITY KERNEL
             "sensit.readFromFiles": [
                 self.sensit_readFromFiles,
@@ -355,6 +331,12 @@ class Tomofast_x:
                 str,
                 "plainText",
             ],
+            "inversion.targetMisfit": [
+                self.inversion_targetMisfit,
+                self.dlg.lineEdit_targetMisfit,
+                str,
+                "text",
+            ],
             # MODEL DAMPING (m - m_prior)
             "inversion.modelDamping.grav.weight": [
                 self.inversion_modelDamping_grav_weight,
@@ -394,13 +376,6 @@ class Tomofast_x:
                 "value",
             ],
             # ADMM constraints
-            "inversion.admm.grav.enableADMM": [
-                self.inversion_admm_grav_enableADMM,
-                self.dlg.radioButton_grav_depth_based_weighting,
-                self.dlg.radioButton_grav_dist_based_weighting,
-                int,
-                "radio",
-            ],
             "inversion.admm.grav.nLithologies": [
                 self.inversion_admm_grav_nLithologies,
                 self.dlg.spinBox_grav_number_ADMM_litho,
@@ -418,13 +393,6 @@ class Tomofast_x:
                 self.dlg.lineEdit_grav_ADMM_weight,
                 str,
                 "text",
-            ],
-            "inversion.admm.magn.enableADMM": [
-                self.inversion_admm_magn_enableADMM,
-                self.dlg.radioButton_magn_dist_based_weighting,
-                self.dlg.radioButton_magn_depth_based_weighting,
-                int,
-                "radio",
             ],
             "inversion.admm.magn.nLithologies": [
                 self.inversion_admm_magn_nLithologies,
@@ -526,6 +494,29 @@ class Tomofast_x:
                 self.dlg.doubleSpinBox_mag_int,
                 float,
                 "value",
+            ],
+            # New canonical names (no grav/magn prefix) — kept alongside old names
+            # so both old and new paramfiles load correctly.
+            "forward.magneticField.intensity_nT": [
+                self.forward_magneticField_intensity,
+                self.dlg.doubleSpinBox_mag_int,
+                float,
+                "value",
+            ],
+            # "value_both": sets p[1] (grav widget) and p[2] (magn widget) to same value
+            "inversion.modelDamping.normPower": [
+                self.inversion_modelDamping_grav_normPower,
+                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
+                self.dlg.mQgsDoubleSpinBox_magn_model_norm_power,
+                float,
+                "value_both",
+            ],
+            "inversion.admm.nLithologies": [
+                self.inversion_admm_grav_nLithologies,
+                self.dlg.spinBox_grav_number_ADMM_litho,
+                self.dlg.spinBox_magn_ADMM_number_litho,
+                int,
+                "value_both",
             ],
         }
 
@@ -778,6 +769,13 @@ class Tomofast_x:
                     self.select_setvars_path
                 )
 
+                self.dlg.radioButton_windowsNative.toggled.connect(
+                    self._update_run_controls
+                )
+                self.dlg.radioButton_windowsWSL.toggled.connect(
+                    self._update_run_controls
+                )
+
                 self.dlg.pushButton_3_visualise.clicked.connect(self.visualise_output)
                 self.dlg.pushButton_kernel_path_select.clicked.connect(
                     self.select_kernel_path
@@ -811,15 +809,7 @@ class Tomofast_x:
                     )
                 )
 
-            if platform.system() == "Darwin":
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
-                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
-            elif platform.system() == "Windows":
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
-                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(True)
-            else:  # Linux
-                self.dlg.lineEdit_2_mpirunPath_2.setEnabled(True)
-                self.dlg.lineEdit_pre_command_2_WSL_Distro.setEnabled(False)
+            self._update_run_controls()
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
@@ -913,54 +903,50 @@ class Tomofast_x:
                     if "global.experimentType" in line:
                         experimentType = line.split("=")[1].strip()
                         break
-            if experimentType == "1":
-                xfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
-                yfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
-                zfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
-                xyzfiles = [xfile, yfile, zfile]
+
+            paraview_dir = path + "/OUTPUT/Paraview/"
+
+            if self.is_2d:
+                # 2D profile inversion: load the single full model VTK (no half-slices)
+                if experimentType in ("1", "3"):
+                    vtk_files = [paraview_dir + "grav_final_model3D_half_x.vtk"]
+                if experimentType in ("2", "3"):
+                    vtk_files = [paraview_dir + "mag_final_model3D_half_x.vtk"]
                 display_voxet_files_clipped_qgis(
-                    xyzfiles,
+                    vtk_files,
                     clip_percentile=95,
                     cmap="jet",
                     opacity=1.0,
                     show_edges=False,
+                )
+            elif experimentType == "1":
+                xyzfiles = [
+                    paraview_dir + "grav_final_model3D_half_x.vtk",
+                    paraview_dir + "grav_final_model3D_half_y.vtk",
+                    paraview_dir + "grav_final_model3D_half_z.vtk",
+                ]
+                display_voxet_files_clipped_qgis(
+                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
                 )
             elif experimentType == "2":
-                xfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
-                yfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
-                zfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
-                xyzfiles = [xfile, yfile, zfile]
+                xyzfiles = [
+                    paraview_dir + "mag_final_model3D_half_x.vtk",
+                    paraview_dir + "mag_final_model3D_half_y.vtk",
+                    paraview_dir + "mag_final_model3D_half_z.vtk",
+                ]
                 display_voxet_files_clipped_qgis(
-                    xyzfiles,
-                    clip_percentile=95,
-                    cmap="jet",
-                    opacity=1.0,
-                    show_edges=False,
+                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
                 )
             else:
-                xfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_x.vtk"
-                yfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_y.vtk"
-                zfile = path + "/OUTPUT/Paraview/grav_final_model3D_half_z.vtk"
-                xyzfiles = [xfile, yfile, zfile]
-                display_voxet_files_clipped_qgis(
-                    xyzfiles,
-                    clip_percentile=95,
-                    cmap="jet",
-                    opacity=1.0,
-                    show_edges=False,
-                )
-
-                xfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_x.vtk"
-                yfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_y.vtk"
-                zfile = path + "/OUTPUT/Paraview/mag_final_model3D_half_z.vtk"
-                xyzfiles = [xfile, yfile, zfile]
-                display_voxet_files_clipped_qgis(
-                    xyzfiles,
-                    clip_percentile=95,
-                    cmap="jet",
-                    opacity=1.0,
-                    show_edges=False,
-                )
+                for prefix in ("grav", "mag"):
+                    xyzfiles = [
+                        paraview_dir + f"{prefix}_final_model3D_half_x.vtk",
+                        paraview_dir + f"{prefix}_final_model3D_half_y.vtk",
+                        paraview_dir + f"{prefix}_final_model3D_half_z.vtk",
+                    ]
+                    display_voxet_files_clipped_qgis(
+                        xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
+                    )
 
     def replace_text_in_file(self, file_path, old_text, new_text):
         """
@@ -1045,9 +1031,195 @@ class Tomofast_x:
                     self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
                     self.dlg.textEdit_inversion_log.insertPlainText(new_text)
                     self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
+                    if "THE END." in new_text:
+                        self._debug_log_timer.stop()
+                        self._check_inversion_results()
         except Exception:
             pass
 
+    def _log_colored(self, text, color, bold=False):
+        """Append a colored line to the inversion log widget."""
+        widget = self.dlg.textEdit_inversion_log
+        cursor = widget.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        fmt = cursor.charFormat()
+        fmt.setForeground(QColor(color))
+        fmt.setFontWeight(75 if bold else 50)
+        cursor.setCharFormat(fmt)
+        cursor.insertText(text + "\n")
+        # Reset to default white non-bold for subsequent plain-text streaming
+        fmt.setForeground(QColor("white"))
+        fmt.setFontWeight(50)
+        cursor.setCharFormat(fmt)
+        widget.setTextCursor(cursor)
+        widget.moveCursor(QTextCursor.End)
+
+    def _get_output_dir_from_parfile(self):
+        """Read global.outputFolderPath from the active paramfile."""
+        try:
+            with open(self.paramfile_Path, "r", errors="replace") as fh:
+                for line in fh:
+                    stripped = line.strip()
+                    if stripped.startswith("global.outputFolderPath") and "=" in stripped:
+                        return stripped.split("=", 1)[1].strip()
+        except Exception:
+            pass
+        return ""
+
+    def _check_inversion_results(self):
+        """Run post-inversion validity checks and report each result to the log widget."""
+
+        def warn(msg):
+            self._log_colored(f"FAIL  {msg}", "red", bold=True)
+
+        def ok(msg):
+            self._log_colored(f"PASS  {msg}", "green", bold=True)
+
+        # Read full debug file once
+        debug_text = ""
+        try:
+            with open(self._debug_log_path, "r", errors="replace") as fh:
+                debug_text = fh.read()
+        except Exception:
+            return
+
+        output_dir = self._get_output_dir_from_parfile()
+        self._log_colored("─" * 60, "gray")
+
+        # --- 1. costs.txt: data cost (cols 2,3) and ADMM cost (cols 6,7) ---
+        if output_dir:
+            costs_path = os.path.join(output_dir, "costs.txt")
+            if os.path.exists(costs_path):
+                try:
+                    with open(costs_path, "r") as fh:
+                        data_lines = [ln for ln in fh if ln.strip() and not ln.strip().startswith("#")]
+                    if data_lines:
+                        cols = data_lines[-1].split()
+                        data_cost_ok = True
+                        for idx in (1, 2):  # data_cost_grav, data_cost_mag
+                            if len(cols) > idx:
+                                val = float(cols[idx])
+                                if val > 0.1:
+                                    warn(f"Data cost exceeds 0.1 ({val:.4g}) [costs.txt col {idx + 1}]\nTry to relax constraints")
+                                    data_cost_ok = False
+                        if data_cost_ok:
+                            ok("Data cost within acceptable range")
+
+                        admm_cost_ok = True
+                        for idx in (5, 6):  # ADMM_cost_grav, ADMM_cost_mag
+                            if len(cols) > idx:
+                                val = float(cols[idx])
+                                if val > 0.05:
+                                    warn(f"ADMM cost exceeds 0.05 ({val:.4g}) [costs.txt col {idx + 1}]\nTry to increase the admm weight, or adjust intervals")
+                                    admm_cost_ok = False
+                        if admm_cost_ok:
+                            ok("ADMM cost within acceptable range")
+                except Exception:
+                    pass
+
+        # --- 2. Compression error ---
+        compr_val = None
+        for line in debug_text.splitlines():
+            if "COMPRESSION ERROR (read)" in line and "=" in line:
+                try:
+                    compr_val = float(line.split("=")[-1].strip())
+                except ValueError:
+                    pass
+        if compr_val is None:
+            ok("Compression error check skipped (not found in log)")
+        elif compr_val > 0.01:
+            warn(f"Compression error > 0.01 ({compr_val:.4g})\nTry reducing the compression ratio")
+        else:
+            ok(f"Compression error acceptable ({compr_val:.4g})")
+
+        # --- 3. Data RMSE – last occurrence ---
+        last_rmse = None
+        for line in debug_text.splitlines():
+            if re.search(r"\bdata RMSE\b", line) and "=" in line:
+                try:
+                    last_rmse = float(line.split("=")[-1].strip())
+                except ValueError:
+                    pass
+        if last_rmse is None:
+            ok("Data RMSE check skipped (not found in log)")
+        elif last_rmse < 1e-7:
+            warn(f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\nTry increasing the target misfit parameter inversion.targetMisfit")
+        else:
+            ok(f"Data RMSE acceptable ({last_rmse:.4g})")
+
+        # --- 4. Major iterations with no ADMM constraints ---
+        n_iter = None
+        admm_grav = 0.0
+        admm_magn = 0.0
+        for line in debug_text.splitlines():
+            if "inversion.nMajorIterations" in line and "=" in line:
+                try:
+                    n_iter = int(line.split("=")[-1].strip())
+                except ValueError:
+                    pass
+            if "inversion.admm.grav.weight" in line and "=" in line:
+                try:
+                    admm_grav = float(line.split("=")[-1].strip())
+                except ValueError:
+                    pass
+            if "inversion.admm.magn.weight" in line and "=" in line:
+                try:
+                    admm_magn = float(line.split("=")[-1].strip())
+                except ValueError:
+                    pass
+        if n_iter is None:
+            ok("Iteration count check skipped (not found in log)")
+        elif n_iter > 3 and admm_grav == 0.0 and admm_magn == 0.0:
+            warn(f"More than 3 major iterations for unconstrained inversion ({n_iter})")
+        else:
+            ok(f"Major iteration count acceptable ({n_iter})")
+
+        # --- 5. Gravity density/Mag sus range (model 1 = grav, model 2 = magn) ---
+        if self.global_experimentType in (1, 3):
+            last_min = last_max = None
+            pattern = re.compile(
+                r"Model\s+1\s+min/max values\s*=\s*([\S]+)\s+([\S]+)", re.IGNORECASE
+            )
+            for line in debug_text.splitlines():
+                m = pattern.search(line)
+                if m:
+                    try:
+                        last_min = float(m.group(1))
+                        last_max = float(m.group(2))
+                    except ValueError:
+                        pass
+            if last_min is None:
+                ok("Density range check skipped (min/max not found in log)")
+            elif abs(last_min) > 1000 or abs(last_max) > 1000:
+                warn(
+                    f"Check density unit scaling "
+                    f"(model min={last_min:.4g}, max={last_max:.4g})"
+                )
+            else:
+                ok(f"Density range acceptable (min={last_min:.4g}, max={last_max:.4g})")
+        elif self.global_experimentType in (2, 3):
+            last_min = last_max = None
+            pattern = re.compile(
+                r"Model\s+2\s+min/max values\s*=\s*([\S]+)\s+([\S]+)", re.IGNORECASE
+            )
+            for line in debug_text.splitlines():
+                m = pattern.search(line)
+                if m:
+                    try:
+                        last_min = float(m.group(1))
+                        last_max = float(m.group(2))
+                    except ValueError:
+                        pass
+            if last_min is None:
+                ok("Mag sus range check skipped (min/max not found in log)")
+            elif abs(last_min) > 1 or abs(last_max) > 1:
+                warn(
+                    f"Check magnetic susceptibility unit scaling "
+                    f"(model min={last_min:.4g}, max={last_max:.4g})"
+                )
+            else:
+                ok(f"Magnetic susceptibility range acceptable (min={last_min:.4g}, max={last_max:.4g})")
+    
     def run_inversion(self):
         if (
             os.path.exists(self.paramfile_Path)
@@ -1113,7 +1285,7 @@ class Tomofast_x:
             )
 
     def _run_windows_native(self, noProc):
-        """Launch inversion using the native Windows executable via a batch file."""
+        """Launch inversion using the native Windows executable via a batch file (no console window)."""
         tomo_path = self._validate_path(self.tomo_Path)
         param_path = self._validate_path(self.paramfile_Path)
         mpiexec_path = (
@@ -1125,13 +1297,6 @@ class Tomofast_x:
         distro = " "
 
         debug_path = param_path.replace('"', "") + "_debug.txt"
-
-        print("noProc - ", noProc)
-        print("tomo_path - ", tomo_path)
-        print("param_path - ", param_path)
-        print("debug_path - ", debug_path)
-        print("mpiexec_path - ", mpiexec_path)
-        print("oneapi_path - ", oneapi_path)
 
         oneapi_path_bat = oneapi_path.replace("/", "\\")
         tomo_path_bat = tomo_path.replace("/", "\\")
@@ -1148,19 +1313,11 @@ setlocal
 
 call "{oneapi_path_bat}"
 if errorlevel 1 (
-    echo Failed to set up Intel oneAPI environment
-    pause
     exit /b 1
 )
 
-echo Environment setup complete
-echo Running TomoFast-x...
-
 {run_command} > "{debug_path_bat}" 2>&1
 
-echo.
-echo Process completed. Press any key to close...
-pause >nul
 endlocal
 """
         batch_file_path = os.path.join(
@@ -1169,19 +1326,26 @@ endlocal
         with open(batch_file_path, "w") as batch_file:
             batch_file.write(batch_content)
 
-        print(f"Created batch file: {batch_file_path}")
-
-        command = f'start "TomoFast-x Process" cmd /c "{batch_file_path}"'
-        print("command: ", command)
-
         CREATE_NEW_PROCESS_GROUP = 0x00000200
-        DETACHED_PROCESS = 0x00000008
+        CREATE_NO_WINDOW = 0x08000000
         process = subprocess.Popen(
-            command,
-            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
-            creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+            [batch_file_path],
+            shell=False,
+            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
         )
         return process, distro, mpiexec_path
+
+    def _update_run_controls(self):
+        """Enable/disable WSL Distro and setvars.bat widgets based on OS and mode."""
+        is_windows = platform.system() == "Windows"
+        native = is_windows and self.dlg.radioButton_windowsNative.isChecked()
+        wsl = is_windows and self.dlg.radioButton_windowsWSL.isChecked()
+
+        for w in (self.dlg.label_32, self.dlg.lineEdit_pre_command_2_WSL_Distro):
+            w.setEnabled(wsl)
+        for w in (self.dlg.label_18, self.dlg.lineEdit_setvarsPath,
+                  self.dlg.pushButton_select_setvars):
+            w.setEnabled(native)
 
     def _run_windows_wsl(self, noProc):
         """Launch inversion inside a WSL distribution from Windows."""
@@ -1205,37 +1369,26 @@ endlocal
         if wsl_path in wsl_param_path:
             wsl_param_path = wsl_param_path.replace(wsl_path, "")
             self.replace_text_in_file(self.paramfile_Path_run, wsl_path, "")
-            print(
-                "Adjusted wsl_param_path for linux stored paramfile - ",
-                wsl_param_path,
-            )
 
-        wsl_tomo_path = self.add_quotes_to_path(self.tomo_Path.replace(wsl_path, ""))
+        wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
         mpirun_path = " mpirun "
         wsl_param_path = wsl_param_path.replace('"', "")
 
         wsl_debug_path = wsl_param_path + "_debug.txt"
-
-        print("mpirun_path - ", mpirun_path)
-        print("noProc - ", noProc)
-        print("wsl_tomo_path - ", wsl_tomo_path)
-        print("wsl_param_path - ", wsl_param_path)
-        print("wsl_debug_path - ", wsl_debug_path)
 
         if noProc == 1:
             base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
         else:
             base_command = f"{mpirun_path} -np {noProc} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
 
-        command = f'start "TomoFast-x Process" wsl bash -c "{base_command}; echo; echo Press any key to close...; read -n1"'
-        print("command: ", command)
-
         CREATE_NEW_PROCESS_GROUP = 0x00000200
-        DETACHED_PROCESS = 0x00000008
+        CREATE_NO_WINDOW = 0x08000000
+        # Use bash -l so the login profile (~/.bash_profile / ~/.profile) is
+        # sourced, giving the same PATH as an interactive WSL terminal (mpirun etc.)
         process = subprocess.Popen(
-            command,
-            shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
-            creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+            ["wsl", "-d", distro, "bash", "-l", "-c", base_command],
+            shell=False,
+            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
         )
         return process, distro, mpirun_path
 
@@ -1467,6 +1620,7 @@ endlocal
                 self.dtm_filename = self.global_elevFilename
                 self.load_dtm()
                 self.global_elevType = 2
+                self.forward_depthWeighting_type = 2
         except Exception as e:
             print(f"Warning: could not load DTM layer: {e}")
 
@@ -1527,10 +1681,47 @@ endlocal
             }
             result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
 
-            QgsProject.instance().addMapLayer(result)
+            geom_type = QgsWkbTypes.geometryType(result.wkbType())
 
-            # Use the coordinates of the bounding box as limits of mesh (without padding)
-            self.data_extents(result)
+            if geom_type == QgsWkbTypes.LineGeometry:
+                features = list(result.getFeatures())
+                if not features:
+                    return
+                pts = list(features[0].geometry().vertices())
+                if len(pts) != 2:
+                    self.iface.messageBar().pushMessage(
+                        "2D profile must be a straight line with exactly 2 nodes",
+                        level=Qgis.Warning,
+                        duration=10,
+                    )
+                    return
+                self.is_2d = True
+                self.profile_line_pts = [(pts[0].x(), pts[0].y()), (pts[1].x(), pts[1].y())]
+                for w in (
+                    self.dlg.mQgsSpinBox_mesh_south,
+                    self.dlg.mQgsSpinBox_mesh_west,
+                    self.dlg.mQgsSpinBox_mesh_north,
+                    self.dlg.mQgsSpinBox_mesh_east,
+                ):
+                    w.setEnabled(False)
+                self.iface.messageBar().pushMessage(
+                    "2D profile mode: mesh will be oriented along the profile line",
+                    level=Qgis.Info,
+                    duration=8,
+                )
+            else:
+                self.is_2d = False
+                self.profile_line_pts = None
+                for w in (
+                    self.dlg.mQgsSpinBox_mesh_south,
+                    self.dlg.mQgsSpinBox_mesh_west,
+                    self.dlg.mQgsSpinBox_mesh_north,
+                    self.dlg.mQgsSpinBox_mesh_east,
+                ):
+                    w.setEnabled(True)
+                self.data_extents(result)
+
+            QgsProject.instance().addMapLayer(result)
             self._move_layer_to_top(result)
 
     def select_data_file(self, dataType):
@@ -1572,6 +1763,7 @@ endlocal
             self.load_dtm()
             self.global_elevFilename = self.dtm_filename
             self.global_elevType = 2
+            self.forward_depthWeighting_type = 2
 
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file(self, dataType):
@@ -1871,9 +2063,19 @@ endlocal
             header=None,
             nrows=self.data2tomofast.nx * self.data2tomofast.ny,
         )
-        df[0] = (df[0] + df[1]) / 2.0
-        df[2] = (df[2] + df[3]) / 2.0
+        df[0] = (df[0] + df[1]) / 2.0  # along-profile (or world-X) midpoint
+        df[2] = (df[2] + df[3]) / 2.0  # cross-profile (or world-Y) midpoint
         df = df.drop(columns=[1, 3, 4, 5, 6, 7, 8])  # removed data column
+
+        # For 2D: mesh is in profile coordinates — back-project to world coordinates
+        # so the layer displays correctly and sample_elevation() samples at the right spots.
+        if self.is_2d and self.profile_line_pts:
+            (px1, py1) = self.profile_line_pts[0]
+            (ux, uy), (qx, qy), _ = self._profile_unit_vectors()
+            d_along = df[0].values  # along-profile distance
+            d_cross = df[2].values  # cross-profile distance
+            df[0] = px1 + d_along * ux + d_cross * qx
+            df[2] = py1 + d_along * uy + d_cross * qy
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
         # Start of the edition
@@ -1922,50 +2124,26 @@ endlocal
             "COLUMN_PREFIX": "elevation",
             "OUTPUT": "TEMPORARY_OUTPUT",
         }
-        processing.runAndLoadResults("native:rastersampling", parameter)
-
-        elev = QgsProject.instance().mapLayersByName("Sampled")[0]
+        result = processing.runAndLoadResults("native:rastersampling", parameter)
+        elev = QgsProject.instance().mapLayer(result["OUTPUT"])
         elev.setName("elevation_grid")
 
-        # Extract sampled points into a dataframe keyed by coordinates
-        sampled_data = {}
-        for feature in elev.getFeatures():
-            pt = feature.geometry().asPoint()
-            key = (round(pt.x(), 2), round(pt.y(), 2))
-            val = feature["elevation1"]
-            sampled_data[key] = val if val is not None else 0.0
-
-        # Read the model grid to get the exact nx*ny points in the correct order
-        model_grid_df = pd.read_csv(
-            self.global_outputFolderPath + "/model_grid.txt",
-            sep=" ",
-            skiprows=1,
-            header=None,
-            nrows=self.data2tomofast.nx * self.data2tomofast.ny,
-            names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
-        )
-
-        # Calculate cell centres
-        model_grid_df["cx"] = (model_grid_df["x1"] + model_grid_df["x2"]) / 2.0
-        model_grid_df["cy"] = (model_grid_df["y1"] + model_grid_df["y2"]) / 2.0
-
-        # Build elevation column by looking up each model grid point in the
-        # sampled data, falling back to 0 if the DTM didn't cover that point
+        # Collect elevation values in feature order. native:rastersampling preserves
+        # the input feature order, which matches the model_grid surface-cell row order.
+        # This avoids fragile coordinate-key matching across computation paths.
         elevations = []
         missing = 0
-        for _, row in model_grid_df.iterrows():
-            key = (round(row["cx"], 2), round(row["cy"], 2))
-            val = sampled_data.get(key, None)
-            if val is None:
-                # Try nearest key within a small tolerance in case of float precision
-                val = 0.0
-                for k, v in sampled_data.items():
-                    if abs(k[0] - key[0]) < 1.0 and abs(k[1] - key[1]) < 1.0:
-                        val = v
-                        break
-                else:
+        for feature in elev.getFeatures():
+            val = feature["elevation1"]
+            if val is None or val != val:  # None or NaN
+                elevations.append(0.0)
+                missing += 1
+            else:
+                try:
+                    elevations.append(-float(val))
+                except (TypeError, ValueError):
+                    elevations.append(0.0)
                     missing += 1
-            elevations.append(-val)  # negate to convert DTM height to depth
 
         if missing > 0:
             self.iface.messageBar().pushMessage(
@@ -1975,14 +2153,29 @@ endlocal
                 duration=45,
             )
 
-        # Write elevation grid with exactly nx*ny rows in model grid order
-        output_df = pd.DataFrame(
-            {
-                "x": model_grid_df["cx"].values,
-                "y": model_grid_df["cy"].values,
-                "elevation": elevations,
-            }
+        # Build x,y for the output CSV using world-coordinate cell centres.
+        # For 2D: model_grid.txt is in profile coords — convert to world.
+        model_grid_df = pd.read_csv(
+            self.global_outputFolderPath + "/model_grid.txt",
+            sep=" ",
+            skiprows=1,
+            header=None,
+            nrows=self.data2tomofast.nx * self.data2tomofast.ny,
+            names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
         )
+        model_grid_df["cx"] = (model_grid_df["x1"] + model_grid_df["x2"]) / 2.0
+        model_grid_df["cy"] = (model_grid_df["y1"] + model_grid_df["y2"]) / 2.0
+
+        if self.is_2d and self.profile_line_pts:
+            (px1, py1) = self.profile_line_pts[0]
+            (ux, uy), (qx, qy), _ = self._profile_unit_vectors()
+            cx_out = px1 + model_grid_df["cx"].values * ux + model_grid_df["cy"].values * qx
+            cy_out = py1 + model_grid_df["cx"].values * uy + model_grid_df["cy"].values * qy
+        else:
+            cx_out = model_grid_df["cx"].values
+            cy_out = model_grid_df["cy"].values
+
+        output_df = pd.DataFrame({"x": cx_out, "y": cy_out, "elevation": elevations})
         output_df.to_csv(
             self.global_outputFolderPath + "/elevation_grid.csv",
             index=False,
@@ -2263,29 +2456,31 @@ endlocal
                     self.dlg.lineEdit_output_directory_path.text()
                 )[-1]
 
-                # try:
-                result = self.save_outputs()
-                if result:
+                try:
+                    result = self.save_outputs()
+                    if result:
 
-                    self.iface.messageBar().pushMessage(
-                        "Files saved to ",
-                        self.dlg.lineEdit_output_directory_path.text(),
-                        "Directory",
-                        level=Qgis.Success,
-                        duration=15,
-                    )
-                    self.update_memory_size()
-                    self.save_parameter_file()
-                    for name in ("Sampled", "elevation_grid", "Extracted Data"):
-                        for lyr in QgsProject.instance().mapLayersByName(name):
-                            QgsProject.instance().removeMapLayer(lyr.id())
-                """except:
+                        self.iface.messageBar().pushMessage(
+                            "Files saved to ",
+                            self.dlg.lineEdit_output_directory_path.text(),
+                            "Directory",
+                            level=Qgis.Success,
+                            duration=15,
+                        )
+                        self.update_memory_size()
+                        self.save_parameter_file()
+                        for name in ("Sampled", "elevation_grid", "Extracted Data"):
+                            for lyr in QgsProject.instance().mapLayersByName(name):
+                                QgsProject.instance().removeMapLayer(lyr.id())
+                except Exception as _e:
+                    import traceback
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
-                        "Please check your input data and try again.",
-                        level=Qgis.Warning,
-                        duration=45,
-                    )"""
+                        str(_e),
+                        level=Qgis.Critical,
+                        duration=60,
+                    )
+                    print("Tomofast-x save error:\n" + traceback.format_exc())
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
@@ -2338,6 +2533,12 @@ endlocal
                 self.convert_point_data(self.global_dataType)
 
         self.load_mesh_vector()
+        # For 2D: rewrite model_grid.txt from profile coordinates to world coordinates
+        # so Tomofast-x receives the same coordinate system as data_grav/magn.csv.
+        # Must happen after load_mesh_vector() (which already built the QGIS layer from
+        # profile coords) and before add_topography() (which modifies Z in-place).
+        if self.is_2d and self.profile_line_pts:
+            self._rewrite_model_grid_2d_world()
         if self.global_elevType == 2:
             mean_elevation = self.data2tomofast.add_topography(
                 self.global_outputFolderPath + "/model_grid.txt",
@@ -2347,6 +2548,13 @@ endlocal
             mean_elevation = 0
 
         self.tidy_layers()
+
+        # Clean up internal intermediate files used only during processing.
+        if self.is_2d and self.profile_line_pts:
+            for fname in ["reproj_data_grav.csv", "reproj_data_magn.csv"]:
+                fpath = self.global_outputFolderPath + "/" + fname
+                if os.path.exists(fpath):
+                    os.remove(fpath)
 
         return True
 
@@ -2392,9 +2600,6 @@ endlocal
 
         if self.global_dataType != "points":
             # open reprojected data layers
-            xcol = "POINT_X"
-            ycol = "POINT_Y"
-
             if self.global_experimentType == 1:
                 fileName1 = self.global_outputFolderPath + "/data_grav.csv"
                 proj1 = self.grav_proj_out
@@ -2417,7 +2622,6 @@ endlocal
             self.tidy_data(temp_file_path1, fileName1, dataName1)
 
             # Define the URI to load the CSV with specified geometry fields and no header
-            # uri = f"file://{temp_file_path1}?type=csv&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
             uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
 
             # Load the layer as a point layer
@@ -2546,6 +2750,69 @@ endlocal
             and meshBox["south"] <= y <= meshBox["north"]
         )
 
+    def _profile_unit_vectors(self):
+        """Return (ux, uy), (px, py), profile_len for the current 2D profile."""
+        (x1, y1), (x2, y2) = self.profile_line_pts
+        dx, dy = x2 - x1, y2 - y1
+        L = np.sqrt(dx ** 2 + dy ** 2)
+        ux, uy = dx / L, dy / L          # unit along-profile
+        px, py = -uy, ux                 # unit cross-profile (90° CCW)
+        return (ux, uy), (px, py), L
+
+    def _rewrite_model_grid_2d_world(self):
+        """
+        Read model_grid.txt (profile coords) and overwrite it with world-coordinate
+        axis-aligned bounding boxes of the parallelogram cells.
+        Must be called after write_model_grid_2d() and after mesh_layer building
+        (which still needs to read the profile-coord version).
+        """
+        (x0w, y0w) = self.profile_line_pts[0]
+        (ux, uy), (qx, qy), _ = self._profile_unit_vectors()
+        mg = pd.read_csv(
+            self.global_outputFolderPath + "/model_grid.txt",
+            sep=" ", skiprows=1, header=None,
+            names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
+        )
+        x1_p, x2_p = mg["x1"].values, mg["x2"].values
+        y1_p, y2_p = mg["y1"].values, mg["y2"].values
+        e1 = x0w + x1_p * ux + y1_p * qx
+        n1 = y0w + x1_p * uy + y1_p * qy
+        e2 = x0w + x2_p * ux + y1_p * qx
+        n2 = y0w + x2_p * uy + y1_p * qy
+        e3 = x0w + x1_p * ux + y2_p * qx
+        n3 = y0w + x1_p * uy + y2_p * qy
+        e4 = x0w + x2_p * ux + y2_p * qx
+        n4 = y0w + x2_p * uy + y2_p * qy
+        mg["x1"] = np.minimum(np.minimum(e1, e2), np.minimum(e3, e4))
+        mg["x2"] = np.maximum(np.maximum(e1, e2), np.maximum(e3, e4))
+        mg["y1"] = np.minimum(np.minimum(n1, n2), np.minimum(n3, n4))
+        mg["y2"] = np.maximum(np.maximum(n1, n2), np.maximum(n3, n4))
+        grid = mg[["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"]].values
+        np.savetxt(
+            self.global_outputFolderPath + "/model_grid.txt",
+            grid,
+            delimiter=" ",
+            fmt="%f %f %f %f %f %f %d %d %d",
+            header=str(len(mg)),
+            comments="",
+        )
+
+    def _project_data_to_profile(self):
+        """
+        Replace POINT_X / POINT_Y in self.data2tomofast.df with profile coordinates:
+          POINT_X = along-profile distance from profile start
+          POINT_Y = 0 (data projected onto the centre of the profile)
+        World coordinates are saved as x_world / y_world for the world-coordinate output file.
+        """
+        (x1, y1) = self.profile_line_pts[0]
+        (ux, uy), _, _ = self._profile_unit_vectors()
+        pts_x = self.data2tomofast.df["POINT_X"].values
+        pts_y = self.data2tomofast.df["POINT_Y"].values
+        self.data2tomofast.df["x_world"] = pts_x
+        self.data2tomofast.df["y_world"] = pts_y
+        self.data2tomofast.df["POINT_X"] = (pts_x - x1) * ux + (pts_y - y1) * uy
+        self.data2tomofast.df["POINT_Y"] = 0.0
+
     # convert raster data into points based on mesh locations
     def convert_raster_data(self, filename, proj_out, dataType):
 
@@ -2573,25 +2840,59 @@ endlocal
         }
 
         # write out mesh
-        self.data2tomofast.write_model_grid(
-            self.padding,
-            self.cell_x,
-            self.cell_y,
-            self.dz,
-            meshBoxOffset,
-            self.global_outputFolderPath,
-            self.depth_layers,
-        )
+        if self.is_2d and self.profile_line_pts:
+            (ux, uy), (qx, qy), profile_len = self._profile_unit_vectors()
+            self.data2tomofast.write_model_grid_2d(
+                profile_len,
+                self.padding,
+                self.cell_x,
+                self.cell_y,
+                self.dz,
+                meshBoxOffset,
+                self.global_outputFolderPath,
+                self.depth_layers,
+            )
+        else:
+            self.data2tomofast.write_model_grid(
+                self.padding,
+                self.cell_x,
+                self.cell_y,
+                self.dz,
+                meshBoxOffset,
+                self.global_outputFolderPath,
+                self.depth_layers,
+            )
 
-        # read in top layer of mesh
+        # Read top-layer surface cells from the mesh.
+        # For 2D: read only nx rows (one per X column, the j=0 Y band is sufficient since
+        # all X cells are present there and we only need along-profile positions).
+        n_surface_rows = (
+            self.data2tomofast.nx
+            if (self.is_2d and self.profile_line_pts)
+            else self.data2tomofast.nx * self.data2tomofast.ny
+        )
         df = pd.read_csv(
             self.global_outputFolderPath + "/model_grid.txt",
             sep=" ",
             skiprows=1,
             header=None,
-            nrows=self.data2tomofast.nx * self.data2tomofast.ny,
-            names=["x1", "x2", "y1", "y2", "z1", "z2,", "value", "i", "j", "k"],
+            nrows=n_surface_rows,
+            names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
         )
+
+        if self.is_2d and self.profile_line_pts:
+            # Keep only core X cells: uniform size = cell_x. Padding cells are larger.
+            x_cell_size = df["x2"] - df["x1"]
+            df = df[np.abs(x_cell_size - self.cell_x) < 0.1 * self.cell_x].reset_index(drop=True)
+            # World coords for core cell centres, sampled on the profile line (cross=0).
+            (x1, y1) = self.profile_line_pts[0]
+            (ux, uy), _, _ = self._profile_unit_vectors()
+            d_along = (df["x1"] + df["x2"]) / 2.0
+            df["x_world"] = x1 + d_along * ux
+            df["y_world"] = y1 + d_along * uy
+        else:
+            df["x_world"] = (df["x1"] + df["x2"]) / 2.0
+            df["y_world"] = (df["y1"] + df["y2"]) / 2.0
 
         # Create an empty memory layer (point geometry type, with a CRS, e.g., EPSG:4326)
 
@@ -2611,20 +2912,16 @@ endlocal
         provider.addAttributes(fields)
         mesh_layer.updateFields()
 
-        # Loop over the DataFrame rows to create features and add them to the layer
+        # Loop over the DataFrame rows to create features and add them to the layer.
+        # Use pre-computed world coordinates (x_world/y_world) so that 2D profile
+        # cells — stored in profile coordinates — are sampled at their true world positions.
         for idx, row in df.iterrows():
-            # Create a new feature
             feature = QgsFeature()
-
-            # Set the geometry (Point) for the feature
-            x = row["x1"] - ((row["x1"] - row["x2"]) / 2.0)
-            y = row["y1"] - ((row["y1"] - row["y2"]) / 2.0)
-            if self.in_ROI(x, y, self.meshBox):
+            x = row["x_world"]
+            y = row["y_world"]
+            if self.is_2d or self.in_ROI(x, y, self.meshBox):
                 point = QgsPointXY(x, y)
-
                 feature.setGeometry(QgsGeometry.fromPointXY(point))
-
-                # Add the feature to the layer
                 provider.addFeature(feature)
 
         # Update the layer's extent
@@ -2702,7 +2999,17 @@ endlocal
         data_df = data_df[new_column_order]
         QgsProject.instance().removeMapLayer(new_data_layer)
 
-        # save out extracted data as same format as points data
+        # For 2D: save world coords for QGIS operations (DTM sampling, display),
+        # then convert POINT_X/POINT_Y to profile coordinates for Tomofast-x.
+        if self.is_2d and self.profile_line_pts:
+            data_df["x_world"] = data_df["POINT_X"]
+            data_df["y_world"] = data_df["POINT_Y"]
+            (x1, y1) = self.profile_line_pts[0]
+            (ux, uy), _, _ = self._profile_unit_vectors()
+            along = (data_df["POINT_X"] - x1) * ux + (data_df["POINT_Y"] - y1) * uy
+            data_df["POINT_X"] = along
+            data_df["POINT_Y"] = 0.0
+
         data_df.to_csv(self.global_outputFolderPath + reprojPoints, index=False)
 
     # convert point data to tomofast format
@@ -2719,15 +3026,24 @@ endlocal
                     self.grav_proj_out,
                 )
             else:
+                # For 2D raster: use world coords so data_grav.csv can be displayed directly.
+                y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
+                x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
-                    "POINT_Y",
-                    "POINT_X",
+                    y_col,
+                    x_col,
                     "data1",
                     self.grav_proj_out,
                     self.grav_proj_out,
                 )
                 self.datacol_grav = "data1"
+            if self.data2tomofast.df is not None and len(self.data2tomofast.df) == 0:
+                raise ValueError(
+                    f"Grav data file has 0 rows. "
+                    f"File: {self.filename_grav if dataFormat == 'points' else 'reproj_data_grav.csv'}. "
+                    f"Check that the file exists, has data rows, and the column names match."
+                )
             if self.global_elevType == 1:  # const elev
 
                 self.add_elevation(
@@ -2738,6 +3054,8 @@ endlocal
                 self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
+            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+                self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
             )
@@ -2753,15 +3071,23 @@ endlocal
                     self.magn_proj_out,
                 )
             else:
+                y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
+                x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
-                    "POINT_Y",
-                    "POINT_X",
+                    y_col,
+                    x_col,
                     "data1",
                     self.magn_proj_out,
                     self.magn_proj_out,
                 )
                 self.datacol_magn = "data1"
+            if self.data2tomofast.df is not None and len(self.data2tomofast.df) == 0:
+                raise ValueError(
+                    f"Magn data file has 0 rows. "
+                    f"File: {self.filename_magn if dataFormat == 'points' else 'reproj_data_magn.csv'}. "
+                    f"Check that the file exists, has data rows, and the column names match."
+                )
             if self.global_elevType == 1:
                 self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, 0
@@ -2771,6 +3097,8 @@ endlocal
                 self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
+            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+                self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
             )
@@ -2785,10 +3113,12 @@ endlocal
                     self.grav_proj_out,
                 )
             else:
+                y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
+                x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
-                    "POINT_Y",
-                    "POINT_X",
+                    y_col,
+                    x_col,
                     "data1",
                     self.grav_proj_out,
                     self.grav_proj_out,
@@ -2803,6 +3133,8 @@ endlocal
                 self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
+            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+                self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
             )
@@ -2817,10 +3149,12 @@ endlocal
                     self.magn_proj_out,
                 )
             else:
+                y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
+                x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
-                    "POINT_Y",
-                    "POINT_X",
+                    y_col,
+                    x_col,
                     "data1",
                     self.magn_proj_out,
                     self.magn_proj_out,
@@ -2831,24 +3165,43 @@ endlocal
                     self.global_magn_sensor_height, self.global_elevType, 0
                 )
             else:
-                self.add_dtm(1)
+                self.add_dtm(2)
                 self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
+            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+                self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
             )
 
         if dataFormat == "points":
-            self.data2tomofast.write_model_grid(
-                self.padding,
-                self.cell_x,
-                self.cell_y,
-                self.dz,
-                self.meshBox,
-                self.global_outputFolderPath,
-                self.depth_layers,
-            )
+            if self.is_2d and self.profile_line_pts:
+                _, _, profile_len = self._profile_unit_vectors()
+                depth_box = {
+                    "core_depth": self.dlg.doubleSpinBox_coreDepth.value(),
+                    "full_depth": self.dlg.doubleSpinBox_fullDepth.value(),
+                }
+                self.data2tomofast.write_model_grid_2d(
+                    profile_len,
+                    self.padding,
+                    self.cell_x,
+                    self.cell_y,
+                    self.dz,
+                    depth_box,
+                    self.global_outputFolderPath,
+                    self.depth_layers,
+                )
+            else:
+                self.data2tomofast.write_model_grid(
+                    self.padding,
+                    self.cell_x,
+                    self.cell_y,
+                    self.dz,
+                    self.meshBox,
+                    self.global_outputFolderPath,
+                    self.depth_layers,
+                )
 
         self.dlg.nx_label.setText(str(self.data2tomofast.nx))
         self.dlg.ny_label.setText(str(self.data2tomofast.ny))
@@ -2919,18 +3272,26 @@ endlocal
             compression = self.dlg.mQgsDoubleSpinBox_compression_ratio.value()
         else:
             compression = 1.0
-
-        nx = int(
-            (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
-            / self.cell_x
-        )
-        ny = int(
-            (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
-            / self.cell_y
-        )
-
-        data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
-        data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
+            
+        if self.is_2d and self.profile_line_pts:
+            (x1, y1) = self.profile_line_pts[0]
+            (x2, y2) = self.profile_line_pts[1]
+            profile_length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            data_nx = int(profile_length / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = 1
+            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
+            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
+        elif self.is_2d:
+            # profile_line_pts not yet set — fall back to bbox estimate
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = 1
+            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
+            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
+        else:
+            nx = int((self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding)) / self.cell_x) if self.cell_x > 0 else 0
+            ny = int((self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding)) / self.cell_y) if self.cell_y > 0 else 0
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y) if self.cell_y > 0 else 0
 
         if self.meshBox["total_layers"] > 0:
             nz = int(self.meshBox["total_layers"])
@@ -3059,12 +3420,16 @@ endlocal
 
             layer.commitChanges()
         else:
-            # load data layer
+            # For 2D raster: POINT_X/Y are profile coords; use x_world/y_world for DTM sampling.
+            if self.is_2d and self.profile_line_pts:
+                x_field, y_field = "x_world", "y_world"
+            else:
+                x_field, y_field = "POINT_X", "POINT_Y"
             layer = QgsVectorLayer(
                 "file:///"
                 + self.global_outputFolderPath
                 + reprojFileName
-                + "?crs={}&xField={}&yField={}".format(proj_out, "POINT_X", "POINT_Y"),
+                + "?crs={}&xField={}&yField={}".format(proj_out, x_field, y_field),
                 reprojDataLayerName,
                 "delimitedtext",
             )
@@ -3076,8 +3441,6 @@ endlocal
             "COLUMN_PREFIX": "elevation",
             "OUTPUT": "TEMPORARY_OUTPUT",
         }
-        processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
-
         result = processing.runAndLoadResults("native:rastersampling", parameter)
         layer_id = result["OUTPUT"]
         new_data_layer = QgsProject.instance().mapLayer(layer_id)
@@ -3155,6 +3518,11 @@ endlocal
         self.f_params.write(
             "#global.experimentType               = {}\n".format(
                 self.global_experimentType
+            )
+        )
+        self.f_params.write(
+            "#global.is_2d                        = {}\n".format(
+                1 if self.is_2d else 0
             )
         )
 
@@ -3237,7 +3605,7 @@ endlocal
                 )
             )
             self.f_params.write(
-                "forward.magneticField.intensity                   = {}\n".format(
+                "forward.magneticField.intensity_nT                = {}\n".format(
                     self.forward_magneticField_intensity  # .item()
                 )
             )
@@ -3285,13 +3653,13 @@ endlocal
             )"""
 
         self.spacer("DEPTH WEIGHTING")
+        
+        
+        self.f_params.write(
+            "forward.depthWeighting.type         = {}\n".format(self.forward_depthWeighting_type)
+        )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.f_params.write(
-                "forward.depthWeighting.grav.type    = {}\n".format(
-                    self.forward_depthWeighting_grav_type
-                )
-            )
             self.f_params.write(
                 "forward.depthWeighting.grav.power   = {}\n".format(
                     self.forward_depthWeighting_grav_power
@@ -3299,11 +3667,6 @@ endlocal
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.f_params.write(
-                "forward.depthWeighting.magn.type    = {}\n".format(
-                    self.forward_depthWeighting_magn_type
-                )
-            )
             self.f_params.write(
                 "forward.depthWeighting.magn.power   = {}\n".format(
                     self.forward_depthWeighting_magn_power
@@ -3378,6 +3741,12 @@ endlocal
                 self.inversion_minResidual
             )
         )
+        if self.inversion_targetMisfit:
+            self.f_params.write(
+                "inversion.targetMisfit               = {}\n".format(
+                    self.inversion_targetMisfit
+                )
+            )
 
         self.spacer("MODEL DAMPING (m - m_prior)")
         if self.global_experimentType == 1 or self.global_experimentType == 3:
@@ -3394,18 +3763,15 @@ endlocal
                 )
             )
 
-        if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.f_params.write(
-                "inversion.modelDamping.grav.normPower = {}\n".format(
-                    self.inversion_modelDamping_grav_normPower
-                )
-            )
-        if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.f_params.write(
-                "inversion.modelDamping.magn.normPower = {}\n".format(
-                    self.inversion_modelDamping_magn_normPower
-                )
-            )
+        # inversion.modelDamping.normPower is a single global parameter (no grav/magn prefix)
+        _norm_power = (
+            self.inversion_modelDamping_magn_normPower
+            if self.global_experimentType == 2
+            else self.inversion_modelDamping_grav_normPower
+        )
+        self.f_params.write(
+            "inversion.modelDamping.normPower    = {}\n".format(_norm_power)
+        )
 
         self.spacer("JOINT INVERSION parameters")
 
@@ -3430,17 +3796,20 @@ endlocal
 
         self.spacer("ADMM constraints")
 
+        # enableADMM and nLithologies are global parameters (no grav/magn prefix)
+        if self.global_experimentType == 1:
+            _admm_enable = self.inversion_admm_grav_enableADMM
+            _admm_n_litho = self.inversion_admm_grav_nLithologies
+        elif self.global_experimentType == 2:
+            _admm_enable = self.inversion_admm_magn_enableADMM
+            _admm_n_litho = self.inversion_admm_magn_nLithologies
+        else:  # joint
+            _admm_enable = max(self.inversion_admm_grav_enableADMM, self.inversion_admm_magn_enableADMM)
+            _admm_n_litho = max(self.inversion_admm_grav_nLithologies, self.inversion_admm_magn_nLithologies)
+        self.f_params.write("inversion.admm.enableADMM           = {}\n".format(_admm_enable))
+        self.f_params.write("inversion.admm.nLithologies         = {}\n".format(_admm_n_litho))
+
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.f_params.write(
-                "inversion.admm.grav.enableADMM      = {}\n".format(
-                    self.inversion_admm_grav_enableADMM
-                )
-            )
-            self.f_params.write(
-                "inversion.admm.grav.nLithologies    = {}\n".format(
-                    self.inversion_admm_grav_nLithologies
-                )
-            )
             if self.inversion_admm_grav_nLithologies > 0:
                 self.f_params.write(
                     "inversion.admm.dataCostThreshold      = {}\n".format("0.1e-3")
@@ -3473,16 +3842,6 @@ endlocal
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.f_params.write(
-                "inversion.admm.magn.enableADMM      = {}\n".format(
-                    self.inversion_admm_magn_enableADMM
-                )
-            )
-            self.f_params.write(
-                "inversion.admm.magn.nLithologies    = {}\n".format(
-                    self.inversion_admm_magn_nLithologies
-                )
-            )
             if self.inversion_admm_magn_nLithologies > 0:
                 self.f_params.write(
                     "inversion.admm.dataCostThreshold      = {}\n".format("0.1e-3")
@@ -3707,10 +4066,10 @@ endlocal
     # load data from GUI widgets to variables
     def parse_parameters(self):
 
-        if self.dlg.checkBox_grav_depth_weighting.isChecked():
-            self.forward_depthWeighting_type = 2
-        else:
-            self.forward_depthWeighting_type = 1
+        #if self.dlg.checkBox_grav_depth_weighting.isChecked():
+        #    self.forward_depthWeighting_type = 2
+        #else:
+        #    self.forward_depthWeighting_type = 1
         self.global_outputFolderPath = self.dlg.lineEdit_output_directory_path.text()
         self.global_description = self.dlg.textEdit_experiment_description.toPlainText()
 
@@ -3735,17 +4094,6 @@ endlocal
             self.global_outputFolderPath + "/magn_calc_read_data.txt"
         )"""
 
-        if self.dlg.checkBox_grav_depth_weighting.isChecked():
-            self.forward_depthWeighting_type = 2
-        else:
-            self.forward_depthWeighting_type = 1
-
-        self.forward_depthWeighting_grav_power = (
-            self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.value()
-        )
-        self.forward_depthWeighting_magn_power = (
-            self.dlg.mQgsDoubleSpinBox_mag_depth_weighting.value()
-        )
         if self.dlg.checkBox_read_sens_matrix.isChecked():
             self.sensit_readFromFiles = 1
         else:
@@ -3766,6 +4114,7 @@ endlocal
             self.dlg.mQgsSpinBox_model_save_iters.value()
         )
         self.inversion_minResidual = self.dlg.textEdit_min_residual.toPlainText()
+        self.inversion_targetMisfit = self.dlg.lineEdit_targetMisfit.text().strip()
 
         self.inversion_modelDamping_grav_weight = (
             self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.value()
@@ -3787,15 +4136,6 @@ endlocal
         self.inversion_joint_magn_problemWeight = (
             self.dlg.mQgsDoubleSpinBox_magn_weight.value()
         )
-
-        if self.dlg.radioButton_grav_depth_based_weighting.isChecked():
-            self.inversion_grav_depthWeighting = 1
-        else:
-            self.inversion_grav_depthWeighting = 2
-        if self.dlg.radioButton_magn_dist_based_weighting.isChecked():
-            self.inversion_mag_depthWeighting = 1
-        else:
-            self.inversion_mag_depthWeighting = 2
 
         self.inversion_admm_grav_nLithologies = int(
             self.dlg.spinBox_grav_number_ADMM_litho.value()
@@ -3893,6 +4233,10 @@ endlocal
                     pls[0].strip().replace("#", "")
                 )  # replace() removes leading # to signify qgis parameter only
 
+                if pkey == "global.is_2d" and len(pls) == 2:
+                    self.is_2d = bool(int(pls[1].strip()))
+                    continue
+
                 if pkey in self.d_params.keys():  # if parameter found in dict
 
                     if len(pls) == 2:
@@ -3935,6 +4279,15 @@ endlocal
                                     p[1].setChecked(True)
                                 else:
                                     p[1].setChecked(False)
+                            elif p[-1] == "check_both":
+                                # p[1] = grav checkbox, p[2] = magn checkbox
+                                checked = (p[0] == 2)
+                                p[1].setChecked(checked)
+                                p[2].setChecked(checked)
+                            elif p[-1] == "value_both":
+                                # p[1] = grav widget, p[2] = magn widget
+                                p[1].setValue(p[-2](p[0]))
+                                p[2].setValue(p[-2](p[0]))
                             elif p[-1] == "radio":
                                 for button in range(1, len(p) - 2):
                                     p[button].setChecked(False)
@@ -4029,7 +4382,6 @@ endlocal
             self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.groupBox_16.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.label_7.setEnabled(True)
@@ -4041,10 +4393,11 @@ endlocal
             self.dlg.groupBox_10.setEnabled(False)
             self.dlg.groupBox_12.setEnabled(False)
             self.dlg.groupBox_23.setEnabled(False)
-            self.dlg.groupBox_29.setEnabled(False)
             self.dlg.groupBox_30.setEnabled(False)
             self.dlg.groupBox_35.setEnabled(False)
             self.global_experimentType = 1
+            if not self.dlg.lineEdit_targetMisfit.text().strip():
+                self.dlg.lineEdit_targetMisfit.setText("1e-7")
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
             self.dlg.groupBox.setEnabled(False)
@@ -4053,7 +4406,6 @@ endlocal
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(False)
             self.dlg.groupBox_9.setEnabled(False)
-            self.dlg.groupBox_16.setEnabled(False)
             self.dlg.groupBox_22.setEnabled(False)
             self.dlg.groupBox_26.setEnabled(False)
             self.dlg.label_7.setEnabled(False)
@@ -4063,11 +4415,12 @@ endlocal
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
             self.dlg.groupBox_23.setEnabled(True)
-            self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
             self.dlg.groupBox_35.setEnabled(True)
             self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.global_experimentType = 2
+            if not self.dlg.lineEdit_targetMisfit.text().strip():
+                self.dlg.lineEdit_targetMisfit.setText("5")
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
             self.dlg.pushButton_load_magn_data.setEnabled(True)
@@ -4078,7 +4431,6 @@ endlocal
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
             self.dlg.groupBox_6.setEnabled(True)
             self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.groupBox_16.setEnabled(True)
             self.dlg.groupBox_22.setEnabled(True)
             self.dlg.groupBox_26.setEnabled(True)
             self.dlg.label_7.setEnabled(True)
@@ -4089,10 +4441,11 @@ endlocal
             self.dlg.groupBox_10.setEnabled(True)
             self.dlg.groupBox_12.setEnabled(True)
             self.dlg.groupBox_23.setEnabled(True)
-            self.dlg.groupBox_29.setEnabled(True)
             self.dlg.groupBox_30.setEnabled(True)
             self.dlg.groupBox_35.setEnabled(True)
             self.global_experimentType = 3
+            if not self.dlg.lineEdit_targetMisfit.text().strip():
+                self.dlg.lineEdit_targetMisfit.setText("1e-7")
 
     # update mesh parameters to allow multiple layer thicknesses
     def mesh_layers(self):
@@ -4106,12 +4459,6 @@ endlocal
         )
         self.dlg.checkBox_use_compression.setToolTip(
             "Use wavelet compression to speed calculations and reduce memory demands of inversion\n\n[forward.matrixCompression.type]"
-        )
-        self.dlg.checkBox_grav_depth_weighting.setToolTip(
-            "Enable depth weighting for gravity inversion\n\n[forward.depthWeighting.type]"
-        )
-        self.dlg.checkBox_magn_depth_weighting.setToolTip(
-            "Enable depth weighting for magnetic inversion\n\n[forward.depthWeighting.type]"
         )
         self.dlg.comboBox_grav_field_x.setToolTip(
             "Define column in csv file that contains Longitude/Easting information"
@@ -4139,9 +4486,6 @@ endlocal
         )
         self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
             "Index of power term for depth weighting [3 for magnetics]\n\n[inversion.modelDamping.grav.weight]"
-        )
-        self.dlg.mQgsDoubleSpinBox_grav_depth_weight_power.setToolTip(
-            "Index of power term for depth weighting [2 for gravity]\n\n[inversion.depthWeighting.grav.power]"
         )
         self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
             "Amount of wavelet compression [smaller value means more compression]\nAutomatically set to provide 1% error but value can be manually overidden\n\n[forward.matrixCompression.rate]"
@@ -4279,18 +4623,6 @@ endlocal
         self.dlg.radioButton_joint_inv.setToolTip(
             "Define parameters for joint gravity-magnetic inversion experiment"
         )
-        self.dlg.radioButton_magn_depth_based_weighting.setToolTip(
-            "Select depth-based ADMM constraints\n\n[inversion.admm.magn.enableADMM]"
-        )
-        self.dlg.radioButton_magn_dist_based_weighting.setToolTip(
-            "Select distance-based ADMM constraints"
-        )
-        self.dlg.radioButton_grav_depth_based_weighting.setToolTip(
-            "Select depth-based ADMM constraints\n\n[inversion.admm.grav.enableADMM]"
-        )
-        self.dlg.radioButton_grav_dist_based_weighting.setToolTip(
-            "Select distance-based ADMM constraints"
-        )
         self.dlg.spinBox_grav_number_ADMM_litho.setToolTip(
             "Number of distinct pairs of ADMM density upper and lower bounds\n\n[inversion.admm.grav.nLithologies]"
         )
@@ -4381,6 +4713,7 @@ endlocal
 
     def initialise_variables(self):
         self.global_experimentType = 1
+        self.global_description = ""
         self.modelGrid_grav_file = ""
         self.global_outputFolderPath = ""
         self.global_description = ""
@@ -4406,6 +4739,7 @@ endlocal
         self.inversion_nMinorIterations = 100
         self.inversion_writeModelEveryNiter = 0
         self.inversion_minResidual = 1e-13
+        self.inversion_targetMisfit = 1e-7
         self.inversion_modelDamping_grav_weight = 0
         self.inversion_modelDamping_grav_normPower = 2
         self.inversion_modelDamping_magn_weight = 0
@@ -4435,6 +4769,8 @@ endlocal
         self.global_elevType = 1
         self.global_elevFilename = ""
         self.ROIFileName = ""
+        self.is_2d = False
+        self.profile_line_pts = None  # [(x1,y1),(x2,y2)] in output CRS when is_2d
         self.modelGrid_size = [0, 0, 0]
         self.global_grav_dataUnitsMultiplier = 0.00001
         self.global_magn_dataUnitsMultiplier = 1
@@ -4462,7 +4798,7 @@ endlocal
         self.z_by_list = ""
         self.depth_layers = []
         self.nData = 0
-        self.tomo_Path = ""
+        #self.tomo_Path = ""
         self.paramfile_Path = ""
         self.kernelfiledirectory = ""
         self.parfilename = ""

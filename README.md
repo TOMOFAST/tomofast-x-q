@@ -12,6 +12,8 @@ changelog=0.2.14
     * Split run_inversion into os-specific codes    
     * Full load of data layers when loading old parfile  
     * Add built-in display of tomofast output to plugin GUI   
+    * Extract profile and create 2D inversion files   
+    * Add translations for French, Spanish, Portuguese, Brazilian Portuguese and Mandarin   
     0.2.13   
     * Update calls for newer pandas compatibility   
     * Increase max depths for mesh generation   
@@ -53,7 +55,7 @@ B. Select Grav, mag or both Inversion stype [Step 1]
 C. Select a data layer (csv or tif format), define input and output projections, and Load data [Step 2a or Step 3a]   
 D. If csv data, select fields for lat_x, long_y & data [Step 2b or Step 3b, data loaded to QGIS once Assign fields button selected]   
 E. Select DTM tif file or use constant value [Step 4 reprojected dtm loaded to QGIS]   
-F. Specify mesh parameters (optionally defined from max/min x,y extents of a polygon shapefile). Check Model Grid Size to make sure the mesh is not stupidly large. z cell parameters can either be defined as a two layer system (with finer cells in the upper layer then progressively coarser cells beneath that) or as a multi z cell system (with comma separated lists of cell size and layer thicknesses, with the latter being multiples of the equivalent cell size)   
+F. Specify mesh parameters (optionally defined from max/min x,y extents of a polygon shapefile, or define a 2D section with a straight line polyline shapefile). Check Model Grid Size to make sure the mesh is not stupidly large. z cell parameters can either be defined as a two layer system (with finer cells in the upper layer then progressively coarser cells beneath that) or as a multi z cell system (with comma separated lists of cell size and layer thicknesses, with the latter being multiples of the equivalent cell size)   
 G. Define compression amount. Check the Estimated Memory Requirements to make sure you run the inversion on a computer with enough memory.    
     
 **Select Grav/Mag Parameters tab**   

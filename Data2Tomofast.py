@@ -51,19 +51,17 @@ class Data2Tomofast:
     # =================================================================================
     def write_data_tomofast(self, data_column, out_file, eType):
         """
-        Writes data to file in Tomofast-x format.
+        Writes data to file in Tomofast-x format. First line = N, then observations.
         """
         Ndata = self.df[data_column].values.size
         if eType == 1:
             filename = out_file + "/data_grav.csv"
         else:
             filename = out_file + "/data_magn.csv"
-        # Write a header.
+
         with open(filename, "w") as f:
             f.write(str(Ndata) + "\n")
-
         column_list = ["POINT_X", "POINT_Y", "POINT_Z", data_column]
-
         self.df.to_csv(
             filename, sep=" ", columns=column_list, index=False, header=False, mode="a"
         )
@@ -266,6 +264,97 @@ class Data2Tomofast:
             grid,
             delimiter=" ",
             fmt="%f %f %f %f %f %f %d %d %d",  # Changed format (removed one %f)
+            header=str(nelements),
+            comments="",
+        )
+
+    # =================================================================================
+    def write_model_grid_2d(
+        self, profile_len, padding_size, dx0, dy0, dz0, meshBox, directory, depth_layers=None
+    ):
+        """
+        Write a profile-oriented 2D model grid for Tomofast-x.
+
+        Coordinates are in a profile-centric frame:
+          X = along-profile distance from profile start
+          Y = cross-profile distance (one cell centred on Y=0)
+          Z = depth (same as 3D)
+
+        profile_len   : total length of the profile line (m)
+        padding_size  : padding (m) applied to both ends of X and Y
+        dx0           : along-profile cell size (m)
+        dy0           : cross-profile cell size (m) — one core cell: [-dy0/2, dy0/2]
+        dz0           : vertical cell size (legacy mode only)
+        meshBox       : dict with "core_depth" and "full_depth" keys (depth only)
+        directory     : output folder
+        depth_layers  : optional explicit depth layering (same as write_model_grid)
+        """
+        # Along-profile (X): shift core by half a cell so centres fall at profile endpoints.
+        # Core spans [-dx0/2, profile_len + dx0/2] → first centre at X=0, last at X=profile_len.
+        dx, x_padding = self.generate_cell_sizes(-dx0 / 2, profile_len + dx0 / 2, dx0, padding_size, True)
+
+        # Cross-profile (Y): single core cell centred on Y=0 (data sit at Y=0).
+        # Using one cell [-dy0/2, dy0/2] keeps Y=0 at a cell centre, not a boundary.
+        dy, y_padding = self.generate_cell_sizes(-dy0 / 2, dy0 / 2, dy0, padding_size, True)
+
+        # Depth (Z)
+        if depth_layers:
+            dz = self.generate_depth_cell_sizes(depth_layers)
+        else:
+            zcore_max = meshBox["core_depth"]
+            z_padding_size = meshBox["full_depth"] - meshBox["core_depth"]
+            dz, _ = self.generate_cell_sizes(0.0, zcore_max, dz0, z_padding_size, False)
+
+        Xmin = -dx0 / 2 - x_padding
+        Ymin = -dy0 / 2 - y_padding
+        Zmin = 0.0
+
+        nx = dx.size
+        ny = dy.size
+        nz = dz.size
+
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+
+        nelements = nx * ny * nz
+        grid = np.zeros((nelements, 9))
+
+        x_cumsum = np.cumsum(np.concatenate(([0], dx[:-1])))
+        y_cumsum = np.cumsum(np.concatenate(([0], dy[:-1])))
+        z_cumsum = np.cumsum(np.concatenate(([0], dz[:-1])))
+
+        X1 = Xmin + x_cumsum
+        X2 = X1 + dx
+        Y1 = Ymin + y_cumsum
+        Y2 = Y1 + dy
+        Z1 = Zmin + z_cumsum
+        Z2 = Z1 + dz
+
+        i_indices = np.arange(nx)
+        j_indices = np.arange(ny)
+        k_indices = np.arange(nz)
+
+        I, J, K = np.meshgrid(i_indices, j_indices, k_indices, indexing="ij")
+        X1_mesh, Y1_mesh, Z1_mesh = np.meshgrid(X1, Y1, Z1, indexing="ij")
+        X2_mesh, Y2_mesh, Z2_mesh = np.meshgrid(X2, Y2, Z2, indexing="ij")
+
+        grid[:, 0] = X1_mesh.ravel("F")
+        grid[:, 1] = X2_mesh.ravel("F")
+        grid[:, 2] = Y1_mesh.ravel("F")
+        grid[:, 3] = Y2_mesh.ravel("F")
+        grid[:, 4] = Z1_mesh.ravel("F")
+        grid[:, 5] = Z2_mesh.ravel("F")
+        grid[:, 6] = (I + 1).ravel("F")
+        grid[:, 7] = (J + 1).ravel("F")
+        grid[:, 8] = (K + 1).ravel("F")
+
+        model_grid_file_name = directory + "/model_grid.txt"
+        np.savetxt(
+            model_grid_file_name,
+            grid,
+            delimiter=" ",
+            fmt="%f %f %f %f %f %f %d %d %d",
             header=str(nelements),
             comments="",
         )
