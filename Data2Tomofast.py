@@ -4,9 +4,14 @@
 
 import numpy as np
 import pandas as pd
+import pyproj
 from pyproj import Transformer
 import matplotlib.pyplot as plt
 import os
+
+# Enable the global PROJ context so that pyproj can find the database when
+# running inside QGIS on Linux/Mac (avoids "no database context specified").
+pyproj.set_use_global_context(True)
 
 
 class Data2Tomofast:
@@ -27,15 +32,19 @@ class Data2Tomofast:
         # Read input data file.
         df = pd.read_csv(input_file)
 
-        # Convert data positions from lat/long to cartesian.
-        transformer = Transformer.from_crs(
-            epsg_from,  # degrees
-            epsg_to,  # meters
-            always_xy=True,
-        )
-        data_x, data_y = transformer.transform(
-            df[long_column].values, df[lat_column].values
-        )
+        # Convert data positions from source to target CRS.
+        if epsg_from == epsg_to:
+            data_x = df[long_column].values.astype(float)
+            data_y = df[lat_column].values.astype(float)
+        else:
+            transformer = Transformer.from_crs(
+                epsg_from,  # degrees
+                epsg_to,  # meters
+                always_xy=True,
+            )
+            data_x, data_y = transformer.transform(
+                df[long_column].values, df[lat_column].values
+            )
 
         # Update data frame with converted data positions.
         df["POINT_X"] = data_x
