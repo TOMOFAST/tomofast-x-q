@@ -909,9 +909,9 @@ class Tomofast_x:
             if self.is_2d:
                 # 2D profile inversion: load the single full model VTK (no half-slices)
                 if experimentType in ("1", "3"):
-                    vtk_files = [paraview_dir + "grav_final_model3D_half_x.vtk"]
+                    vtk_files = [paraview_dir + "grav_final_model3D_half_y.vtk"]
                 if experimentType in ("2", "3"):
-                    vtk_files = [paraview_dir + "mag_final_model3D_half_x.vtk"]
+                    vtk_files = [paraview_dir + "mag_final_model3D_half_y.vtk"]
                 display_voxet_files_clipped_qgis(
                     vtk_files,
                     clip_percentile=95,
@@ -2533,12 +2533,6 @@ endlocal
                 self.convert_point_data(self.global_dataType)
 
         self.load_mesh_vector()
-        # For 2D: rewrite model_grid.txt from profile coordinates to world coordinates
-        # so Tomofast-x receives the same coordinate system as data_grav/magn.csv.
-        # Must happen after load_mesh_vector() (which already built the QGIS layer from
-        # profile coords) and before add_topography() (which modifies Z in-place).
-        if self.is_2d and self.profile_line_pts:
-            self._rewrite_model_grid_2d_world()
         if self.global_elevType == 2:
             mean_elevation = self.data2tomofast.add_topography(
                 self.global_outputFolderPath + "/model_grid.txt",
@@ -2546,6 +2540,10 @@ endlocal
             )
         else:
             mean_elevation = 0
+        # After load_mesh_vector and add_topography (which both expect profile-centric
+        # coords internally), convert model_grid.txt X/Y to real world coordinates.
+        if self.is_2d and self.profile_line_pts:
+            self._rewrite_model_grid_2d_world()
 
         self.tidy_layers()
 
@@ -2761,10 +2759,15 @@ endlocal
 
     def _rewrite_model_grid_2d_world(self):
         """
-        Read model_grid.txt (profile coords) and overwrite it with world-coordinate
-        axis-aligned bounding boxes of the parallelogram cells.
-        Must be called after write_model_grid_2d() and after mesh_layer building
-        (which still needs to read the profile-coord version).
+        Read model_grid.txt (profile-centric coords) and overwrite with real-world
+        coordinates while preserving profile-aligned cell appearance.
+
+        Spine projection:
+          X (Easting)  = x0 + s * ux             (along-profile contribution only)
+          Y (Northing) = y0 + s_mid * uy + t * qy (cross-profile + along-profile N shift)
+
+        Adjacent along-profile cells share exact X edges; Y bands shift progressively
+        northward along the profile, producing the tilted-grid appearance in world space.
         """
         (x0w, y0w) = self.profile_line_pts[0]
         (ux, uy), (qx, qy), _ = self._profile_unit_vectors()
@@ -2773,20 +2776,21 @@ endlocal
             sep=" ", skiprows=1, header=None,
             names=["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"],
         )
-        x1_p, x2_p = mg["x1"].values, mg["x2"].values
-        y1_p, y2_p = mg["y1"].values, mg["y2"].values
-        e1 = x0w + x1_p * ux + y1_p * qx
-        n1 = y0w + x1_p * uy + y1_p * qy
-        e2 = x0w + x2_p * ux + y1_p * qx
-        n2 = y0w + x2_p * uy + y1_p * qy
-        e3 = x0w + x1_p * ux + y2_p * qx
-        n3 = y0w + x1_p * uy + y2_p * qy
-        e4 = x0w + x2_p * ux + y2_p * qx
-        n4 = y0w + x2_p * uy + y2_p * qy
-        mg["x1"] = np.minimum(np.minimum(e1, e2), np.minimum(e3, e4))
-        mg["x2"] = np.maximum(np.maximum(e1, e2), np.maximum(e3, e4))
-        mg["y1"] = np.minimum(np.minimum(n1, n2), np.minimum(n3, n4))
-        mg["y2"] = np.maximum(np.maximum(n1, n2), np.maximum(n3, n4))
+        s1, s2 = mg["x1"].values, mg["x2"].values
+        t1, t2 = mg["y1"].values, mg["y2"].values
+        s_mid = (s1 + s2) / 2.0
+        t_mid = (t1 + t2) / 2.0
+        # Full profile→world: along-profile (s*ux, s*uy) + cross-profile (t*qx, t*qy)
+        # Use s for X bounds and t_mid for cross-profile E offset so cells are perpendicular to profile
+        x1_world = x0w + s1 * ux + t_mid * qx
+        x2_world = x0w + s2 * ux + t_mid * qx
+        # Use s_mid for along-profile N offset and t for Y bounds
+        y1_world = y0w + s_mid * uy + t1 * qy
+        y2_world = y0w + s_mid * uy + t2 * qy
+        mg["x1"] = np.minimum(x1_world, x2_world)
+        mg["x2"] = np.maximum(x1_world, x2_world)
+        mg["y1"] = np.minimum(y1_world, y2_world)
+        mg["y2"] = np.maximum(y1_world, y2_world)
         grid = mg[["x1", "x2", "y1", "y2", "z1", "z2", "i", "j", "k"]].values
         np.savetxt(
             self.global_outputFolderPath + "/model_grid.txt",
@@ -3026,7 +3030,6 @@ endlocal
                     self.grav_proj_out,
                 )
             else:
-                # For 2D raster: use world coords so data_grav.csv can be displayed directly.
                 y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
                 x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
