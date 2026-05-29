@@ -1100,7 +1100,7 @@ class Tomofast_x:
                             if len(cols) > idx:
                                 val = float(cols[idx])
                                 if val > 0.1:
-                                    warn(f"Data cost exceeds 0.1 ({val:.4g}) [costs.txt col {idx + 1}]\nTry to relax constraints")
+                                    warn(f"Data cost exceeds 0.1 ({val:.4g}) [costs.txt col {idx + 1}]\nTry to relax constraints, .e.g. reduce ADMM weighting")
                                     data_cost_ok = False
                         if data_cost_ok:
                             ok("Data cost within acceptable range")
@@ -1142,8 +1142,10 @@ class Tomofast_x:
                     pass
         if last_rmse is None:
             ok("Data RMSE check skipped (not found in log)")
-        elif last_rmse < 1e-7:
-            warn(f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\nTry increasing the target misfit parameter inversion.targetMisfit")
+        elif last_rmse < 4e-7 and self.global_experimentType in [1, 3]:  # grav
+            warn(f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\nTry increasing the target misfit parameter inversion.targetMisfit to this value")
+        elif last_rmse < 1 and self.global_experimentType in [2, 3]:  # magn
+            warn(f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\nTry increasing the target misfit parameter inversion.targetMisfit to this value")
         else:
             ok(f"Data RMSE acceptable ({last_rmse:.4g})")
 
