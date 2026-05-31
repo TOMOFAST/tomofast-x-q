@@ -3310,9 +3310,6 @@ endlocal
             self.forward_matrixCompression_rate = self.forward_matrixCompression_rate*100.0
             self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(self.forward_matrixCompression_rate)
 
-        print("Mesh size is {} {} {} cells.".format(nx , ny , nz))
-        print("2d status", self.is_2d,self.profile_line_pts)
-
     def update_memory_size(self):
         self.setupMesh()
         if self.dlg.checkBox_use_compression.isChecked():
