@@ -3293,16 +3293,25 @@ endlocal
 
         data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
         data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
-        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
         self.update_memory_size()
+        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
 
     def update_ideal_compression_ratio(self, nx, ny, nz):
         # Assumes Haar wavelet
         # From Bruce et al. 2025 in prep.
-        if nx * ny * nz > 0:
+        if nx * ny * nz > 400000:
             ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
             self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr * 2)
             self.forward_matrixCompression_rate = ideal_cr * 2  # (just to be sure)
+        else:
+            self.forward_matrixCompression_rate = 1.0
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(1.0)
+        if self.is_2d :
+            self.forward_matrixCompression_rate = self.forward_matrixCompression_rate*100.0
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(self.forward_matrixCompression_rate)
+
+        print("Mesh size is {} {} {} cells.".format(nx , ny , nz))
+        print("2d status", self.is_2d,self.profile_line_pts)
 
     def update_memory_size(self):
         self.setupMesh()
@@ -3647,6 +3656,17 @@ endlocal
                     self.forward_magneticField_intensity  # .item()
                 )
             )
+            if self.is_2d and self.profile_line_pts:
+                self.profile_line_pts
+                profile_declination=np.arctan2(
+                    self.profile_line_pts[1][0] - self.profile_line_pts[0][0],
+                    self.profile_line_pts[1][1] - self.profile_line_pts[0][1],
+                ) * 180 / np.pi
+                self.f_params.write(
+                    "forward.magneticField.XaxisDeclination                 = {}\n".format(
+                        90-profile_declination 
+                    )
+                )
 
         # if(self.global_experimentType==2 or self.global_experimentType==3):
         #    self.f_params.write("modelGrid.magn.file                 = {}\n".format(self.output_directory+"/model_magn_grid.txt"))
