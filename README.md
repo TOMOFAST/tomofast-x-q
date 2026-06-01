@@ -74,8 +74,8 @@ K. Define output directory and mesh and data files will then be written out and 
 L. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
-- For **Native Windows** use you will need to specify the path to a bat file (tooltip give likely location)
-- For **WSL** which Linux Distribution is installed 
+- For **Native Windows** use you will need to specify the path to a bat file (**setvars.bat**)and **mpiexec.exe** (tooltips give likely locations)
+- For **WSL** which Linux Distribution is installed in the **WSL Distro** text area and type in **mpirun** in the **Path to mpirun/mpiexec** text area
 - For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    
 Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    
