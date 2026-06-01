@@ -2565,10 +2565,9 @@ endlocal
             )
         else:
             mean_elevation = 0
-        # After load_mesh_vector and add_topography (which both expect profile-centric
-        # coords internally), convert model_grid.txt X/Y to real world coordinates.
-        if self.is_2d and self.profile_line_pts:
-            self._rewrite_model_grid_2d_world()
+        # model_grid.txt stays in local (profile-centric) coordinates so that
+        # Tomofast-x sees a mesh with boundaries parallel to X & Y.
+        # QGIS display functions back-project to world coords for visualisation.
 
         self.tidy_layers()
 
@@ -2607,7 +2606,19 @@ endlocal
             self.forward_data_magn_nData = data_len
 
         time.sleep(5)
-        temp_data.to_csv(temp_file_path1, sep=" ", index=False)
+
+        # For 2D profile: data_temp.csv needs world coords for QGIS display,
+        # but fileName1 (the Tomofast-x input) must keep local profile coords.
+        if self.is_2d and self.profile_line_pts:
+            (x1w, y1w) = self.profile_line_pts[0]
+            (ux, uy), _, _ = self._profile_unit_vectors()
+            along = temp_data["x"].values
+            temp_world = temp_data.copy()
+            temp_world["x"] = x1w + along * ux
+            temp_world["y"] = y1w + along * uy
+            temp_world.to_csv(temp_file_path1, sep=" ", index=False)
+        else:
+            temp_data.to_csv(temp_file_path1, sep=" ", index=False)
 
         with open(fileName1, "w") as temp_file:
 
@@ -3092,7 +3103,7 @@ endlocal
                 self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
-            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+            if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
@@ -3135,7 +3146,7 @@ endlocal
                 self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
-            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+            if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
@@ -3171,7 +3182,7 @@ endlocal
                 self.add_elevation(
                     self.global_grav_sensor_height, self.global_elevType, self.data_df
                 )
-            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+            if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_grav, self.global_outputFolderPath, 1
@@ -3207,7 +3218,7 @@ endlocal
                 self.add_elevation(
                     self.global_magn_sensor_height, self.global_elevType, self.data_df
                 )
-            if self.is_2d and self.profile_line_pts and dataFormat == "points":
+            if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
                 self.datacol_magn, self.global_outputFolderPath, 2
@@ -3293,16 +3304,22 @@ endlocal
 
         data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
         data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
-        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
         self.update_memory_size()
+        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
 
     def update_ideal_compression_ratio(self, nx, ny, nz):
         # Assumes Haar wavelet
         # From Bruce et al. 2025 in prep.
-        if nx * ny * nz > 0:
+        if nx * ny * nz > 400000:
             ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
             self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr * 2)
             self.forward_matrixCompression_rate = ideal_cr * 2  # (just to be sure)
+            if self.is_2d :
+                self.forward_matrixCompression_rate = self.forward_matrixCompression_rate*100.0
+                self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(self.forward_matrixCompression_rate)
+        else:
+            self.forward_matrixCompression_rate = 1.0
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(1.0)
 
     def update_memory_size(self):
         self.setupMesh()
@@ -3647,6 +3664,17 @@ endlocal
                     self.forward_magneticField_intensity  # .item()
                 )
             )
+            if self.is_2d and self.profile_line_pts:
+                self.profile_line_pts
+                profile_declination=np.arctan2(
+                    self.profile_line_pts[1][0] - self.profile_line_pts[0][0],
+                    self.profile_line_pts[1][1] - self.profile_line_pts[0][1],
+                ) * 180 / np.pi
+                self.f_params.write(
+                    "forward.magneticField.XaxisDeclination                 = {}\n".format(
+                        -(90-profile_declination)
+                    )
+                )
 
         # if(self.global_experimentType==2 or self.global_experimentType==3):
         #    self.f_params.write("modelGrid.magn.file                 = {}\n".format(self.output_directory+"/model_magn_grid.txt"))
@@ -3976,12 +4004,73 @@ endlocal
             )
 
         self.f_params.close()
+
+        if self.is_2d and self.profile_line_pts:
+            self._write_paraview_transform_script()
+
         self.iface.messageBar().pushMessage(
             "parfile.txt saved to  {}".format(self.global_outputFolderPath),
             "OK ",
             level=Qgis.Success,
             duration=45,
         )
+
+    def _write_paraview_transform_script(self):
+        """Write a ParaView Programmable Filter script that transforms the
+        Tomofast-x 2D profile local coordinates back to real-world coordinates.
+        Saved alongside paramfile.txt so it is easy to find after an inversion."""
+        (x1, y1) = self.profile_line_pts[0]
+        (x2, y2) = self.profile_line_pts[1]
+
+        import math
+        dx, dy = x2 - x1, y2 - y1
+        L = math.sqrt(dx ** 2 + dy ** 2)
+        declination = math.degrees(math.atan2(dx, dy))  # degrees clockwise from North
+
+        crs = self.magn_proj_out if self.global_experimentType in (2, 3) else self.grav_proj_out
+        script_path = self.global_outputFolderPath + "/paraview_transform.py"
+        with open(script_path, "w") as fh:
+            fh.write(f"""\
+import math
+from paraview import simple as pv  # type: ignore  (resolved at runtime inside ParaView)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tomofast-x 2D profile → real-world coordinate transform
+# Generated by Tomofast-x-q plugin.
+#
+# HOW TO USE (Macros menu):
+#   1. In ParaView: Macros → Add new macro → select this file.
+#   2. In the Pipeline Browser, click the VTK dataset you want to transform.
+#   3. Run the macro — a transformed copy appears in the Pipeline Browser.
+#
+# Profile CRS : {crs}
+# ─────────────────────────────────────────────────────────────────────────────
+
+PROFILE_X1 = {x1}    # Easting  of profile start (m)
+PROFILE_Y1 = {y1}    # Northing of profile start (m)
+PROFILE_X2 = {x2}    # Easting  of profile end   (m)
+PROFILE_Y2 = {y2}    # Northing of profile end   (m)
+
+# Profile length    : {L:.2f} m
+# XaxisDeclination  : {declination:.4f} degrees from North (matches paramfile)
+
+source = pv.GetActiveSource()
+if source is None:
+    raise RuntimeError(
+        "No active source — select a VTK dataset in the Pipeline Browser first."
+    )
+
+# Rotation angle of the profile measured from East, counter-clockwise (degrees).
+alpha = math.degrees(math.atan2(PROFILE_Y2 - PROFILE_Y1, PROFILE_X2 - PROFILE_X1))
+
+# ParaView's built-in Transform filter: rotate around Z, then translate.
+tf = pv.Transform(Input=source)
+tf.Transform.Rotate = [0.0, 0.0, alpha]
+tf.Transform.Translate = [PROFILE_X1, PROFILE_Y1, 0.0]
+
+pv.Show(tf)
+pv.Render()
+""")
 
     def export_model(self):
 
