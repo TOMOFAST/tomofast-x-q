@@ -77,7 +77,7 @@ import pandas as pd
 import os
 
 basepath = os.path.dirname(__file__)
-shc_fn = basepath + '/IGRF13.shc' # Default shc file
+shc_fn = basepath + '/IGRF14.shc' # Default shc file
 
 # Geomagnetic reference radius:
 RE = 6371.2 # km
