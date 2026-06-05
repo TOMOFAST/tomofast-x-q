@@ -8,7 +8,7 @@ Run: lrelease Tomofast_x_*.ts
 """
 import os
 import struct
-import xml.etree.ElementTree as ET
+import defusedxml.etree.ElementTree as ET
 
 # Qt .qm magic bytes (version 2.1)
 QM_MAGIC = b'\x3c\xb8\x64\x18\xca\xef\x9c\x95\xcd\x21\x1c\xbf\x60\xa1\xbd\xdd'
