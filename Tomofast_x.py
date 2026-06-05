@@ -1347,9 +1347,9 @@ endlocal
         for w in (self.dlg.radioButton_windowsNative, self.dlg.radioButton_windowsWSL):
             w.setEnabled(is_windows)
 
-        for w in (self.dlg.label_32, self.dlg.lineEdit_pre_command_2_WSL_Distro):
+        for w in (self.dlg.label_wsl_distro, self.dlg.lineEdit_pre_command_2_WSL_Distro):
             w.setEnabled(wsl)
-        for w in (self.dlg.label_18, self.dlg.lineEdit_setvarsPath,
+        for w in (self.dlg.label_setvars_path, self.dlg.lineEdit_setvarsPath,
                   self.dlg.pushButton_select_setvars):
             w.setEnabled(native)
 
@@ -1673,8 +1673,8 @@ endlocal
         # --- Enable downstream widget groups now that data is present ---
         if grav_loaded or magn_loaded:
             self.update_widgets()
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_3.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_mesh_params.setEnabled(True)
 
     # select existing parfile
     def select_parfile(self):
@@ -1791,6 +1791,7 @@ endlocal
 
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file(self, dataType):
+        self.is_2d = False   # reset 2D mode in case user changes data file
         self.process_data_file(dataType)
         if dataType == "grav":
             suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
@@ -1824,10 +1825,10 @@ endlocal
 
         # enable GroupBox 9
         if self.global_dataType == "points":
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.label_44.setEnabled(True)
-            self.dlg.label_45.setEnabled(True)
-            self.dlg.label_47.setEnabled(True)
+            self.dlg.groupBox_grav_fields.setEnabled(True)
+            self.dlg.label_grav_field_long_x.setEnabled(True)
+            self.dlg.label_grav_field_lat_y.setEnabled(True)
+            self.dlg.label_grav_field_data_col.setEnabled(True)
             if dataType == "grav":
                 self.dlg.comboBox_grav_field_x.setEnabled(True)
                 self.dlg.comboBox_grav_field_y.setEnabled(True)
@@ -1841,8 +1842,8 @@ endlocal
 
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
         else:
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_grav_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
 
@@ -1925,13 +1926,13 @@ endlocal
             self.datacol_grav = self.dlg.comboBox_grav_field_data.currentText()
 
             # enable GroupBox 2
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_grav_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
             self.dlg.pushButton_select_dtm_path.setEnabled(True)
 
             # enable GroupBox 3
-            self.dlg.groupBox_3.setEnabled(True)
+            self.dlg.groupBox_mesh_params.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
             self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
             self.dlg.lineEdit_ROI_path_select.setEnabled(True)
@@ -1941,13 +1942,13 @@ endlocal
             self.datacol_magn = self.dlg.comboBox_magn_field_data.currentText()
 
             # enable GroupBox 2
-            self.dlg.groupBox_2.setEnabled(True)
-            self.dlg.groupBox_10.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_magn_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(True)
 
             # enable GroupBox 3
-            self.dlg.groupBox_3.setEnabled(True)
+            self.dlg.groupBox_mesh_params.setEnabled(True)
             self.dlg.lineEdit_output_directory_path.setEnabled(True)
             self.dlg.lineEdit_output_directory_path_select.setEnabled(True)
             self.dlg.lineEdit_ROI_path_select.setEnabled(True)
@@ -2509,6 +2510,10 @@ endlocal
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
+        self.forward_magneticField_declination = self.dlg.doubleSpinBox_mag_dec.value()
+        self.forward_magneticField_inclination = self.dlg.doubleSpinBox_mag_inc.value()
+        self.forward_magneticField_intensity = self.dlg.doubleSpinBox_mag_int.value()
+
         if (
             (self.global_experimentType == 2 or self.global_experimentType == 3)
             and self.forward_magneticField_declination == 0.0
@@ -3310,6 +3315,7 @@ endlocal
     def update_ideal_compression_ratio(self, nx, ny, nz):
         # Assumes Haar wavelet
         # From Bruce et al. 2025 in prep.
+
         if nx * ny * nz > 400000:
             ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
             self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr * 2)
@@ -4479,9 +4485,16 @@ pv.Render()
                 p[3].setText(p[-2](p[0][2]))
         self.inversion_type_reset_gui()
         self.dlg.lineEdit_param_load_path.clear()
-        self.dlg.groupBox_2.setEnabled(False)
-        self.dlg.groupBox_3.setEnabled(False)
-        self.dlg.groupBox_9.setEnabled(False)
+        self.dlg.groupBox_dtm.setEnabled(False)
+        self.dlg.groupBox_mesh_params.setEnabled(False)
+        self.dlg.groupBox_grav_fields.setEnabled(False)
+        for w in (
+            self.dlg.mQgsSpinBox_mesh_south,
+            self.dlg.mQgsSpinBox_mesh_west,
+            self.dlg.mQgsSpinBox_mesh_north,
+            self.dlg.mQgsSpinBox_mesh_east,
+        ):
+            w.setEnabled(True)
 
     # update gui
     def enable_boxes(self):
@@ -4504,46 +4517,46 @@ pv.Render()
         # enable GroupBoxes
 
         if self.dlg.radioButton_grav_inv.isChecked():  # grav
-            self.dlg.groupBox.setEnabled(True)
+            self.dlg.groupBox_grav_data_file.setEnabled(True)
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setEnabled(False)
             self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(False)
-            self.dlg.groupBox_6.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.groupBox_22.setEnabled(True)
-            self.dlg.groupBox_26.setEnabled(True)
-            self.dlg.label_7.setEnabled(True)
+            self.dlg.groupBox_grav_admm.setEnabled(True)
+            self.dlg.groupBox_grav_fields.setEnabled(True)
+            self.dlg.groupBox_grav_unit_multipliers.setEnabled(True)
+            self.dlg.groupBox_grav_model_damping.setEnabled(True)
+            self.dlg.label_grav_params_header.setEnabled(True)
             self.dlg.pushButton_load_grav_data.setEnabled(True)
 
-            self.dlg.label_9.setEnabled(False)
+            self.dlg.label_magn_params_header.setEnabled(False)
 
-            self.dlg.groupBox_7.setEnabled(False)
-            self.dlg.groupBox_10.setEnabled(False)
-            self.dlg.groupBox_12.setEnabled(False)
-            self.dlg.groupBox_23.setEnabled(False)
-            self.dlg.groupBox_30.setEnabled(False)
-            self.dlg.groupBox_35.setEnabled(False)
+            self.dlg.groupBox_magn_data_file.setEnabled(False)
+            self.dlg.groupBox_magn_fields.setEnabled(False)
+            self.dlg.groupBox_magnetic_field.setEnabled(False)
+            self.dlg.groupBox_magn_unit_multipliers.setEnabled(False)
+            self.dlg.groupBox_magn_model_damping.setEnabled(False)
+            self.dlg.groupBox_magn_admm.setEnabled(False)
             self.global_experimentType = 1
             if not self.dlg.lineEdit_targetMisfit.text().strip():
                 self.dlg.lineEdit_targetMisfit.setText("1e-7")
 
         elif self.dlg.radioButton_magn_inv.isChecked():  # mag
-            self.dlg.groupBox.setEnabled(False)
+            self.dlg.groupBox_grav_data_file.setEnabled(False)
 
             self.dlg.mQgsProjectionSelectionWidget_magn_in.setEnabled(False)
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
-            self.dlg.groupBox_6.setEnabled(False)
-            self.dlg.groupBox_9.setEnabled(False)
-            self.dlg.groupBox_22.setEnabled(False)
-            self.dlg.groupBox_26.setEnabled(False)
-            self.dlg.label_7.setEnabled(False)
+            self.dlg.groupBox_grav_admm.setEnabled(False)
+            self.dlg.groupBox_grav_fields.setEnabled(False)
+            self.dlg.groupBox_grav_unit_multipliers.setEnabled(False)
+            self.dlg.groupBox_grav_model_damping.setEnabled(False)
+            self.dlg.label_grav_params_header.setEnabled(False)
 
-            self.dlg.label_9.setEnabled(True)
-            self.dlg.groupBox_7.setEnabled(True)
-            self.dlg.groupBox_10.setEnabled(True)
-            self.dlg.groupBox_12.setEnabled(True)
-            self.dlg.groupBox_23.setEnabled(True)
-            self.dlg.groupBox_30.setEnabled(True)
-            self.dlg.groupBox_35.setEnabled(True)
+            self.dlg.label_magn_params_header.setEnabled(True)
+            self.dlg.groupBox_magn_data_file.setEnabled(True)
+            self.dlg.groupBox_magn_fields.setEnabled(True)
+            self.dlg.groupBox_magnetic_field.setEnabled(True)
+            self.dlg.groupBox_magn_unit_multipliers.setEnabled(True)
+            self.dlg.groupBox_magn_model_damping.setEnabled(True)
+            self.dlg.groupBox_magn_admm.setEnabled(True)
             self.dlg.pushButton_load_magn_data.setEnabled(True)
             self.global_experimentType = 2
             if not self.dlg.lineEdit_targetMisfit.text().strip():
@@ -4551,25 +4564,25 @@ pv.Render()
 
         elif self.dlg.radioButton_joint_inv.isChecked():  # grav/mag
             self.dlg.pushButton_load_magn_data.setEnabled(True)
-            self.dlg.groupBox.setEnabled(True)
+            self.dlg.groupBox_grav_data_file.setEnabled(True)
             self.dlg.mQgsProjectionSelectionWidget_grav_in.setEnabled(False)
             self.dlg.mQgsProjectionSelectionWidget_grav_out.setEnabled(False)
             self.dlg.mQgsProjectionSelectionWidget_magn_in.setEnabled(False)
             self.dlg.mQgsProjectionSelectionWidget_magn_out.setEnabled(False)
-            self.dlg.groupBox_6.setEnabled(True)
-            self.dlg.groupBox_9.setEnabled(True)
-            self.dlg.groupBox_22.setEnabled(True)
-            self.dlg.groupBox_26.setEnabled(True)
-            self.dlg.label_7.setEnabled(True)
+            self.dlg.groupBox_grav_admm.setEnabled(True)
+            self.dlg.groupBox_grav_fields.setEnabled(True)
+            self.dlg.groupBox_grav_unit_multipliers.setEnabled(True)
+            self.dlg.groupBox_grav_model_damping.setEnabled(True)
+            self.dlg.label_grav_params_header.setEnabled(True)
             self.dlg.pushButton_load_grav_data.setEnabled(True)
 
-            self.dlg.label_9.setEnabled(True)
-            self.dlg.groupBox_7.setEnabled(True)
-            self.dlg.groupBox_10.setEnabled(True)
-            self.dlg.groupBox_12.setEnabled(True)
-            self.dlg.groupBox_23.setEnabled(True)
-            self.dlg.groupBox_30.setEnabled(True)
-            self.dlg.groupBox_35.setEnabled(True)
+            self.dlg.label_magn_params_header.setEnabled(True)
+            self.dlg.groupBox_magn_data_file.setEnabled(True)
+            self.dlg.groupBox_magn_fields.setEnabled(True)
+            self.dlg.groupBox_magnetic_field.setEnabled(True)
+            self.dlg.groupBox_magn_unit_multipliers.setEnabled(True)
+            self.dlg.groupBox_magn_model_damping.setEnabled(True)
+            self.dlg.groupBox_magn_admm.setEnabled(True)
             self.global_experimentType = 3
             if not self.dlg.lineEdit_targetMisfit.text().strip():
                 self.dlg.lineEdit_targetMisfit.setText("1e-7")
@@ -4602,7 +4615,7 @@ pv.Render()
         self.dlg.comboBox_magn_field_y.setToolTip(
             "Define column in csv file that contains Latitude/Northing information"
         )
-        self.dlg.groupBox_10.setToolTip(
+        self.dlg.groupBox_magn_fields.setToolTip(
             "Define column in csv file that contains Magnetic information"
         )
         self.dlg.lineEdit_grav_ADMM_weight.setToolTip(
@@ -4647,16 +4660,16 @@ pv.Render()
         self.dlg.mQgsDoubleSpinBox_magn_model_weight.setToolTip(
             "Define weight of magnetic model damping term (m - m_prior)\n\n[inversion.modelDamping.magn.weight]"
         )
-        self.dlg.label_61.setToolTip(
+        self.dlg.label_grav_input_crs.setToolTip(
             "Define input gravity data projection system [EPSG:4326]\n\n[anomalies.grav.proj.in]"
         )
-        self.dlg.label_62.setToolTip(
+        self.dlg.label_grav_output_crs.setToolTip(
             "Define processed gravity data projection system [EPSG:4326]\n\n[anomalies.grav.proj.out]"
         )
-        self.dlg.label_68.setToolTip(
+        self.dlg.label_magn_input_crs.setToolTip(
             "Define input magnetic data projection system [EPSG:4326]\n\n[anomalies.magn.proj.in]"
         )
-        self.dlg.label_71.setToolTip(
+        self.dlg.label_magn_output_crs.setToolTip(
             "Define processed magnetic data projection system [EPSG:4326]\n\n[anomalies.magn.proj.out]"
         )
         self.dlg.mQgsSpinBox_mesh_south.setToolTip(
