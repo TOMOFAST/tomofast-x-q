@@ -4,7 +4,7 @@
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.15 First Beta of ARCGis Pro Toolbox   
+changelog=0.2.15 First Beta of ArcGIS Pro Toolbox   
     0.2.14   
     * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   

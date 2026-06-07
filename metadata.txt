@@ -22,7 +22,7 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.15 First Beta of ARCGis Pro Toolbox   
+changelog=0.2.15 First Beta of ArcGIS Pro Toolbox   
     0.2.14   
     * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   
