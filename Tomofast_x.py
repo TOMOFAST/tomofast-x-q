@@ -3318,11 +3318,12 @@ endlocal
 
         if nx * ny * nz > 400000:
             ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(ideal_cr * 2)
-            self.forward_matrixCompression_rate = ideal_cr * 2  # (just to be sure)
-            if self.is_2d :
-                self.forward_matrixCompression_rate = self.forward_matrixCompression_rate*100.0
-                self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(self.forward_matrixCompression_rate)
+            val = ideal_cr * 2
+            if self.is_2d:
+                val *= 100.0
+            val = min(val, 1.0)  # compression ratio must not exceed 1
+            self.forward_matrixCompression_rate = val
+            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(val)
         else:
             self.forward_matrixCompression_rate = 1.0
             self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(1.0)

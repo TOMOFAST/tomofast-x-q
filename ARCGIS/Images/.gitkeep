@@ -1,0 +1,5 @@
+Place icon images here:
+  AddinDesktop16.png  (16x16 pixels)
+  AddinDesktop32.png  (32x32 pixels)
+
+You can use the icon.png from the parent plugin directory as a source.

@@ -1,10 +1,11 @@
-# Tomofast-x QGIS Plugin v0.2.14
+# Tomofast-x QGIS Plugin v0.2.15
  QGIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.14   
+changelog=0.2.15 First Beta of ARCGis Pro Toolbox   
+    0.2.14   
     * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   
     * Fix untested path usage   
@@ -36,8 +37,21 @@ changelog=0.2.14
     * Add export to csv option
  
     
-## Plugin Install
+## QGIS Plugin Install
 Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
+
+## ArcGIS Pro: THIS IS VERY BETA!!!
+1) Download and unzip this respository and store somewhere safe.
+2) In order to run python code in ARCGIS Pro you will need to manually add some python libraries so SGTool has everything it needs:
+- a) Open Package Manager: Click the Project tab on the ribbon and select Package Manager from the side menu. Access Environment Manager (Gear icon to right of active environemnt): 
+  - i) Click the Environment Manager button (top right) to open the management dialog.
+  - ii) Clone the Environment: Locate the environment you wish to copy (usually arcgispro-py3) and click the Clone button next to it.
+  - iii) Set Destination: In the Clone Environment dialog, provide a name and path for your new environment or leave it as the default.
+  - iv) Finalize: Click OK. The cloning process may take several minutes.
+- b) Once the cloned environment has been created, search for and install the following packages, **if they are not already installed**:
+  - pandas
+- c) In the ArcGIS Pro Catalogue area, go to Add toolbox and select the file **Tomofast_X.pyt** in the **ARCGIS** directory in this repository. 
+- d) Double click on the new **Tomofast_X.pyt** Toolbox to get the list of functions that can be run, and select  **Open Tomofast-x Panel** then **run** to launch the Tomofast_x_q GUI.     
 
 ## Tomofast-x Install
 To use this plugin to its full potential you may want to install Tomofast-x itself on the same computer on which you are running QGIS.
