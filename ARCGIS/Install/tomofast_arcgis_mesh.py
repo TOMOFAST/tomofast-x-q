@@ -181,6 +181,13 @@ class MeshMixin:
         else:
             df["x_world"] = (df["x1"] + df["x2"]) / 2.0
             df["y_world"] = (df["y1"] + df["y2"]) / 2.0
+            # Clip to unbuffered ROI (same as QGIS in_ROI check at line 2967)
+            df = df[
+                (df["x_world"] >= self.meshBox["west"]) &
+                (df["x_world"] <= self.meshBox["east"]) &
+                (df["y_world"] >= self.meshBox["south"]) &
+                (df["y_world"] <= self.meshBox["north"])
+            ].reset_index(drop=True)
 
         # Reproject raster
         reproj_raster_path = self.global_outputFolderPath + reprojDataName

@@ -310,6 +310,16 @@ class TomofastUI:
     def _build_data_tab(self, p):
         r = 0
 
+        # ---- Load Existing Parfile (TOP) ----
+        r = self._section(p, r, "Load Existing Parfile")
+        sv_pf = tk.StringVar()
+        e_pf, self.lineEdit_param_load_path = self._entry(p, sv_pf)
+        e_pf.grid(row=r, column=1, sticky="we", padx=4)
+        ttk.Label(p, text="Parfile:").grid(row=r, column=0, sticky="w", padx=4)
+        self.pushButton_param_load_path = ttk.Button(p, text="Load Parfile")
+        self.pushButton_param_load_path.grid(row=r, column=2, padx=2)
+        r += 1
+
         # ---- Inversion type ----
         r = self._section(p, r, "Experiment Type")
         inv_var = tk.IntVar(value=1)
@@ -338,7 +348,6 @@ class TomofastUI:
         self.pushButton_grav_data_path.grid(row=r, column=2, padx=2)
         r += 1
 
-        # Grav CRS
         ttk.Label(p, text="Input CRS:").grid(row=r, column=0, sticky="w", padx=4)
         e_in, self.mQgsProjectionSelectionWidget_grav_in = self._crs_entry(p)
         e_in.grid(row=r, column=1, sticky="w", padx=4)
@@ -348,7 +357,6 @@ class TomofastUI:
         e_out.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
 
-        # Grav field columns
         f_gf = ttk.LabelFrame(p, text="Gravity Field Columns")
         f_gf.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
         self.groupBox_grav_fields = _GroupBoxProxy(f_gf)
@@ -368,65 +376,6 @@ class TomofastUI:
         self.pushButton_assign_grav_fields.grid(row=0, column=6, padx=4)
         self.pushButton_load_grav_data = ttk.Button(f_gf, text="Load Grav")
         self.pushButton_load_grav_data.grid(row=1, column=0, columnspan=3, sticky="w", padx=2, pady=2)
-        r += 1
-
-        # Grav unit multipliers
-        f_gum = ttk.LabelFrame(p, text="Gravity Multipliers")
-        f_gum.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_grav_unit_multipliers = _GroupBoxProxy(f_gum)
-        ttk.Label(f_gum, text="Data units mult:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_gdm = tk.StringVar(value="1e-05")
-        e_gdm, self.lineEdit_grav_data_multiplier = self._entry(f_gum, sv_gdm, 14)
-        e_gdm.grid(row=0, column=1, padx=2)
-        ttk.Label(f_gum, text="Model mult:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_gmm = tk.DoubleVar(value=1.0)
-        sb_gmm, self.mQgsDoubleSpinBox_grav_model_multiplier = self._spinbox_dbl(f_gum, sv_gmm)
-        sb_gmm.grid(row=0, column=3, padx=2)
-        r += 1
-
-        # Sensor heights (grav + magn together)
-        f_sh = ttk.LabelFrame(p, text="Sensor Heights")
-        f_sh.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_sensor_height = _GroupBoxProxy(f_sh)
-        ttk.Label(f_sh, text="Grav:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_gsh = tk.DoubleVar(value=0.0)
-        sb_gsh, self.doubleSpinBox_grav_sensor_height = self._spinbox_dbl(f_sh, sv_gsh, inc=1.0)
-        sb_gsh.grid(row=0, column=1, padx=2)
-        ttk.Label(f_sh, text="Mag:").grid(row=0, column=2, sticky="w", padx=8)
-        sv_msh = tk.DoubleVar(value=0.0)
-        sb_msh, self.doubleSpinBox_magn_sensor_height = self._spinbox_dbl(f_sh, sv_msh, inc=1.0)
-        sb_msh.grid(row=0, column=3, padx=2)
-        r += 1
-
-        # Grav model damping
-        f_gmd = ttk.LabelFrame(p, text="Gravity Model Damping")
-        f_gmd.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_grav_model_damping = _GroupBoxProxy(f_gmd)
-        ttk.Label(f_gmd, text="Weight:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_gdw = tk.DoubleVar(value=0.0)
-        sb_gdw, self.mQgsDoubleSpinBox_grav_mmodel_damping_weight = self._spinbox_dbl(f_gmd, sv_gdw)
-        sb_gdw.grid(row=0, column=1, padx=2)
-        ttk.Label(f_gmd, text="Norm power:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_gnp = tk.DoubleVar(value=2.0)
-        sb_gnp, self.mQgsDoubleSpinBox_grav_mmodel_norm_power = self._spinbox_dbl(f_gmd, sv_gnp)
-        sb_gnp.grid(row=0, column=3, padx=2)
-        r += 1
-
-        # Grav ADMM
-        f_gadmm = ttk.LabelFrame(p, text="Gravity ADMM")
-        f_gadmm.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_grav_admm = _GroupBoxProxy(f_gadmm)
-        ttk.Label(f_gadmm, text="# Lithologies:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_galn = tk.IntVar(value=0)
-        sb_galn, self.spinBox_grav_number_ADMM_litho = self._spinbox_int(f_gadmm, sv_galn, 0, 20)
-        sb_galn.grid(row=0, column=1, padx=2)
-        ttk.Label(f_gadmm, text="Weight:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_gaw = tk.StringVar(value="0")
-        e_gaw, self.lineEdit_grav_ADMM_weight = self._entry(f_gadmm, sv_gaw, 10)
-        e_gaw.grid(row=0, column=3, padx=2)
-        ttk.Label(f_gadmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
-        t_gab, self.textEdit_grav_ADMM_bounds = self._text(f_gadmm, 2, 30)
-        t_gab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
         r += 1
 
         # ---- Magnetic data ----
@@ -470,61 +419,6 @@ class TomofastUI:
         self.pushButton_load_magn_data.grid(row=1, column=0, columnspan=3, sticky="w", padx=2, pady=2)
         r += 1
 
-        f_mum = ttk.LabelFrame(p, text="Magnetic Multipliers")
-        f_mum.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_magn_unit_multipliers = _GroupBoxProxy(f_mum)
-        ttk.Label(f_mum, text="Data units mult:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_mdm = tk.StringVar(value="1")
-        e_mdm, self.lineEdit_magn_data_multiplier = self._entry(f_mum, sv_mdm, 14)
-        e_mdm.grid(row=0, column=1, padx=2)
-        ttk.Label(f_mum, text="Model mult:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_mmm = tk.DoubleVar(value=1.0)
-        sb_mmm, self.mQgsDoubleSpinBox_magn_model_multiplier = self._spinbox_dbl(f_mum, sv_mmm)
-        sb_mmm.grid(row=0, column=3, padx=2)
-        r += 1
-
-        f_mmd = ttk.LabelFrame(p, text="Magnetic Model Damping")
-        f_mmd.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_magn_model_damping = _GroupBoxProxy(f_mmd)
-        ttk.Label(f_mmd, text="Weight:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_mdw = tk.DoubleVar(value=0.0)
-        sb_mdw, self.mQgsDoubleSpinBox_magn_model_weight = self._spinbox_dbl(f_mmd, sv_mdw)
-        sb_mdw.grid(row=0, column=1, padx=2)
-        ttk.Label(f_mmd, text="Norm power:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_mnp = tk.DoubleVar(value=2.0)
-        sb_mnp, self.mQgsDoubleSpinBox_magn_model_norm_power = self._spinbox_dbl(f_mmd, sv_mnp)
-        sb_mnp.grid(row=0, column=3, padx=2)
-        r += 1
-
-        f_madmm = ttk.LabelFrame(p, text="Magnetic ADMM")
-        f_madmm.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_magn_admm = _GroupBoxProxy(f_madmm)
-        ttk.Label(f_madmm, text="# Lithologies:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_maln = tk.IntVar(value=0)
-        sb_maln, self.spinBox_magn_ADMM_number_litho = self._spinbox_int(f_madmm, sv_maln, 0, 20)
-        sb_maln.grid(row=0, column=1, padx=2)
-        ttk.Label(f_madmm, text="Weight:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_maw = tk.StringVar(value="0")
-        e_maw, self.lineEdit_magn_ADMM_weight = self._entry(f_madmm, sv_maw, 10)
-        e_maw.grid(row=0, column=3, padx=2)
-        ttk.Label(f_madmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
-        t_mab, self.textEdit_5_magn_ADMM_bounds = self._text(f_madmm, 2, 30)
-        t_mab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
-        r += 1
-
-        # Joint problem weights
-        f_jp = ttk.LabelFrame(p, text="Joint Inversion Weights")
-        f_jp.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        ttk.Label(f_jp, text="Grav weight:").grid(row=0, column=0, sticky="w", padx=2)
-        sv_gw = tk.DoubleVar(value=1.0)
-        sb_gw, self.mQgsDoubleSpinBox_grav_weight = self._spinbox_dbl(f_jp, sv_gw)
-        sb_gw.grid(row=0, column=1, padx=2)
-        ttk.Label(f_jp, text="Magn weight:").grid(row=0, column=2, sticky="w", padx=2)
-        sv_mw = tk.DoubleVar(value=2.5e-6)
-        sb_mw, self.mQgsDoubleSpinBox_magn_weight = self._spinbox_dbl(f_jp, sv_mw)
-        sb_mw.grid(row=0, column=3, padx=2)
-        r += 1
-
         # DTM
         r = self._section(p, r, "Digital Terrain Model (DTM)")
         f_dtm = ttk.LabelFrame(p, text="DTM")
@@ -548,33 +442,13 @@ class TomofastUI:
         self.lineEdit_ROI_path_select.grid(row=r, column=2, padx=2)
         r += 1
 
-        # Output directory
-        r = self._section(p, r, "Output Directory")
-        sv_out = tk.StringVar()
-        e_out2, self.lineEdit_output_directory_path = self._entry(p, sv_out)
-        e_out2.grid(row=r, column=1, sticky="we", padx=4)
-        ttk.Label(p, text="Output dir:").grid(row=r, column=0, sticky="w", padx=4)
-        self.lineEdit_output_directory_path_select = ttk.Button(p, text="Browse/Process")
-        self.lineEdit_output_directory_path_select.grid(row=r, column=2, padx=2)
-        r += 1
-
         # Description
         ttk.Label(p, text="Description:").grid(row=r, column=0, sticky="nw", padx=4)
         t_desc, self.textEdit_experiment_description = self._text(p, 3, 50)
         t_desc.grid(row=r, column=1, columnspan=2, sticky="we", padx=4)
         r += 1
 
-        # Parfile
-        r = self._section(p, r, "Load Existing Parfile")
-        sv_pf = tk.StringVar()
-        e_pf, self.lineEdit_param_load_path = self._entry(p, sv_pf)
-        e_pf.grid(row=r, column=1, sticky="we", padx=4)
-        ttk.Label(p, text="Parfile:").grid(row=r, column=0, sticky="w", padx=4)
-        self.pushButton_param_load_path = ttk.Button(p, text="Load Parfile")
-        self.pushButton_param_load_path.grid(row=r, column=2, padx=2)
-        r += 1
-
-        # Reset + labels
+        # Stub proxies for code compatibility
         self.label_grav_params_header = _LabelProxy(tk.StringVar(value="Gravity Params"))
         self.label_magn_params_header = _LabelProxy(tk.StringVar(value="Magn Params"))
         self.label_grav_input_crs  = _LabelProxy(tk.StringVar())
@@ -679,18 +553,44 @@ class TomofastUI:
         sb_cr.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
 
-        r = self._section(p, r, "Sensitivity Kernel")
-        ttk.Label(p, text="Read from files:").grid(row=r, column=0, sticky="w", padx=4)
-        sv_rsm = tk.IntVar(value=0)
-        cb_rsm, self.checkBox_read_sens_matrix = self._check(p, sv_rsm)
-        cb_rsm.grid(row=r, column=1, sticky="w", padx=4)
+        # Sensor Heights (moved from Data tab)
+        r = self._section(p, r, "Sensor Heights")
+        f_sh = ttk.LabelFrame(p, text="Sensor Heights")
+        f_sh.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_sensor_height = _GroupBoxProxy(f_sh)
+        ttk.Label(f_sh, text="Grav:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_gsh = tk.DoubleVar(value=0.0)
+        sb_gsh, self.doubleSpinBox_grav_sensor_height = self._spinbox_dbl(f_sh, sv_gsh, inc=1.0)
+        sb_gsh.grid(row=0, column=1, padx=2)
+        ttk.Label(f_sh, text="Mag:").grid(row=0, column=2, sticky="w", padx=8)
+        sv_msh = tk.DoubleVar(value=0.0)
+        sb_msh, self.doubleSpinBox_magn_sensor_height = self._spinbox_dbl(f_sh, sv_msh, inc=1.0)
+        sb_msh.grid(row=0, column=3, padx=2)
         r += 1
-        ttk.Label(p, text="Kernel dir:").grid(row=r, column=0, sticky="w", padx=4)
-        sv_kp = tk.StringVar()
-        e_kp, self.lineEdit_kernel_path = self._entry(p, sv_kp)
-        e_kp.grid(row=r, column=1, sticky="we", padx=4)
-        self.pushButton_kernel_path_select = ttk.Button(p, text="Browse...")
-        self.pushButton_kernel_path_select.grid(row=r, column=2, padx=2)
+
+        # Magnetic Field (moved from Inversion tab)
+        r = self._section(p, r, "Magnetic Field")
+        f_mag = ttk.LabelFrame(p, text="Magnetic Field Parameters")
+        f_mag.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_magnetic_field = _GroupBoxProxy(f_mag)
+        ttk.Label(f_mag, text="Survey date (YYYY-MM-DD):").grid(row=0, column=0, sticky="w", padx=2)
+        import datetime
+        sv_date = tk.StringVar(value=str(datetime.date.today()))
+        e_date, self.dateEdit = self._entry(f_mag, sv_date, 14)
+        e_date.grid(row=0, column=1, padx=2)
+        self.pushButton_calc_IGRF = ttk.Button(f_mag, text="Calc IGRF")
+        self.pushButton_calc_IGRF.grid(row=0, column=2, padx=4)
+        for label, attr, val, inc in [
+            ("Declination:", "doubleSpinBox_mag_dec", 0.0, 0.01),
+            ("Inclination:", "doubleSpinBox_mag_inc", -45.0, 0.01),
+            ("Intensity (nT):", "doubleSpinBox_mag_int", 65000.0, 1.0),
+        ]:
+            row_i = f_mag.grid_size()[1]
+            ttk.Label(f_mag, text=label).grid(row=row_i, column=0, sticky="w", padx=2)
+            sv = tk.DoubleVar(value=val)
+            sb, proxy = self._spinbox_dbl(f_mag, sv, -9e6, 9e6, inc)
+            sb.grid(row=row_i, column=1, padx=2)
+            setattr(self, attr, proxy)
         r += 1
 
     # ====================================================================
@@ -722,28 +622,130 @@ class TomofastUI:
         e_tm.grid(row=r, column=1, sticky="we", padx=4)
         r += 1
 
-        r = self._section(p, r, "Magnetic Field")
-        f_mag = ttk.LabelFrame(p, text="Magnetic Field Parameters")
-        f_mag.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
-        self.groupBox_magnetic_field = _GroupBoxProxy(f_mag)
-        ttk.Label(f_mag, text="Survey date (YYYY-MM-DD):").grid(row=0, column=0, sticky="w", padx=2)
-        import datetime
-        sv_date = tk.StringVar(value=str(datetime.date.today()))
-        e_date, self.dateEdit = self._entry(f_mag, sv_date, 14)
-        e_date.grid(row=0, column=1, padx=2)
-        self.pushButton_calc_IGRF = ttk.Button(f_mag, text="Calc IGRF")
-        self.pushButton_calc_IGRF.grid(row=0, column=2, padx=4)
-        for label, attr, val, inc in [
-            ("Declination:", "doubleSpinBox_mag_dec", 0.0, 0.01),
-            ("Inclination:", "doubleSpinBox_mag_inc", -45.0, 0.01),
-            ("Intensity (nT):", "doubleSpinBox_mag_int", 65000.0, 1.0),
-        ]:
-            row_i = f_mag.grid_size()[1]
-            ttk.Label(f_mag, text=label).grid(row=row_i, column=0, sticky="w", padx=2)
-            sv = tk.DoubleVar(value=val)
-            sb, proxy = self._spinbox_dbl(f_mag, sv, -9e6, 9e6, inc)
-            sb.grid(row=row_i, column=1, padx=2)
-            setattr(self, attr, proxy)
+        # Gravity parameters (moved from Data tab)
+        r = self._section(p, r, "Gravity Parameters")
+        f_gum = ttk.LabelFrame(p, text="Gravity Multipliers")
+        f_gum.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_grav_unit_multipliers = _GroupBoxProxy(f_gum)
+        ttk.Label(f_gum, text="Data units mult:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_gdm = tk.StringVar(value="1e-05")
+        e_gdm, self.lineEdit_grav_data_multiplier = self._entry(f_gum, sv_gdm, 14)
+        e_gdm.grid(row=0, column=1, padx=2)
+        ttk.Label(f_gum, text="Model mult:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_gmm = tk.DoubleVar(value=1.0)
+        sb_gmm, self.mQgsDoubleSpinBox_grav_model_multiplier = self._spinbox_dbl(f_gum, sv_gmm)
+        sb_gmm.grid(row=0, column=3, padx=2)
+        r += 1
+
+        f_gmd = ttk.LabelFrame(p, text="Gravity Model Damping")
+        f_gmd.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_grav_model_damping = _GroupBoxProxy(f_gmd)
+        ttk.Label(f_gmd, text="Weight:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_gdw = tk.DoubleVar(value=0.0)
+        sb_gdw, self.mQgsDoubleSpinBox_grav_mmodel_damping_weight = self._spinbox_dbl(f_gmd, sv_gdw)
+        sb_gdw.grid(row=0, column=1, padx=2)
+        ttk.Label(f_gmd, text="Norm power:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_gnp = tk.DoubleVar(value=2.0)
+        sb_gnp, self.mQgsDoubleSpinBox_grav_mmodel_norm_power = self._spinbox_dbl(f_gmd, sv_gnp)
+        sb_gnp.grid(row=0, column=3, padx=2)
+        r += 1
+
+        f_gadmm = ttk.LabelFrame(p, text="Gravity ADMM")
+        f_gadmm.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_grav_admm = _GroupBoxProxy(f_gadmm)
+        ttk.Label(f_gadmm, text="# Lithologies:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_galn = tk.IntVar(value=0)
+        sb_galn, self.spinBox_grav_number_ADMM_litho = self._spinbox_int(f_gadmm, sv_galn, 0, 20)
+        sb_galn.grid(row=0, column=1, padx=2)
+        ttk.Label(f_gadmm, text="Weight:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_gaw = tk.StringVar(value="0")
+        e_gaw, self.lineEdit_grav_ADMM_weight = self._entry(f_gadmm, sv_gaw, 10)
+        e_gaw.grid(row=0, column=3, padx=2)
+        ttk.Label(f_gadmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
+        t_gab, self.textEdit_grav_ADMM_bounds = self._text(f_gadmm, 2, 30)
+        t_gab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
+        r += 1
+
+        # Magnetic parameters (moved from Data tab)
+        r = self._section(p, r, "Magnetic Parameters")
+        f_mum = ttk.LabelFrame(p, text="Magnetic Multipliers")
+        f_mum.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_magn_unit_multipliers = _GroupBoxProxy(f_mum)
+        ttk.Label(f_mum, text="Data units mult:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_mdm = tk.StringVar(value="1")
+        e_mdm, self.lineEdit_magn_data_multiplier = self._entry(f_mum, sv_mdm, 14)
+        e_mdm.grid(row=0, column=1, padx=2)
+        ttk.Label(f_mum, text="Model mult:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_mmm = tk.DoubleVar(value=1.0)
+        sb_mmm, self.mQgsDoubleSpinBox_magn_model_multiplier = self._spinbox_dbl(f_mum, sv_mmm)
+        sb_mmm.grid(row=0, column=3, padx=2)
+        r += 1
+
+        f_mmd = ttk.LabelFrame(p, text="Magnetic Model Damping")
+        f_mmd.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_magn_model_damping = _GroupBoxProxy(f_mmd)
+        ttk.Label(f_mmd, text="Weight:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_mdw = tk.DoubleVar(value=0.0)
+        sb_mdw, self.mQgsDoubleSpinBox_magn_model_weight = self._spinbox_dbl(f_mmd, sv_mdw)
+        sb_mdw.grid(row=0, column=1, padx=2)
+        ttk.Label(f_mmd, text="Norm power:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_mnp = tk.DoubleVar(value=2.0)
+        sb_mnp, self.mQgsDoubleSpinBox_magn_model_norm_power = self._spinbox_dbl(f_mmd, sv_mnp)
+        sb_mnp.grid(row=0, column=3, padx=2)
+        r += 1
+
+        f_madmm = ttk.LabelFrame(p, text="Magnetic ADMM")
+        f_madmm.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        self.groupBox_magn_admm = _GroupBoxProxy(f_madmm)
+        ttk.Label(f_madmm, text="# Lithologies:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_maln = tk.IntVar(value=0)
+        sb_maln, self.spinBox_magn_ADMM_number_litho = self._spinbox_int(f_madmm, sv_maln, 0, 20)
+        sb_maln.grid(row=0, column=1, padx=2)
+        ttk.Label(f_madmm, text="Weight:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_maw = tk.StringVar(value="0")
+        e_maw, self.lineEdit_magn_ADMM_weight = self._entry(f_madmm, sv_maw, 10)
+        e_maw.grid(row=0, column=3, padx=2)
+        ttk.Label(f_madmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
+        t_mab, self.textEdit_5_magn_ADMM_bounds = self._text(f_madmm, 2, 30)
+        t_mab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
+        r += 1
+
+        # Joint problem weights (moved from Data tab)
+        f_jp = ttk.LabelFrame(p, text="Joint Inversion Weights")
+        f_jp.grid(row=r, column=0, columnspan=3, sticky="we", padx=4, pady=2)
+        ttk.Label(f_jp, text="Grav weight:").grid(row=0, column=0, sticky="w", padx=2)
+        sv_gw = tk.DoubleVar(value=1.0)
+        sb_gw, self.mQgsDoubleSpinBox_grav_weight = self._spinbox_dbl(f_jp, sv_gw)
+        sb_gw.grid(row=0, column=1, padx=2)
+        ttk.Label(f_jp, text="Magn weight:").grid(row=0, column=2, sticky="w", padx=2)
+        sv_mw = tk.DoubleVar(value=2.5e-6)
+        sb_mw, self.mQgsDoubleSpinBox_magn_weight = self._spinbox_dbl(f_jp, sv_mw)
+        sb_mw.grid(row=0, column=3, padx=2)
+        r += 1
+
+        # Sensitivity Kernel (moved from Mesh tab)
+        r = self._section(p, r, "Sensitivity Kernel")
+        ttk.Label(p, text="Read from files:").grid(row=r, column=0, sticky="w", padx=4)
+        sv_rsm = tk.IntVar(value=0)
+        cb_rsm, self.checkBox_read_sens_matrix = self._check(p, sv_rsm)
+        cb_rsm.grid(row=r, column=1, sticky="w", padx=4)
+        r += 1
+        ttk.Label(p, text="Kernel dir:").grid(row=r, column=0, sticky="w", padx=4)
+        sv_kp = tk.StringVar()
+        e_kp, self.lineEdit_kernel_path = self._entry(p, sv_kp)
+        e_kp.grid(row=r, column=1, sticky="we", padx=4)
+        self.pushButton_kernel_path_select = ttk.Button(p, text="Browse...")
+        self.pushButton_kernel_path_select.grid(row=r, column=2, padx=2)
+        r += 1
+
+        # Output Directory (moved from Data tab)
+        r = self._section(p, r, "Output Directory")
+        sv_out = tk.StringVar()
+        e_out2, self.lineEdit_output_directory_path = self._entry(p, sv_out)
+        e_out2.grid(row=r, column=1, sticky="we", padx=4)
+        ttk.Label(p, text="Output dir:").grid(row=r, column=0, sticky="w", padx=4)
+        self.lineEdit_output_directory_path_select = ttk.Button(p, text="Browse/Process")
+        self.lineEdit_output_directory_path_select.grid(row=r, column=2, padx=2)
         r += 1
 
     # ====================================================================
@@ -817,9 +819,25 @@ class TomofastUI:
         r += 1
 
         r = self._section(p, r, "Inversion Log")
-        t_log, self.textEdit_inversion_log = self._text(p, 20, 60)
-        t_log.configure(bg="black", fg="white", font=("Courier", 9))
-        t_log.grid(row=r, column=0, columnspan=3, padx=4, pady=2, sticky="we")
+        log_frame = ttk.Frame(p)
+        log_frame.grid(row=r, column=0, columnspan=3, padx=4, pady=2, sticky="nswe")
+        log_frame.columnconfigure(0, weight=1)
+        log_frame.rowconfigure(0, weight=1)
+        sv_log = tk.StringVar()
+        t_log = tk.Text(log_frame, height=20, width=90, wrap=tk.NONE,
+                        bg="black", fg="white", font=("Courier", 9))
+        vsb_log = ttk.Scrollbar(log_frame, orient="vertical", command=t_log.yview)
+        hsb_log = ttk.Scrollbar(log_frame, orient="horizontal", command=t_log.xview)
+        t_log.configure(yscrollcommand=vsb_log.set, xscrollcommand=hsb_log.set)
+        t_log.grid(row=0, column=0, sticky="nswe")
+        vsb_log.grid(row=0, column=1, sticky="ns")
+        hsb_log.grid(row=1, column=0, sticky="we")
+        self.textEdit_inversion_log = _WidgetProxy(sv_log, t_log)
+        self.textEdit_inversion_log.toPlainText = lambda: t_log.get("1.0", tk.END).strip()
+        self.textEdit_inversion_log.setText = lambda x: (t_log.delete("1.0", tk.END), t_log.insert("1.0", str(x)))
+        self.textEdit_inversion_log.insertPlainText = lambda x: t_log.insert(tk.END, x)
+        self.textEdit_inversion_log.clear = lambda: t_log.delete("1.0", tk.END)
+        self.textEdit_inversion_log.moveCursor = lambda pos: t_log.see(tk.END)
         r += 1
 
         r = self._section(p, r, "Version")
@@ -845,4 +863,8 @@ class TomofastUI:
         self.pushButton_3_visualise = ttk.Button(p, text="Visualise Output")
         self.pushButton_3_Export.grid(row=r, column=0, padx=4, pady=4, sticky="w")
         self.pushButton_3_visualise.grid(row=r, column=1, padx=4, pady=4, sticky="w")
+        try:
+            import pyvista  # noqa: F401
+        except ImportError:
+            self.pushButton_3_visualise.configure(state="disabled")
         r += 1
