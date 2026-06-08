@@ -300,7 +300,7 @@ class TomofastUI:
         return e, _WidgetProxy(sv, e)
 
     def _browse_btn(self, parent, text="...", cmd=None):
-        b = ttk.Button(parent, text=text, command=cmd, width=4)
+        b = ttk.Button(parent, text=text, command=cmd, width=8)
         return b
 
     # ====================================================================
