@@ -1839,7 +1839,40 @@ class Tomofast_x:
         )
 
     # estimate mag field from centroid of data, date and sensor height
+    def get_noddy_mag_params(self, geotiff_path):
+        """Return (inc, dec, intensity) from Noddy GeoTIFF metadata, or None."""
+        path = str(geotiff_path).split("|")[0]
+        if not path.lower().endswith((".tif", ".tiff")) or not os.path.isfile(path):
+            return None
+        try:
+            ds = gdal.Open(path, gdal.GA_ReadOnly)
+            if ds is None:
+                return None
+            md = ds.GetMetadata()
+            ds = None
+            if not all(k in md for k in ("inclination", "declination", "intensity")):
+                return None
+            return (
+                float(md["inclination"]),
+                float(md["declination"]),
+                float(md["intensity"]),
+            )
+        except Exception:
+            return None
+
     def update_mag_field(self):
+
+        # Noddy GeoTIFF: use the field stored in its metadata
+        noddy = self.get_noddy_mag_params(self.dlg.lineEdit_magn_data_path.text())
+        if noddy is not None:
+            inc, dec, inten = noddy
+            self.forward_magneticField_inclination = inc
+            self.forward_magneticField_declination = dec
+            self.forward_magneticField_intensity = inten
+            self.dlg.doubleSpinBox_mag_dec.setValue(dec)
+            self.dlg.doubleSpinBox_mag_inc.setValue(inc)
+            self.dlg.doubleSpinBox_mag_int.setValue(inten)
+            return
 
         # retrieve parameters
         self.magn_SurveyHeight = self.dlg.doubleSpinBox_magn_sensor_height.value()

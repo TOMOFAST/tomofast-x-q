@@ -254,8 +254,42 @@ class DataMixin:
         self.ui.mQgsDoubleSpinBox_compression_ratio.setEnabled(True)
 
     # ------------------------------------------------------------------
+    def get_noddy_mag_params(self, geotiff_path):
+        """Return (inc, dec, intensity) from Noddy GeoTIFF metadata, or None."""
+        path = str(geotiff_path).split("|")[0]
+        if not path.lower().endswith((".tif", ".tiff")) or not os.path.isfile(path):
+            return None
+        try:
+            ds = gdal.Open(path, gdal.GA_ReadOnly)
+            if ds is None:
+                return None
+            md = ds.GetMetadata()
+            ds = None
+            if not all(k in md for k in ("inclination", "declination", "intensity")):
+                return None
+            return (
+                float(md["inclination"]),
+                float(md["declination"]),
+                float(md["intensity"]),
+            )
+        except Exception:
+            return None
+
     def update_mag_field(self):
         from pyproj import Transformer
+
+        # Noddy GeoTIFF: use the field stored in its metadata
+        noddy = self.get_noddy_mag_params(self.ui.lineEdit_magn_data_path.text())
+        if noddy is not None:
+            inc, dec, inten = noddy
+            self.forward_magneticField_inclination = inc
+            self.forward_magneticField_declination = dec
+            self.forward_magneticField_intensity = inten
+            self.ui.doubleSpinBox_mag_dec.setValue(dec)
+            self.ui.doubleSpinBox_mag_inc.setValue(inc)
+            self.ui.doubleSpinBox_mag_int.setValue(inten)
+            return
+
         self.magn_SurveyHeight = self.ui.doubleSpinBox_magn_sensor_height.value()
         date_text = str(self.ui.dateEdit.date().toPyDate())
         date_split = date_text.split("-")
