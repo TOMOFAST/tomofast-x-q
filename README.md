@@ -1,10 +1,15 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.15
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.16
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.15 First Beta of ArcGIS Pro Toolbox   
+changelog=0.2.16   
+    * Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)   
+    * Number of processors box disabled for native Windows (exe uses OpenMP default thread count)   
+    * Copy parfile to output folder from the plugin on native Windows   
+    * Clip data to rectangle ROI, GUI reorganisation   
+    0.2.15 First Beta of ArcGIS Pro Toolbox   
     0.2.14   
     * Allow tiff and tif suffix inputs for DTM   
     * Remove Upload_plugin.py script   
@@ -88,8 +93,8 @@ K. Define output directory and mesh and data files will then be written out and 
 L. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
-- For **Native Windows** use you will need to specify the path to a bat file called **setvars.bat** and **mpiexec.exe** (tooltips give likely locations)
-- For **WSL** which Linux Distribution is installed in the **WSL Distro** text area and type in **mpirun** in the **Path to mpirun/mpiexec** text area
+- For **Native Windows** use you only need the path to the MPI-free tomofastx.exe; no OpenMPI, setvars.bat or mpiexec is required, and the number of threads is chosen automatically
+- For **WSL** specify which Linux Distribution is installed in the **WSL Distro** text area (mpirun must be available in the WSL distro)
 - For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    
 Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    

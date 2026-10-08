@@ -765,9 +765,6 @@ class Tomofast_x:
                 self.dlg.pushButton_select_mpirun_mipexec.clicked.connect(
                     self.select_mpirunexec_path
                 )
-                self.dlg.pushButton_select_setvars.clicked.connect(
-                    self.select_setvars_path
-                )
 
                 self.dlg.radioButton_windowsNative.toggled.connect(
                     self._update_run_controls
@@ -870,9 +867,7 @@ class Tomofast_x:
                     line = tpfile.readline()
                     self.dlg.lineEdit_2_mpirunPath_2.setText(line.rstrip())
 
-                    line = tpfile.readline()
-                    self.dlg.lineEdit_setvarsPath.setText(line.rstrip())
-                    self.setvars_Path = line.rstrip()
+                    line = tpfile.readline()  # legacy setvars line, unused
 
                     line = tpfile.readline().rstrip()
                     if line in ("0", "1"):
@@ -1070,7 +1065,7 @@ class Tomofast_x:
         """Run post-inversion validity checks and report each result to the log widget."""
 
         def warn(msg):
-            self._log_colored(f"FAIL  {msg}", "red", bold=True)
+            self._log_colored(f"WARNING  {msg}", "red", bold=True)
 
         def ok(msg):
             self._log_colored(f"PASS  {msg}", "green", bold=True)
@@ -1267,7 +1262,7 @@ class Tomofast_x:
                     tpfile.write(distro + "\n")
                     tpfile.write("\n")
                     tpfile.write(mpi_path + "\n")
-                    tpfile.write(self.dlg.lineEdit_setvarsPath.text().strip() + "\n")
+                    tpfile.write("\n")  # legacy setvars line, kept for file layout
                     tpfile.write(("1" if use_native_windows else "0") + "\n")
                     tpfile.write(str(noProc) + "\n")
 
@@ -1287,61 +1282,49 @@ class Tomofast_x:
             )
 
     def _run_windows_native(self, noProc):
-        """Launch inversion using the native Windows executable via a batch file (no console window)."""
-        tomo_path = self._validate_path(self.tomo_Path)
-        param_path = self._validate_path(self.paramfile_Path)
-        mpiexec_path = (
-            self._validate_path(self.dlg.lineEdit_2_mpirunPath_2.text().strip())
-            if hasattr(self.dlg, "lineEdit_2_mpirunPath_2")
-            else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
-        )
-        oneapi_path = self._validate_path(self.dlg.lineEdit_setvarsPath.text().strip())
+        """Launch the MPI-free native Windows executable directly (no console window)."""
+        tomo_path = os.path.normpath(self.tomo_Path)
+        param_path = os.path.normpath(self.paramfile_Path)
         distro = " "
 
-        debug_path = param_path.replace('"', "") + "_debug.txt"
+        debug_path = param_path + "_debug.txt"
 
-        oneapi_path_bat = oneapi_path.replace("/", "\\")
-        tomo_path_bat = tomo_path.replace("/", "\\")
-        param_path_bat = param_path.replace("/", "\\")
-        debug_path_bat = debug_path.replace("/", "\\")
-
-        if noProc == 1:
-            run_command = f'"{tomo_path_bat}" -p "{param_path_bat}"'
-        else:
-            run_command = f'"{mpiexec_path}" -n {noProc} "{tomo_path_bat}" -p "{param_path_bat}"'
-
-        batch_content = f"""@echo off
-setlocal
-
-call "{oneapi_path_bat}"
-if errorlevel 1 (
-    exit /b 1
-)
-
-{run_command} > "{debug_path_bat}" 2>&1
-
-endlocal
-"""
-        batch_file_path = os.path.join(
-            os.path.dirname(self.paramfile_Path), "run_tomofastx.bat"
-        )
-        with open(batch_file_path, "w") as batch_file:
-            batch_file.write(batch_content)
+        # The exe shells out to Unix `cp` to archive the parfile in the output
+        # folder, which fails on Windows, so do the copy here instead.
+        out_dir = self._get_output_dir_from_parfile()
+        if out_dir and os.path.isdir(out_dir):
+            try:
+                shutil.copyfile(
+                    param_path, os.path.join(out_dir, os.path.basename(param_path))
+                )
+            except Exception as e:
+                print(f"Could not copy parfile to output folder: {e}")
 
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         CREATE_NO_WINDOW = 0x08000000
-        process = subprocess.Popen(
-            [batch_file_path],
-            shell=False,
-            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
-        )
-        return process, distro, mpiexec_path
+        # Redirect stdout/stderr to the debug log, which the GUI tails.
+        # Thread count is left to the OpenMP default: setting OMP_NUM_THREADS
+        # explicitly made the exe crash/hang.
+        env = os.environ.copy()
+        debug_file = open(debug_path, "w")
+        try:
+            process = subprocess.Popen(
+                [tomo_path, "-p", param_path],
+                shell=False,
+                env=env,
+                stdout=debug_file,
+                stderr=subprocess.STDOUT,
+                cwd=os.path.dirname(param_path),
+                creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
+            )
+        finally:
+            debug_file.close()
+        return process, distro, ""
 
     def _update_run_controls(self):
-        """Enable/disable WSL Distro and setvars.bat widgets based on OS and mode."""
+        """Enable/disable WSL Distro and mpirun widgets based on OS and mode."""
         is_windows = platform.system() == "Windows"
-        native = is_windows and self.dlg.radioButton_windowsNative.isChecked()
-        wsl = is_windows and self.dlg.radioButton_windowsWSL.isChecked()
+        wsl =is_windows and self.dlg.radioButton_windowsWSL.isChecked()
 
         # Windows-only radio buttons are hidden from non-Windows users
         for w in (self.dlg.radioButton_windowsNative, self.dlg.radioButton_windowsWSL):
@@ -1349,9 +1332,13 @@ endlocal
 
         for w in (self.dlg.label_wsl_distro, self.dlg.lineEdit_pre_command_2_WSL_Distro):
             w.setEnabled(wsl)
-        for w in (self.dlg.label_setvars_path, self.dlg.lineEdit_setvarsPath,
-                  self.dlg.pushButton_select_setvars):
-            w.setEnabled(native)
+        # mpirun path is only needed on macOS/Linux; the native Windows exe needs no MPI
+        for w in (self.dlg.label_mpirun_path, self.dlg.lineEdit_2_mpirunPath_2,
+                  self.dlg.pushButton_select_mpirun_mipexec):
+            w.setVisible(not is_windows)
+        # The native Windows exe chooses its own OpenMP thread count
+        native = is_windows and self.dlg.radioButton_windowsNative.isChecked()
+        self.dlg.mQgsSpinBox_noProc.setEnabled(not native)
 
     def _run_windows_wsl(self, noProc):
         """Launch inversion inside a WSL distribution from Windows."""
@@ -1523,17 +1510,6 @@ endlocal
         )
         if os.path.exists(self.mpi_runexec_path) and self.mpi_runexec_path != "":
             self.dlg.lineEdit_2_mpirunPath_2.setText(self.mpi_runexec_path)
-
-    def select_setvars_path(self):
-
-        self.setvars_Path, _filter = QFileDialog.getOpenFileName(
-            None,
-            "Select tomofast paramfile",
-            ".",
-            "BAT (*.bat;*.BAT)",
-        )
-        if os.path.exists(self.setvars_Path) and self.setvars_Path != "":
-            self.dlg.lineEdit_setvarsPath.setText(self.setvars_Path)
 
     # load and parse existing paramfiel and set gui widgets accordingly
     def process_parameter_file(self):
@@ -4830,11 +4806,8 @@ pv.Render()
         self.dlg.pushButton_2_select_parfilePath.setToolTip(
             "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
         )
-        self.dlg.pushButton_select_setvars.setToolTip(
-            "Select setvars.bat file \n(usually at C:\Program Files (x86)\Intel\oneAPI\setvars.bat)"
-        )
         self.dlg.pushButton_select_mpirun_mipexec.setToolTip(
-            "Path to mpirun or mpiexec.exe executable, if not in PATH, \n e.g. for MacOS'/opt/homebrew/bin/mpirun' or \n Windows C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.17\\bin\\mpiexec.exe"
+            "Path to mpirun executable, if not in PATH, \n e.g. for MacOS '/opt/homebrew/bin/mpirun' (not needed on Windows)"
         )
 
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
@@ -4951,7 +4924,6 @@ pv.Render()
         self.global_magn_sensor_height = 0
         self.paramfile_Path = ""
         self.suffix_known = False
-        self.setvars_Path = ""
         self.z_by_list = ""
         self.depth_layers = []
         self.nData = 0
