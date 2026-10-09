@@ -5,10 +5,11 @@
 
 ## Recent changes
 changelog=0.2.17   
+    * Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)
     * Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF   
     0.2.16   
     * Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)   
-    * Number of processors box disabled for native Windows (exe uses OpenMP default thread count)   
+    * Number of processors box sets the OpenMP thread count (OMP_NUM_THREADS) for native Windows   
     * Copy parfile to output folder from the plugin on native Windows   
     * Clip data to rectangle ROI, GUI reorganisation   
     0.2.15 First Beta of ArcGIS Pro Toolbox   
@@ -95,7 +96,7 @@ K. Define output directory and mesh and data files will then be written out and 
 L. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
-- For **Native Windows** use you only need the path to the MPI-free tomofastx.exe; no OpenMPI, setvars.bat or mpiexec is required, and the number of threads is chosen automatically
+- For **Native Windows** use you only need the path to the MPI-free tomofastx.exe; no OpenMPI, setvars.bat or mpiexec is required; the "number of processors" box sets the number of OpenMP threads
 - For **WSL** specify which Linux Distribution is installed in the **WSL Distro** text area (mpirun must be available in the WSL distro)
 - For **MacOs** use you will have to specify the path to the OpenMPI mpirun binary
    

@@ -23,10 +23,11 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=0.2.17
+    * Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)
     * Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF
     0.2.16
     * Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)
-    * Number of processors box disabled for native Windows (exe uses OpenMP default thread count)
+    * Number of processors box sets the OpenMP thread count (OMP_NUM_THREADS) for native Windows
     * Copy parfile to output folder from the plugin on native Windows
     * Clip data to rectangle ROI, GUI reorganisation
     0.2.15 First Beta of ArcGIS Pro Toolbox

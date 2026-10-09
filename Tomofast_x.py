@@ -87,6 +87,7 @@ import processing
 import os
 from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
+import signal
 import subprocess
 import shlex
 import platform
@@ -149,6 +150,9 @@ class Tomofast_x:
         self._debug_log_timer.timeout.connect(self._poll_debug_log)
         self._debug_log_path = ""
         self._debug_log_pos = 0
+        self._process = None
+        self._wsl_distro = ""
+        self._wsl_param_path = ""
 
     def define_parameters(self):
 
@@ -779,6 +783,10 @@ class Tomofast_x:
                 )
 
                 self.dlg.pushButton_3_runInversion.clicked.connect(self.run_inversion)
+                self.dlg.pushButton_cancel_inversion.setEnabled(False)
+                self.dlg.pushButton_cancel_inversion.clicked.connect(
+                    self.cancel_inversion
+                )
 
                 self.dlg.pushButton_3_Export.clicked.connect(self.export_model)
                 # connect to provide cleanup on closing of dockwidget
@@ -1014,7 +1022,47 @@ class Tomofast_x:
             raise ValueError(f"Unsafe characters in path: {path}")
         return path
 
+    def cancel_inversion(self):
+        """Kill the running tomofast job (and any child processes)."""
+        process = self._process
+        if process is None or process.poll() is not None:
+            self.dlg.pushButton_cancel_inversion.setEnabled(False)
+            return
+        try:
+            if platform.system() == "Windows":
+                # /T kills the whole process tree, /F forces it
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                    creationflags=0x08000000,  # CREATE_NO_WINDOW
+                    check=False,
+                )
+                if self._wsl_distro.strip() and self._wsl_param_path:
+                    # Killing wsl.exe does not stop the Linux-side job. Match only
+                    # processes whose command line contains this job's (unique)
+                    # parfile path, so other tomofast runs are left alone.
+                    subprocess.run(
+                        ["wsl", "-d", self._wsl_distro.strip(), "--exec",
+                         "pkill", "-f", "--", re.escape(self._wsl_param_path)],
+                        creationflags=0x08000000,
+                        check=False,
+                    )
+            else:
+                # Job was started in its own session/process group
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        except Exception as e:
+            print(f"Could not cancel the inversion: {e}")
+            return
+        self._debug_log_timer.stop()
+        self.dlg.textEdit_inversion_log.appendPlainText("\n*** Inversion cancelled by user ***")
+        self.dlg.pushButton_cancel_inversion.setEnabled(False)
+        self.iface.messageBar().pushMessage(
+            "Inversion cancelled", level=Qgis.Info, duration=10
+        )
+
     def _poll_debug_log(self):
+        # Disable the cancel button once the job has ended on its own
+        if self._process is not None and self._process.poll() is not None:
+            self.dlg.pushButton_cancel_inversion.setEnabled(False)
         if not self._debug_log_path or not os.path.exists(self._debug_log_path):
             return
         try:
@@ -1250,6 +1298,9 @@ class Tomofast_x:
                 except Exception:
                     pass
                 self._debug_log_pos = 0
+                self._process = process
+                self._wsl_distro = distro if platform.system() == "Windows" and not use_native_windows else ""
+                self.dlg.pushButton_cancel_inversion.setEnabled(True)
                 self.dlg.textEdit_inversion_log.clear()
                 self._debug_log_timer.start(500)
 
@@ -1303,9 +1354,9 @@ class Tomofast_x:
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         CREATE_NO_WINDOW = 0x08000000
         # Redirect stdout/stderr to the debug log, which the GUI tails.
-        # Thread count is left to the OpenMP default: setting OMP_NUM_THREADS
-        # explicitly made the exe crash/hang.
+        # OpenMP build: thread count is set through OMP_NUM_THREADS
         env = os.environ.copy()
+        env["OMP_NUM_THREADS"] = str(noProc)
         debug_file = open(debug_path, "w")
         try:
             process = subprocess.Popen(
@@ -1336,9 +1387,6 @@ class Tomofast_x:
         for w in (self.dlg.label_mpirun_path, self.dlg.lineEdit_2_mpirunPath_2,
                   self.dlg.pushButton_select_mpirun_mipexec):
             w.setVisible(not is_windows)
-        # The native Windows exe chooses its own OpenMP thread count
-        native = is_windows and self.dlg.radioButton_windowsNative.isChecked()
-        self.dlg.mQgsSpinBox_noProc.setEnabled(not native)
 
     def _run_windows_wsl(self, noProc):
         """Launch inversion inside a WSL distribution from Windows."""
@@ -1366,6 +1414,7 @@ class Tomofast_x:
         wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
         mpirun_path = " mpirun "
         wsl_param_path = wsl_param_path.replace('"', "")
+        self._wsl_param_path = wsl_param_path
 
         wsl_debug_path = wsl_param_path + "_debug.txt"
 
