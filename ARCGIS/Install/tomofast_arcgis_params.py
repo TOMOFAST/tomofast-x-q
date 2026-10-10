@@ -221,12 +221,7 @@ class ParamsMixin:
         )
 
         self.spacer("INVERSION parameters")
-        if (
-            self.inversion_admm_grav_nLithologies > 0
-            or self.inversion_admm_magn_nLithologies > 0
-        ):
-            self.f_params.write("inversion.nMajorIterations          = {}\n".format("50"))
-        elif self.global_experimentType == 3:
+        if self.global_experimentType == 3:
             self.f_params.write("inversion.nMajorIterations          = {}\n".format("15"))
         else:
             self.f_params.write(
@@ -336,17 +331,13 @@ class ParamsMixin:
                         self.inversion_admm_grav_bounds
                     )
                 )
+        self.f_params.write(
+            "inversion.admm.grav.weight          = {}\n".format(
+                self.inversion_admm_grav_weight
+            )
+        )
         if self.inversion_admm_grav_nLithologies > 0:
-            self.f_params.write(
-                "inversion.admm.grav.weight      = {}\n".format("1000.0")
-            )
             self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
-        else:
-            self.f_params.write(
-                "inversion.admm.grav.weight          = {}\n".format(
-                    self.inversion_admm_grav_weight
-                )
-            )
 
         if self.global_experimentType in (2, 3):
             if self.inversion_admm_magn_nLithologies > 0:
@@ -366,17 +357,13 @@ class ParamsMixin:
                         self.inversion_admm_magn_bounds
                     )
                 )
+            self.f_params.write(
+                "inversion.admm.magn.weight          = {}\n".format(
+                    self.inversion_admm_magn_weight
+                )
+            )
             if self.inversion_admm_magn_nLithologies > 0:
-                self.f_params.write(
-                    "inversion.admm.magn.weight      = {}\n".format("1000.0")
-                )
                 self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
-            else:
-                self.f_params.write(
-                    "inversion.admm.magn.weight          = {}\n".format(
-                        self.inversion_admm_magn_weight
-                    )
-                )
 
         self.spacer("MESH")
         self.f_params.write(

@@ -770,6 +770,17 @@ class Tomofast_x:
                     self.select_mpirunexec_path
                 )
 
+                self.dlg.spinBox_grav_number_ADMM_litho.valueChanged.connect(
+                    lambda v: self._on_n_litho_changed(
+                        v, self.dlg.spinBox_grav_number_ADMM_litho,
+                        self.dlg.lineEdit_grav_ADMM_weight)
+                )
+                self.dlg.spinBox_magn_ADMM_number_litho.valueChanged.connect(
+                    lambda v: self._on_n_litho_changed(
+                        v, self.dlg.spinBox_magn_ADMM_number_litho,
+                        self.dlg.lineEdit_magn_ADMM_weight)
+                )
+
                 self.dlg.radioButton_windowsNative.toggled.connect(
                     self._update_run_controls
                 )
@@ -1376,6 +1387,21 @@ class Tomofast_x:
         finally:
             debug_file.close()
         return process, distro, ""
+
+    def _on_n_litho_changed(self, n_litho, spinbox, weight_edit):
+        """Set ADMM weight and major iterations when the user edits nLithologies."""
+        # Ignore programmatic changes (e.g. loading a parameter file)
+        if not spinbox.hasFocus():
+            return
+        if n_litho > 0:
+            weight_edit.setText("1000")
+            self.dlg.mQgsSpinBox_major_iters.setValue(50)
+        else:
+            weight_edit.setText("0")
+            # Major iterations are shared, so only drop them when ADMM is off for both
+            if (self.dlg.spinBox_grav_number_ADMM_litho.value() == 0
+                    and self.dlg.spinBox_magn_ADMM_number_litho.value() == 0):
+                self.dlg.mQgsSpinBox_major_iters.setValue(3)
 
     def _update_run_controls(self):
         """Enable/disable WSL Distro and mpirun widgets based on OS and mode."""
@@ -3845,14 +3871,7 @@ class Tomofast_x:
 
         self.spacer("INVERSION parameters")
 
-        if (
-            self.inversion_admm_grav_nLithologies > 0
-            or self.inversion_admm_magn_nLithologies > 0
-        ):
-            self.f_params.write(
-                "inversion.nMajorIterations          = {}\n".format("50")
-            )
-        elif self.global_experimentType == 3:
+        if self.global_experimentType == 3:
             self.f_params.write(
                 "inversion.nMajorIterations          = {}\n".format("15")
             )
@@ -3965,17 +3984,13 @@ class Tomofast_x:
                     )
                 )
 
+        self.f_params.write(
+            "inversion.admm.grav.weight          = {}\n".format(
+                self.inversion_admm_grav_weight
+            )
+        )
         if self.inversion_admm_grav_nLithologies > 0:
-            self.f_params.write(
-                "inversion.admm.grav.weight      = {}\n".format("1000.0")
-            )
             self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
-        else:
-            self.f_params.write(
-                "inversion.admm.grav.weight          = {}\n".format(
-                    self.inversion_admm_grav_weight
-                )
-            )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             if self.inversion_admm_magn_nLithologies > 0:
@@ -3997,17 +4012,13 @@ class Tomofast_x:
                     )
                 )
 
+            self.f_params.write(
+                "inversion.admm.magn.weight          = {}\n".format(
+                    self.inversion_admm_magn_weight
+                )
+            )
             if self.inversion_admm_magn_nLithologies > 0:
-                self.f_params.write(
-                    "inversion.admm.magn.weight      = {}\n".format("1000.0")
-                )
                 self.f_params.write("inversion.admm.maxWeight      =   0.1000000E+11\n")
-            else:
-                self.f_params.write(
-                    "inversion.admm.magn.weight          = {}\n".format(
-                        self.inversion_admm_magn_weight
-                    )
-                )
 
         self.spacer("MESH")
 

@@ -256,6 +256,31 @@ class TomofastUI:
         sb = ttk.Spinbox(parent, textvariable=var, from_=frm, to=to, width=wid)
         return sb, _WidgetProxy(var, sb)
 
+    def _link_n_litho(self, sb, var, weight_var):
+        """Set ADMM weight and major iterations when the user edits nLithologies."""
+        def on_change(*_):
+            # Ignore programmatic changes (e.g. loading a parameter file)
+            if sb.focus_get() is not sb:
+                return
+            try:
+                n = int(var.get())
+            except (tk.TclError, ValueError):
+                return  # partially typed value
+            if n > 0:
+                weight_var.set("1000")
+                self.mQgsSpinBox_major_iters.setValue(50)
+            else:
+                weight_var.set("0")
+                # Major iterations are shared, so only drop them when ADMM is off for both
+                try:
+                    both_zero = (self.spinBox_grav_number_ADMM_litho.value() == 0
+                                 and self.spinBox_magn_ADMM_number_litho.value() == 0)
+                except (tk.TclError, ValueError):
+                    return
+                if both_zero:
+                    self.mQgsSpinBox_major_iters.setValue(3)
+        var.trace_add("write", on_change)
+
     def _spinbox_dbl(self, parent, var, frm=-1e15, to=1e15, inc=0.01, wid=12):
         sb = ttk.Spinbox(parent, textvariable=var, from_=frm, to=to,
                          increment=inc, width=wid, format="%.6f")
@@ -661,6 +686,7 @@ class TomofastUI:
         sv_gaw = tk.StringVar(value="0")
         e_gaw, self.lineEdit_grav_ADMM_weight = self._entry(f_gadmm, sv_gaw, 10)
         e_gaw.grid(row=0, column=3, padx=2)
+        self._link_n_litho(sb_galn, sv_galn, sv_gaw)
         ttk.Label(f_gadmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
         t_gab, self.textEdit_grav_ADMM_bounds = self._text(f_gadmm, 2, 30)
         t_gab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
@@ -705,6 +731,7 @@ class TomofastUI:
         sv_maw = tk.StringVar(value="0")
         e_maw, self.lineEdit_magn_ADMM_weight = self._entry(f_madmm, sv_maw, 10)
         e_maw.grid(row=0, column=3, padx=2)
+        self._link_n_litho(sb_maln, sv_maln, sv_maw)
         ttk.Label(f_madmm, text="Bounds:").grid(row=1, column=0, sticky="w", padx=2)
         t_mab, self.textEdit_5_magn_ADMM_bounds = self._text(f_madmm, 2, 30)
         t_mab.grid(row=1, column=1, columnspan=4, padx=2, sticky="we")
