@@ -5,7 +5,7 @@
 
 ## Recent changes
 changelog=0.2.17   
-    * Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)
+    * Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)   
     * Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF   
     0.2.16   
     * Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)   
