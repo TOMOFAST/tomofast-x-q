@@ -1357,6 +1357,11 @@ class Tomofast_x:
         # OpenMP build: thread count is set through OMP_NUM_THREADS
         env = os.environ.copy()
         env["OMP_NUM_THREADS"] = str(noProc)
+        # stdout is a file, so Fortran runtimes buffer it by default; force
+        # unbuffered output so the GUI can tail the log live.
+        env["GFORTRAN_UNBUFFERED_ALL"] = "y"  # gfortran
+        env["FORT_BUFFERED"] = "false"        # Intel ifort/ifx
+
         debug_file = open(debug_path, "w")
         try:
             process = subprocess.Popen(

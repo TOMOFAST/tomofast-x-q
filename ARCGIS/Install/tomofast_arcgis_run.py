@@ -330,6 +330,7 @@ class RunMixin:
         batch_content = (
             f'@echo off\nsetlocal\n\ncall "{oneapi_path_bat}"\n'
             f'if errorlevel 1 (\n    exit /b 1\n)\n\n'
+            f'set GFORTRAN_UNBUFFERED_ALL=y\nset FORT_BUFFERED=false\n'
             f'{run_command} > "{debug_path_bat}" 2>&1\n\nendlocal\n'
         )
         batch_file_path = os.path.join(
