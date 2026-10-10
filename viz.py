@@ -22,8 +22,9 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
     # Track if we've successfully added any meshes
     meshes_added = 0
     
-    # Process each voxet file
-    for i, file_path in enumerate(files):
+    # First pass: load every file so all share one pooled colour range
+    loaded = []
+    for file_path in files:
         try:
             print(f"Loading voxet file: {file_path}")
             
@@ -49,14 +50,22 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
                 continue
                 
             print(f"Using scalar field: {scalar_name}")
-            
-            # Calculate clipping values at specified percentile
-            vmin = np.min(data)
-            vmax = np.percentile(data, clip_percentile)
-            
             print(f"Data range: [{np.min(data)}, {np.max(data)}]")
-            print(f"Clipped range (95%): [{vmin}, {vmax}]")
-            
+            loaded.append((file_path, grid, scalar_name, np.asarray(data)))
+
+        except Exception as e:
+            print(f"Error processing {file_path}: {str(e)}")
+
+    # Shared clipping values (percentile of the pooled data) for all files
+    if loaded:
+        pooled = np.concatenate([d.ravel() for _, _, _, d in loaded])
+        vmin = np.min(pooled)
+        vmax = np.percentile(pooled, clip_percentile)
+        print(f"Shared clipped range ({clip_percentile}%): [{vmin}, {vmax}]")
+
+    # Second pass: add each mesh with the shared colour range
+    for file_path, grid, scalar_name, _ in loaded:
+        try:
             # Add to plotter with clipped color range
             # Set show_scalar_bar=False to prevent automatic scalar bars for each mesh
             plotter.add_mesh(
@@ -84,7 +93,7 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
     if meshes_added > 0:
         try:
             # Add a single scalar bar for all meshes
-            plotter.add_scalar_bar(title="Value (clipped at 95%)")
+            plotter.add_scalar_bar(title=f"Value (clipped at {clip_percentile}%)")
             print("Added scalar bar")
         except Exception as e:
             print(f"Could not add scalar bar: {str(e)}")
