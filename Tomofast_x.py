@@ -5007,8 +5007,54 @@ pv.Render()
         self.dlg.comboBox_grav_field_y.setToolTip(
             "Define column in csv file that contains Latitude/Northing information"
         )
-        self.dlg.comboBox_grav_field_data.setToolTip(
-            "Define column in csv file that contains Gravity information"
+        _grav_data_tip = (
+            "Column in the csv file that contains the gravity data.\n\n"
+            "With several components this is the FIRST component's column, and the\n"
+            "following columns of the file are the other components, in file order:\n"
+            "  1 component (gravity, or gradiometry Gz/Gzz): this column only.\n"
+            "  6 components (gradiometry tensor): this column is xx, and the next five\n"
+            "  columns must be yy, zz, xy, yz, xz in that order.\n\n"
+            "Not used for GeoTIFF input (see the Load Grav button)."
+        )
+        self.dlg.comboBox_grav_field_data.setToolTip(_grav_data_tip)
+        self.dlg.label_grav_field_data_col.setToolTip(_grav_data_tip)
+        _magn_data_tip = (
+            "Column in the csv file that contains the magnetic data.\n\n"
+            "With several components this is the FIRST component's column, and the\n"
+            "following columns of the file are the other components, in file order:\n"
+            "  TMI (1 component): this column only.\n"
+            "  Bx,By,Bz (3 components): this column is Bx, and the next two columns\n"
+            "  must be By and Bz in that order.\n\n"
+            "Not used for GeoTIFF input (see the Load Mag button)."
+        )
+        self.dlg.comboBox_magn_field_data.setToolTip(_magn_data_tip)
+        self.dlg.label_magn_field_data_col.setToolTip(_magn_data_tip)
+        self.dlg.comboBox_grav_type.setToolTip(
+            "Type of gravity data.\n"
+            "Gravity: gravity data.\n"
+            "Gradiometry: gravity gradient data (Eotvos). The depth weighting power is\n"
+            "set to 3 and the default target misfit changes to suit Eotvos units.\n\n"
+            "[forward.data.grav.type]"
+        )
+        self.dlg.comboBox_grav_ncomp.setToolTip(
+            "Number of gradiometry data components.\n"
+            "1 component: Gz/Gzz only.\n"
+            "6 components: full tensor in the order xx, yy, zz, xy, yz, xz.\n"
+            "Fixed at 1 for plain gravity data.\n\n"
+            "[forward.data.grav.nDataComponents]"
+        )
+        self.dlg.comboBox_magn_ncomp.setToolTip(
+            "Type of magnetic data.\n"
+            "TMI data: total magnetic intensity (1 component).\n"
+            "Bx,By,Bz data: three-component magnetic field data.\n\n"
+            "[forward.data.magn.nDataComponents]"
+        )
+        self.dlg.comboBox_magn_nmodel.setToolTip(
+            "Type of magnetic model.\n"
+            "Scalar model: one susceptibility per cell.\n"
+            "Vector (MVI): magnetisation vector inversion, solving for (Mx, My, Mz) in\n"
+            "every cell. The sensitivity matrix and run time grow about three times.\n\n"
+            "[modelGrid.magn.nModelComponents]"
         )
         self.dlg.comboBox_magn_field_x.setToolTip(
             "Define column in csv file that contains Longitude/Easting information"
@@ -5134,11 +5180,25 @@ pv.Render()
             "Assign x,y,data fields defined above"
         )
         self.dlg.pushButton_load_grav_data.setToolTip(
-            "Load gravity data as QGIS Layer\n\n[anomalies.grav.data.file]"
+            "Load gravity data as QGIS Layer\n\n[anomalies.grav.data.file]\n\n"
+            "GeoTIFF naming for the number of components chosen alongside\n"
+            "(for csv files see the Data tooltip):\n"
+            "1 component: one file, any name.\n"
+            "6 components (xx, yy, zz, xy, yz, xz): six files in the same folder, on\n"
+            "the same grid, with names identical except for the tag xx, yy, zz, xy,\n"
+            "yz or xz (any case, set off by _ - or .), e.g. gg_xx.tif ... gg_xz.tif.\n"
+            "Select any one of them; the others are found automatically."
         )
 
         self.dlg.pushButton_load_magn_data.setToolTip(
-            "Load magnetic data as QGIS Layer\n\n[anomalies.magn.data_file]"
+            "Load magnetic data as QGIS Layer\n\n[anomalies.magn.data_file]\n\n"
+            "GeoTIFF naming for the type of data chosen alongside\n"
+            "(for csv files see the Data tooltip):\n"
+            "TMI data: one file, any name.\n"
+            "Bx,By,Bz data: three files in the same folder, on the same grid, with\n"
+            "names identical except for the tag Bx, By or Bz (any case, set off by\n"
+            "_ - or .), e.g. mag_Bx.tif, mag_By.tif, mag_Bz.tif.\n"
+            "Select any one of them; the others are found automatically."
         )
         self.dlg.pushButton_grav_data_path.setToolTip(
             "Select a gravity dataset in csv, tif or ers format\n\n[anomalies.grav.data.file]"

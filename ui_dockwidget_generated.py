@@ -1339,7 +1339,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_grav_fields.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 2b : Define grav input fields"))
         self.label_grav_field_long_x.setText(_translate("mQgsSpinBox_mesh_south_2", "long_x"))
         self.label_grav_field_lat_y.setText(_translate("mQgsSpinBox_mesh_south_2", "lat_y"))
-        self.label_grav_field_data_col.setText(_translate("mQgsSpinBox_mesh_south_2", "Data Column"))
+        self.label_grav_field_data_col.setText(_translate("mQgsSpinBox_mesh_south_2", "Data"))
         self.pushButton_assign_grav_fields.setText(_translate("mQgsSpinBox_mesh_south_2", "Assign fields"))
         self.groupBox_mesh_params.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 5 : Specify Mesh Parameters"))
         self.label_mesh_cell_size_y.setText(_translate("mQgsSpinBox_mesh_south_2", "Cell Size y"))
