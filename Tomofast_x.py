@@ -30,6 +30,7 @@ from qgis.PyQt.QtCore import (
     QUrl,
     QTimer,
     Qt,
+    QDate,
 )
 from qgis.PyQt.QtGui import QIcon, QDesktopServices, QTextCursor, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QDockWidget
@@ -356,13 +357,13 @@ class Tomofast_x:
             ],
             "inversion.modelDamping.magn.weight": [
                 self.inversion_modelDamping_magn_weight,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
+                self.dlg.mQgsDoubleSpinBox_magn_model_weight,
                 float,
                 "value",
             ],
             "inversion.modelDamping.magn.normPower": [
                 self.inversion_modelDamping_magn_normPower,
-                self.dlg.mQgsDoubleSpinBox_grav_mmodel_norm_power,
+                self.dlg.mQgsDoubleSpinBox_magn_model_norm_power,
                 float,
                 "value",
             ],
@@ -4542,6 +4543,9 @@ pv.Render()
         # parse parfile file and copy valid parameters to associated variables
 
         self.initialise_variables()
+        # d_params holds copies of the variable values taken when it was built,
+        # so rebuild it or reset would restore stale values
+        self.define_parameters()
 
         for pkey in self.d_params:
 
@@ -4549,6 +4553,9 @@ pv.Render()
 
             if p[-1] == "value":
                 p[1].setValue(p[-2](p[0]))
+            elif p[-1] == "value_both":
+                p[1].setValue(p[-2](p[0]))
+                p[2].setValue(p[-2](p[0]))
             elif p[-1] == "plainText":
                 p[1].setText(p[-2](p[0]))
             elif p[-1] == "text":
@@ -4572,8 +4579,25 @@ pv.Render()
                 p[1].setText(p[-2](p[0][0]))
                 p[2].setText(p[-2](p[0][1]))
                 p[3].setText(p[-2](p[0][2]))
-        self.inversion_type_reset_gui()
+        # Widgets that are not part of d_params
         self.dlg.lineEdit_param_load_path.clear()
+        self.dlg.lineEdit_kernel_path.clear()
+        self.dlg.textEdit_z_cell_size_list.clear()
+        self.dlg.textEdit_z_layer_thickness_list.clear()
+        self.dlg.dateEdit.setDate(QDate(2000, 1, 1))
+        for combo in (
+            self.dlg.comboBox_grav_field_x,
+            self.dlg.comboBox_grav_field_y,
+            self.dlg.comboBox_grav_field_data,
+            self.dlg.comboBox_magn_field_x,
+            self.dlg.comboBox_magn_field_y,
+            self.dlg.comboBox_magn_field_data,
+            ):
+            combo.clear()
+            combo.setEnabled(False)
+        self.dlg.pushButton_assign_grav_fields.setEnabled(False)
+        self.dlg.pushButton_assign_magn_fields.setEnabled(False)
+        self.inversion_type_reset_gui()
         self.dlg.groupBox_dtm.setEnabled(False)
         self.dlg.groupBox_mesh_params.setEnabled(False)
         self.dlg.groupBox_grav_fields.setEnabled(False)
@@ -4996,6 +5020,9 @@ pv.Render()
         self.magn_proj_out = "EPSG:4326"
         self.global_elevType = 1
         self.global_elevFilename = ""
+        self.dtm_filename = ""
+        self.dtm_array = None
+        self.data_df = None
         self.ROIFileName = ""
         self.is_2d = False
         self.profile_line_pts = None  # [(x1,y1),(x2,y2)] in output CRS when is_2d

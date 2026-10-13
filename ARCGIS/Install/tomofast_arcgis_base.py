@@ -258,6 +258,9 @@ class TomofastArcGISBase:
         self.magn_proj_out = "EPSG:4326"
         self.global_elevType = 1
         self.global_elevFilename = ""
+        self.dtm_filename = ""
+        self.dtm_array = None
+        self.data_df = None
         self.ROIFileName = ""
         self.is_2d = False
         self.profile_line_pts = None
@@ -430,12 +433,12 @@ class TomofastArcGISBase:
             ],
             "inversion.modelDamping.magn.weight": [
                 self.inversion_modelDamping_magn_weight,
-                self.ui.mQgsDoubleSpinBox_grav_mmodel_damping_weight,
+                self.ui.mQgsDoubleSpinBox_magn_model_weight,
                 float, "value",
             ],
             "inversion.modelDamping.magn.normPower": [
                 self.inversion_modelDamping_magn_normPower,
-                self.ui.mQgsDoubleSpinBox_grav_mmodel_norm_power,
+                self.ui.mQgsDoubleSpinBox_magn_model_norm_power,
                 float, "value",
             ],
             "inversion.joint.grav.problemWeight": [

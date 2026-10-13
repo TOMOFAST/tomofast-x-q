@@ -687,10 +687,16 @@ pv.Render()
     # ------------------------------------------------------------------
     def reset_params(self):
         self.initialise_variables()
+        # d_params holds copies of the variable values taken when it was built,
+        # so rebuild it or reset would restore stale values
+        self.define_parameters()
         for pkey in self.d_params:
             p = self.d_params[pkey]
             if p[-1] == "value":
                 p[1].setValue(p[-2](p[0]))
+            elif p[-1] == "value_both":
+                p[1].setValue(p[-2](p[0]))
+                p[2].setValue(p[-2](p[0]))
             elif p[-1] == "plainText":
                 p[1].setText(p[-2](p[0]))
             elif p[-1] == "text":
@@ -710,8 +716,27 @@ pv.Render()
                 p[1].setText(p[-2](p[0][0]))
                 p[2].setText(p[-2](p[0][1]))
                 p[3].setText(p[-2](p[0][2]))
-        self.inversion_type_reset_gui()
+        # Widgets that are not part of d_params
+        import datetime
         self.ui.lineEdit_param_load_path.setText("")
+        self.ui.lineEdit_kernel_path.setText("")
+        self.ui.textEdit_z_cell_size_list.clear()
+        self.ui.textEdit_z_layer_thickness_list.clear()
+        self.ui.dateEdit.setText(str(datetime.date.today()))
+        for combo in (
+            self.ui.comboBox_grav_field_x,
+            self.ui.comboBox_grav_field_y,
+            self.ui.comboBox_grav_field_data,
+            self.ui.comboBox_magn_field_x,
+            self.ui.comboBox_magn_field_y,
+            self.ui.comboBox_magn_field_data,
+        ):
+            combo.addItems([])
+            combo.setText("")
+            combo.setEnabled(False)
+        self.ui.pushButton_assign_grav_fields.setEnabled(False)
+        self.ui.pushButton_assign_magn_fields.setEnabled(False)
+        self.inversion_type_reset_gui()
         self.ui.groupBox_dtm.setEnabled(False)
         self.ui.groupBox_mesh_params.setEnabled(False)
         self.ui.groupBox_grav_fields.setEnabled(False)
