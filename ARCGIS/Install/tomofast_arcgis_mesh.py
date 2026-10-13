@@ -543,8 +543,12 @@ class MeshMixin:
         with open(fileName1, "r") as f:
             lines = f.readlines()[1:]
 
-        # Columns after x, y, height are the data components (1, 3 or 6)
-        ncomp = max(len(lines[0].split()) - 3, 1) if lines else 1
+        # Columns after x, y, height are the data components (1, 3 or 6). Count
+        # fields per line with single-space splitting: rows with missing (NaN)
+        # values are written as empty fields, so the first row can look shorter.
+        ncomp = max(
+            max((len(l.rstrip("\r\n").split(" ")) for l in lines), default=4) - 3, 1
+        )
         if ncomp == 1:
             data_names = [dataName1]
         else:
@@ -555,8 +559,9 @@ class MeshMixin:
             temp_file.writelines(lines)
             temp_file.flush()
 
+        # single space keeps empty (missing) fields aligned
         temp_data = pd.read_csv(
-            temp_file_path1, na_values=["", " "], sep=r"\s+"
+            temp_file_path1, na_values=["", " "], sep=" "
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
