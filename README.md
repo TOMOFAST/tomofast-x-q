@@ -1,10 +1,17 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.17
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.18
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.17   
+changelog=0.2.18   
+    * Native Windows runs: set GFORTRAN_UNBUFFERED_ALL / FORT_BUFFERED so Fortran output is unbuffered and the log updates live   
+    * Result preview: x/y/z slices now share one clipped colour range   
+    * Setting the number of lithologies above zero sets the ADMM weight to 1000 and major iterations to 50; back to zero sets the weight to 0 and major iterations to 3   
+    * Parameter file now uses the ADMM weights and major iterations from the GUI instead of hard-coded overrides   
+    * Reset now restores all defaults (ADMM lithologies, norm powers, DTM state, field selectors, kernel path, z-layer lists, survey date)   
+    * Fix magnetic model damping weight and norm power being mapped to the gravity widgets   
+    0.2.17   
     * Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)   
     * Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF   
     0.2.16   
