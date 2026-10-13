@@ -1,10 +1,17 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.18
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.19
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.18   
+changelog=0.2.19   
+    * Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data   
+    * Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components   
+    * Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name   
+    * Parameter file writes the new MVI and gradiometry settings (only when non-default); memory estimate accounts for the extra components   
+    * Joint inversion: gravity and magnetic nData are now set separately; loading a joint-mode data file only fills that dataset's column selectors   
+    * Exported and displayed MVI models use Mx,My,Mz columns and magnitude   
+    0.2.18   
     * Native Windows runs: set GFORTRAN_UNBUFFERED_ALL / FORT_BUFFERED so Fortran output is unbuffered and the log updates live   
     * Result preview: x/y/z slices now share one clipped colour range   
     * Setting the number of lithologies above zero sets the ADMM weight to 1000 and major iterations to 50; back to zero sets the weight to 0 and major iterations to 3   

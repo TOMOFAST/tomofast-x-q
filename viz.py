@@ -49,6 +49,17 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
                 print(f"No active scalar data in {file_path}, skipping...")
                 continue
                 
+            # Vector models (e.g. MVI Mx,My,Mz) are displayed by magnitude
+            if data.ndim == 2 and data.shape[1] > 1:
+                magnitude = np.linalg.norm(data, axis=1)
+                scalar_name = f"{scalar_name}_magnitude"
+                if scalar_name.removesuffix("_magnitude") in grid.cell_data:
+                    grid.cell_data[scalar_name] = magnitude
+                else:
+                    grid.point_data[scalar_name] = magnitude
+                grid.set_active_scalars(scalar_name)
+                data = magnitude
+
             print(f"Using scalar field: {scalar_name}")
             print(f"Data range: [{np.min(data)}, {np.max(data)}]")
             loaded.append((file_path, grid, scalar_name, np.asarray(data)))

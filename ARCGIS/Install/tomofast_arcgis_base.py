@@ -110,7 +110,7 @@ class TomofastArcGISBase:
 
         # ---- IntVar traces (radio-button toggled / OS mode) ----------
         self.ui._inv_type_var.trace_add(
-            "write", lambda *_: self.inversion_type_reset_gui()
+            "write", lambda *_: self._on_inversion_type_changed()
         )
         self.ui._os_var.trace_add(
             "write", lambda *_: self._update_run_controls()
@@ -211,6 +211,10 @@ class TomofastArcGISBase:
         self.forward_data_grav_nData = 0
         self.forward_data_grav_dataGridFile = ""
         self.modelGrid_magn_file = ""
+        self.modelGrid_magn_nModelComponents = 1
+        self.forward_data_grav_type = 1
+        self.forward_data_grav_nDataComponents = 1
+        self.forward_data_magn_nDataComponents = 1
         self.forward_data_magn_nData = 0
         self.forward_data_magn_dataGridFile = ""
         self.forward_depthWeighting_type = 1
@@ -364,6 +368,23 @@ class TomofastArcGISBase:
                 self.ui.ny_label,
                 self.ui.nz_label,
                 str, "size",
+            ],
+            # "combo": a _DataComboProxy whose item values are the parfile values
+            "forward.data.grav.type": [
+                self.forward_data_grav_type,
+                self.ui.comboBox_grav_type, int, "combo",
+            ],
+            "forward.data.grav.nDataComponents": [
+                self.forward_data_grav_nDataComponents,
+                self.ui.comboBox_grav_ncomp, int, "combo",
+            ],
+            "forward.data.magn.nDataComponents": [
+                self.forward_data_magn_nDataComponents,
+                self.ui.comboBox_magn_ncomp, int, "combo",
+            ],
+            "modelGrid.magn.nModelComponents": [
+                self.modelGrid_magn_nModelComponents,
+                self.ui.comboBox_magn_nmodel, int, "combo",
             ],
             "forward.data.grav.nData": [
                 self.forward_data_grav_nData, "", int, "ndata",

@@ -50,10 +50,9 @@ class Data2Tomofast:
         df["POINT_X"] = data_x
         df["POINT_Y"] = data_y
 
-        data = df[data_column].values
-
-        Ndata = data.size
-        self.nData = Ndata
+        # data_column may be a single name or a list (multi-component data);
+        # nData is the number of observation points, not points * components.
+        self.nData = len(df[data_column])
 
         self.df = df
 
@@ -62,7 +61,10 @@ class Data2Tomofast:
         """
         Writes data to file in Tomofast-x format. First line = N, then observations.
         """
-        Ndata = self.df[data_column].values.size
+        # data_column may be a single name or a list of component columns
+        if isinstance(data_column, str):
+            data_column = [data_column]
+        Ndata = len(self.df[data_column])
         if eType == 1:
             filename = out_file + "/data_grav.csv"
         else:
@@ -70,7 +72,7 @@ class Data2Tomofast:
 
         with open(filename, "w") as f:
             f.write(str(Ndata) + "\n")
-        column_list = ["POINT_X", "POINT_Y", "POINT_Z", data_column]
+        column_list = ["POINT_X", "POINT_Y", "POINT_Z"] + list(data_column)
         self.df.to_csv(
             filename, sep=" ", columns=column_list, index=False, header=False, mode="a"
         )

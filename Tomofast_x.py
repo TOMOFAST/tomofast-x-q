@@ -152,6 +152,7 @@ class Tomofast_x:
         self._debug_log_path = ""
         self._debug_log_pos = 0
         self._process = None
+        self._exit_reported = False
         self._wsl_distro = ""
         self._wsl_param_path = ""
 
@@ -275,6 +276,31 @@ class Tomofast_x:
                 self.dlg.nz_label,
                 str,
                 "size",
+            ],
+            # "combo": widget is a QComboBox whose item data holds the parfile value
+            "forward.data.grav.type": [
+                self.forward_data_grav_type,
+                self.dlg.comboBox_grav_type,
+                int,
+                "combo",
+            ],
+            "forward.data.grav.nDataComponents": [
+                self.forward_data_grav_nDataComponents,
+                self.dlg.comboBox_grav_ncomp,
+                int,
+                "combo",
+            ],
+            "forward.data.magn.nDataComponents": [
+                self.forward_data_magn_nDataComponents,
+                self.dlg.comboBox_magn_ncomp,
+                int,
+                "combo",
+            ],
+            "modelGrid.magn.nModelComponents": [
+                self.modelGrid_magn_nModelComponents,
+                self.dlg.comboBox_magn_nmodel,
+                int,
+                "combo",
             ],
             "forward.data.grav.nData": [self.forward_data_grav_nData, "", int, "ndata"],
             "forward.data.magn.nData": [self.forward_data_magn_nData, "", int, "ndata"],
@@ -698,13 +724,13 @@ class Tomofast_x:
                 self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
 
                 self.dlg.radioButton_grav_inv.toggled.connect(
-                    self.inversion_type_reset_gui
+                    self._on_inversion_type_toggled
                 )
                 self.dlg.radioButton_magn_inv.toggled.connect(
-                    self.inversion_type_reset_gui
+                    self._on_inversion_type_toggled
                 )
                 self.dlg.radioButton_joint_inv.toggled.connect(
-                    self.inversion_type_reset_gui
+                    self._on_inversion_type_toggled
                 )
 
                 self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
@@ -771,6 +797,10 @@ class Tomofast_x:
                     self.select_mpirunexec_path
                 )
 
+                self.dlg.comboBox_grav_type.currentIndexChanged.connect(
+                    self._update_component_widgets
+                )
+                self._update_component_widgets()
                 self.dlg.spinBox_grav_number_ADMM_litho.valueChanged.connect(
                     lambda v: self._on_n_litho_changed(
                         v, self.dlg.spinBox_grav_number_ADMM_litho,
@@ -1072,9 +1102,22 @@ class Tomofast_x:
         )
 
     def _poll_debug_log(self):
-        # Disable the cancel button once the job has ended on its own
+        # Disable the cancel button once the job has ended on its own, and say so
+        # in the log (an instant exit usually means the exe rejected the parfile)
         if self._process is not None and self._process.poll() is not None:
             self.dlg.pushButton_cancel_inversion.setEnabled(False)
+            if not self._exit_reported:
+                self._exit_reported = True
+                self.dlg.textEdit_inversion_log.appendPlainText(
+                    f"\n*** Process ended (exit code {self._process.returncode}) ***"
+                )
+                if self._process.returncode in (0xC00000FD, -1073741571):
+                    self.dlg.textEdit_inversion_log.appendPlainText(
+                        "Stack overflow in tomofastx.exe (its default stack is only 2 MB, "
+                        "too small for large problems such as MVI).\n"
+                        "Fix: python scripts/set_exe_stack.py <path to tomofastx.exe> "
+                        "(in the plugin folder), or relink with gfortran -Wl,--stack,536870912"
+                    )
         if not self._debug_log_path or not os.path.exists(self._debug_log_path):
             return
         try:
@@ -1197,6 +1240,8 @@ class Tomofast_x:
                     pass
         if last_rmse is None:
             ok("Data RMSE check skipped (not found in log)")
+        elif self.forward_data_grav_type != 1 and self.global_experimentType in [1, 3]:
+            ok("Data RMSE check skipped (gradiometry data has different units)")
         elif last_rmse < 4e-7 and self.global_experimentType in [1, 3]:  # grav
             warn(f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\nTry increasing the target misfit parameter inversion.targetMisfit to this value")
         elif last_rmse < 1 and self.global_experimentType in [2, 3]:  # magn
@@ -1269,6 +1314,9 @@ class Tomofast_x:
                         pass
             if last_min is None:
                 ok("Mag sus range check skipped (min/max not found in log)")
+            elif self.modelGrid_magn_nModelComponents != 1:
+                # MVI solves for magnetisation, not susceptibility, so the limit doesn't apply
+                ok(f"MVI magnetisation range (min={last_min:.4g}, max={last_max:.4g}); susceptibility scaling check not applied")
             elif abs(last_min) > 1 or abs(last_max) > 1:
                 warn(
                     f"Check magnetic susceptibility unit scaling "
@@ -1310,6 +1358,7 @@ class Tomofast_x:
                 except Exception:
                     pass
                 self._debug_log_pos = 0
+                self._exit_reported = False
                 self._process = process
                 self._wsl_distro = distro if platform.system() == "Windows" and not use_native_windows else ""
                 self.dlg.pushButton_cancel_inversion.setEnabled(True)
@@ -1337,6 +1386,9 @@ class Tomofast_x:
                 )
             except Exception as e:
                 print(f"An error occurred: {e}")
+                self.iface.messageBar().pushMessage(
+                    "Could not start the inversion", str(e), level=Qgis.Critical, duration=30
+                )
         else:
             self.iface.messageBar().pushMessage(
                 "Paths to tomofastx and paramfile must be defined",
@@ -1371,6 +1423,10 @@ class Tomofast_x:
         env["OMP_NUM_THREADS"] = str(noProc)
         # stdout is a file, so Fortran runtimes buffer it by default; force
         # unbuffered output so the GUI can tail the log live.
+        # Worker threads default to a small stack (a few MB), which the larger
+        # MVI / gradiometry problems overflow (exit code 0xC00000FD). Honoured by
+        # both gfortran (libgomp) and Intel (libiomp) OpenMP runtimes.
+        env.setdefault("OMP_STACKSIZE", "512M")
         env["GFORTRAN_UNBUFFERED_ALL"] = "y"  # gfortran
         env["FORT_BUFFERED"] = "false"        # Intel ifort/ifx
 
@@ -1388,6 +1444,51 @@ class Tomofast_x:
         finally:
             debug_file.close()
         return process, distro, ""
+
+    # Default target misfit for gravity gradiometry data, in Eotvos (placeholder:
+    # "a few Eotvos" -- confirm the recommended value)
+    GRADIOMETRY_TARGET_MISFIT = "3"
+    GRAVITY_TARGET_MISFIT = "1e-7"
+
+    def _on_inversion_type_toggled(self, checked):
+        """Update the GUI for the new inversion type and its default target misfit."""
+        self.inversion_type_reset_gui()
+        if not checked:
+            return
+        if self.dlg.radioButton_magn_inv.isChecked():
+            new = "5"
+        elif (
+            self.dlg.radioButton_grav_inv.isChecked()
+            and self.dlg.comboBox_grav_type.currentData() == 2
+        ):
+            new = self.GRADIOMETRY_TARGET_MISFIT
+        else:
+            new = self.GRAVITY_TARGET_MISFIT
+        # Only replace a default; keep anything the user typed
+        current = self.dlg.lineEdit_targetMisfit.text().strip()
+        if current in ("", self.GRAVITY_TARGET_MISFIT, self.GRADIOMETRY_TARGET_MISFIT, "5"):
+            self.dlg.lineEdit_targetMisfit.setText(new)
+
+    def _update_component_widgets(self, *_):
+        """Plain gravity is always a single component; gradiometry allows 1 or 6."""
+        gradiometry = self.dlg.comboBox_grav_type.currentData() == 2
+        if not gradiometry:
+            self.dlg.comboBox_grav_ncomp.setCurrentIndex(
+                self.dlg.comboBox_grav_ncomp.findData(1)
+            )
+        self.dlg.comboBox_grav_ncomp.setEnabled(gradiometry)
+
+        # Gradiometry data is in Eotvos, so its target misfit differs from gravity's.
+        # Only swap the value if the user hasn't typed their own.
+        old, new = (
+            (self.GRAVITY_TARGET_MISFIT, self.GRADIOMETRY_TARGET_MISFIT)
+            if gradiometry
+            else (self.GRADIOMETRY_TARGET_MISFIT, self.GRAVITY_TARGET_MISFIT)
+        )
+        if self.dlg.radioButton_grav_inv.isChecked():
+            current = self.dlg.lineEdit_targetMisfit.text().strip()
+            if current in ("", old):
+                self.dlg.lineEdit_targetMisfit.setText(new)
 
     def _on_n_litho_changed(self, n_litho, spinbox, weight_edit):
         """Set ADMM weight and major iterations when the user edits nLithologies."""
@@ -2476,7 +2577,17 @@ class Tomofast_x:
         if suffix.lower() == "csv":
             self.data = pd.read_csv(filename)
 
-            if self.global_experimentType == 1 or self.global_experimentType == 3:
+            # In joint mode each file only fills its own dataset's combo boxes;
+            # clear first so reloading doesn't append duplicate columns.
+            if self.global_experimentType == 1 or (
+                self.global_experimentType == 3 and dataType == "grav"
+            ):
+                for combo in (
+                    self.dlg.comboBox_grav_field_x,
+                    self.dlg.comboBox_grav_field_y,
+                    self.dlg.comboBox_grav_field_data,
+                ):
+                    combo.clear()
                 self.dlg.comboBox_grav_field_x.addItems(self.data.columns)
                 self.dlg.comboBox_grav_field_y.addItems(self.data.columns)
                 self.dlg.comboBox_grav_field_y.setCurrentIndex(1)
@@ -2485,7 +2596,15 @@ class Tomofast_x:
                 self.dlg.comboBox_grav_field_data.setCurrentIndex(2)
                 self.input_data_grav = filename
 
-            if self.global_experimentType == 2 or self.global_experimentType == 3:
+            if self.global_experimentType == 2 or (
+                self.global_experimentType == 3 and dataType == "magn"
+            ):
+                for combo in (
+                    self.dlg.comboBox_magn_field_x,
+                    self.dlg.comboBox_magn_field_y,
+                    self.dlg.comboBox_magn_field_data,
+                ):
+                    combo.clear()
                 self.dlg.comboBox_magn_field_x.addItems(self.data.columns)
                 self.dlg.comboBox_magn_field_y.addItems(self.data.columns)
                 self.dlg.comboBox_magn_field_y.setCurrentIndex(1)
@@ -2501,6 +2620,19 @@ class Tomofast_x:
             or suffix.lower() == "tiff"
             or suffix.lower() == "ers"
         ):
+            # Multi-component data: check the sibling component files up front
+            _kind = "grav" if (
+                self.global_experimentType == 1
+                or (self.global_experimentType == 3 and dataType == "grav")
+            ) else "magn"
+            try:
+                self.find_component_rasters(filename, _kind)
+            except ValueError as e:
+                self.iface.messageBar().pushMessage(
+                    "Data components", str(e), level=Qgis.Critical, duration=30
+                )
+                return
+
             # Load the TIFF file as a QgsRasterLayer
             if self.global_experimentType == 1 or self.global_experimentType == 2:
                 self.data_raster_layer = QgsRasterLayer(filename, "data")
@@ -2681,9 +2813,17 @@ class Tomofast_x:
         with open(fileName1, "r") as f:
             lines = f.readlines()[1:]  # Skip the first line
 
+        # Columns after x, y, height are the data components (1, 3 or 6)
+        ncomp = max(len(lines[0].split()) - 3, 1) if lines else 1
+        if ncomp == 1:
+            data_names = [dataName1]
+        else:
+            data_names = [f"{dataName1}_{i + 1}" for i in range(ncomp)]
+        self._tidy_first_field = data_names[0]
+
         with open(temp_file_path1, "w") as temp_file:
 
-            temp_file.writelines(f"x y height {dataName1}\n")
+            temp_file.writelines("x y height " + " ".join(data_names) + "\n")
             temp_file.writelines(lines)
             temp_file.flush()
             temp_file.close()
@@ -2765,7 +2905,9 @@ class Tomofast_x:
                     symbol = renderer.symbol()
                     if symbol is not None:
                         symbol.setSize(0.125)
-                self.colour_points(layer, dataName1, "Rocket", False)
+                self.colour_points(
+                    layer, getattr(self, "_tidy_first_field", dataName1), "Rocket", False
+                )
                 layer.triggerRepaint()
 
             else:
@@ -3070,79 +3212,30 @@ class Tomofast_x:
         else:
             source_crs = QgsCoordinateReferenceSystem(self.magn_proj_in)
 
-        # Reproject raster using GDAL Python bindings directly.
-        # gdal:warpreproject spawns a subprocess on macOS whose GDAL environment is
-        # broken, so it silently produces no output. Using gdal.Warp in-process avoids
-        # that entirely.
-        reproj_raster_path = self.global_outputFolderPath + reprojDataName
-        src_ds = gdal.Open(filename)
-        if src_ds is None:
-            raise RuntimeError(f"Could not open input raster: {filename}")
-        warp_options = gdal.WarpOptions(
-            srcSRS=source_crs.toWkt(),
-            dstSRS=QgsCoordinateReferenceSystem(proj_out).toWkt(),
-            resampleAlg=gdal.GRA_NearestNeighbour,
-        )
-        out_ds = gdal.Warp(reproj_raster_path, src_ds, options=warp_options)
-        if out_ds is None:
-            raise RuntimeError(
-                f"gdal.Warp failed for input: {filename}"
+        # Reproject each component raster with GDAL Python bindings directly and
+        # sample it at the mesh locations. (gdal:warpreproject spawns a subprocess
+        # on macOS whose GDAL environment is broken, so gdal.Warp is used in-process.)
+        kind = "grav" if dataType == 1 else "magn"
+        raster_paths = self.find_component_rasters(filename, kind)
+        data_df = None
+        for k, raster_path in enumerate(raster_paths):
+            # The first component keeps the original file name so single-component
+            # runs produce exactly the same files as before.
+            if k == 0:
+                reproj_raster_path = self.global_outputFolderPath + reprojDataName
+            else:
+                reproj_raster_path = self.global_outputFolderPath + reprojDataName.replace(
+                    ".tif", f"_{k + 1}.tif"
+                )
+            comp_df = self._sample_raster_at_mesh(
+                raster_path, reproj_raster_path, mesh_layer, source_crs, proj_out,
+                "data" if k == 0 else f"data{k + 1}_",
             )
-        out_ds = None  # flush and close
-        src_ds = None
-
-        # Load the reprojected raster as a layer object — native:rastersampling requires
-        # a QgsRasterLayer for RASTERCOPY, not a file path string.
-        reproj_raster_layer = QgsRasterLayer(reproj_raster_path, "reproj_data_temp")
-        if not reproj_raster_layer.isValid():
-            raise RuntimeError(
-                f"Could not load reprojected raster: {reproj_raster_path}"
-            )
-
-        # sample raster data based on mesh locations
-        parameter = {
-            "INPUT": mesh_layer,
-            "RASTERCOPY": reproj_raster_layer,
-            "COLUMN_PREFIX": "data",
-            "OUTPUT": "TEMPORARY_OUTPUT",
-        }
-        # Get the layer ID from runAndLoadResults
-        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)[
-            "OUTPUT"
-        ]
-
-        # Get the actual layer object from the ID
-        new_data_layer = QgsProject.instance().mapLayer(layer_id)
-
-        # convert layer to dataframe
-        data = []
-        # Extract the fields (attributes) names
-        fields = [field.name() for field in new_data_layer.fields()]
-        fields.append("POINT_X")
-        fields.append("POINT_Y")
-        # Loop through features in the layer
-        for feature in new_data_layer.getFeatures():
-            # Extract attribute values
-            attributes = feature.attributes()
-            geometry = feature.geometry()
-            point = geometry.asPoint()
-            attributes.append(point.x())
-            attributes.append(point.y())
-            # Add attributes and geometry to the data list
-            data.append(attributes)
-
-        # Create a pandas DataFrame
-        data_df = pd.DataFrame(data, columns=fields)
-
-        # Only drop columns if they exist in the dataframe
-        if "fid" in data_df.columns:
-            data_df = data_df.drop(columns=["fid"])
-        if "id" in data_df.columns:
-            data_df = data_df.drop(columns=["id"])
-
-        new_column_order = ["POINT_X", "POINT_Y", "data1"]
-        data_df = data_df[new_column_order]
-        QgsProject.instance().removeMapLayer(new_data_layer)
+            if data_df is None:
+                data_df = comp_df.rename(columns={comp_df.columns[2]: "data1"})
+            else:
+                data_df[f"data{k + 1}"] = comp_df.iloc[:, 2].values
+        data_df = data_df[["POINT_X", "POINT_Y"] + [f"data{i + 1}" for i in range(len(raster_paths))]]
 
         # For 2D: save world coords for QGIS operations (DTM sampling, display),
         # then convert POINT_X/POINT_Y to profile coordinates for Tomofast-x.
@@ -3157,6 +3250,141 @@ class Tomofast_x:
 
         data_df.to_csv(self.global_outputFolderPath + reprojPoints, index=False)
 
+    # Component names expected in multi-component GeoTIFF file names
+    COMPONENT_TOKENS = {
+        "grav": ["xx", "yy", "zz", "xy", "yz", "xz"],
+        "magn": ["bx", "by", "bz"],
+    }
+
+    def find_component_rasters(self, path, kind):
+        """Return the raster paths for each data component of 'grav' or 'magn'.
+
+        For one component this is just [path]. For several, the selected file's
+        name must contain a component token (xx/yy/zz/xy/yz/xz or Bx/By/Bz, any
+        case, delimited by non-alphanumerics). The other components are the files
+        in the same folder whose names differ only in that token. Returned in
+        token order.
+        """
+        n = self._n_components(kind)
+        if n == 1:
+            return [path]
+        tokens = self.COMPONENT_TOKENS[kind][:n]
+        folder, base = os.path.split(path)
+        stem, ext = os.path.splitext(base)
+        match = re.search(
+            r"(?<![A-Za-z0-9])(%s)(?![A-Za-z0-9])" % "|".join(tokens), stem, re.I
+        )
+        if match is None:
+            raise ValueError(
+                f"{base}: file name must contain one of {', '.join(tokens)} "
+                f"(upper or lower case, separated by _ - or . ) to load {n} components."
+            )
+        prefix, suffix = stem[: match.start()], stem[match.end():]
+        siblings = os.listdir(folder or ".")
+        found, missing = [], []
+        for token in tokens:
+            pattern = re.compile(
+                "^" + re.escape(prefix) + re.escape(token) + re.escape(suffix)
+                + re.escape(ext) + "$", re.I
+            )
+            hits = [f for f in siblings if pattern.match(f)]
+            if hits:
+                found.append(os.path.join(folder, hits[0]))
+            else:
+                missing.append(token)
+        if missing:
+            raise ValueError(
+                f"Could not find component file(s) for {', '.join(missing)} next to {base} "
+                f"(expected names like {prefix}<{'|'.join(tokens)}>{suffix}{ext})."
+            )
+        # All components must be on the same grid
+        ref = gdal.Open(found[0])
+        for other in found[1:]:
+            ds = gdal.Open(other)
+            if ds is None or (
+                ds.RasterXSize, ds.RasterYSize, ds.GetGeoTransform()
+            ) != (ref.RasterXSize, ref.RasterYSize, ref.GetGeoTransform()) or (
+                ds.GetProjection() != ref.GetProjection()
+            ):
+                raise ValueError(
+                    f"{os.path.basename(other)} is not on the same grid as "
+                    f"{os.path.basename(found[0])}."
+                )
+        return found
+
+    def _sample_raster_at_mesh(
+        self, src_path, reproj_path, mesh_layer, source_crs, proj_out, prefix
+    ):
+        """Warp src_path to proj_out and sample band 1 at the mesh points.
+
+        Returns a DataFrame with POINT_X, POINT_Y and the sampled values (third column).
+        """
+        src_ds = gdal.Open(src_path)
+        if src_ds is None:
+            raise RuntimeError(f"Could not open input raster: {src_path}")
+        warp_options = gdal.WarpOptions(
+            srcSRS=source_crs.toWkt(),
+            dstSRS=QgsCoordinateReferenceSystem(proj_out).toWkt(),
+            resampleAlg=gdal.GRA_NearestNeighbour,
+        )
+        out_ds = gdal.Warp(reproj_path, src_ds, options=warp_options)
+        if out_ds is None:
+            raise RuntimeError(f"gdal.Warp failed for input: {src_path}")
+        out_ds = None  # flush and close
+        src_ds = None
+
+        # native:rastersampling requires a QgsRasterLayer for RASTERCOPY, not a path.
+        reproj_layer = QgsRasterLayer(reproj_path, "reproj_data_temp")
+        if not reproj_layer.isValid():
+            raise RuntimeError(f"Could not load reprojected raster: {reproj_path}")
+
+        parameter = {
+            "INPUT": mesh_layer,
+            "RASTERCOPY": reproj_layer,
+            "COLUMN_PREFIX": prefix,
+            "OUTPUT": "TEMPORARY_OUTPUT",
+        }
+        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
+        sampled = QgsProject.instance().mapLayer(layer_id)
+
+        sampled_field = prefix + "1"
+        rows = []
+        for feature in sampled.getFeatures():
+            point = feature.geometry().asPoint()
+            rows.append([point.x(), point.y(), feature[sampled_field]])
+        QgsProject.instance().removeMapLayer(sampled)
+        return pd.DataFrame(rows, columns=["POINT_X", "POINT_Y", sampled_field])
+
+    def _n_components(self, kind):
+        """Number of data components selected in the GUI for 'grav' or 'magn'."""
+        combo = self.dlg.comboBox_grav_ncomp if kind == "grav" else self.dlg.comboBox_magn_ncomp
+        return int(combo.currentData() or 1)
+
+    def _datacols(self, kind, dataFormat):
+        """Data column names to write for 'grav' or 'magn'.
+
+        Raster data is sampled into data1..dataN. For CSV the selected data
+        column is the first component and the next N-1 columns of the file
+        (in file order) are the remaining components.
+        """
+        n = self._n_components(kind)
+        if dataFormat != "points":
+            return [f"data{i + 1}" for i in range(n)]
+        first = self.datacol_grav if kind == "grav" else self.datacol_magn
+        if n == 1:
+            return [first]
+        path = self.filename_grav if kind == "grav" else self.filename_magn
+        columns = list(pd.read_csv(path, nrows=0).columns)
+        start = columns.index(first)
+        cols = columns[start:start + n]
+        if len(cols) < n:
+            raise ValueError(
+                f"{kind} data needs {n} component columns starting at '{first}', "
+                f"but {os.path.basename(path)} only has {len(cols)} from there. "
+                f"Select an earlier first data column."
+            )
+        return cols
+
     # convert point data to tomofast format
     def convert_point_data(self, dataFormat):
         # add elevation to data
@@ -3166,7 +3394,7 @@ class Tomofast_x:
                     self.filename_grav,
                     self.ycol_grav,
                     self.xcol_grav,
-                    self.datacol_grav,
+                    self._datacols("grav", dataFormat),
                     self.grav_proj_in,
                     self.grav_proj_out,
                 )
@@ -3177,7 +3405,7 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
                     y_col,
                     x_col,
-                    "data1",
+                    self._datacols("grav", dataFormat),
                     self.grav_proj_out,
                     self.grav_proj_out,
                 )
@@ -3201,8 +3429,9 @@ class Tomofast_x:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_grav, self.global_outputFolderPath, 1
+                self._datacols("grav", dataFormat), self.global_outputFolderPath, 1
             )
+            self.forward_data_grav_nData = self.data2tomofast.nData
 
         elif self.global_experimentType == 2:  # mag
             if dataFormat == "points":
@@ -3210,7 +3439,7 @@ class Tomofast_x:
                     self.filename_magn,
                     self.ycol_magn,
                     self.xcol_magn,
-                    self.datacol_magn,
+                    self._datacols("magn", dataFormat),
                     self.magn_proj_in,
                     self.magn_proj_out,
                 )
@@ -3221,7 +3450,7 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
                     y_col,
                     x_col,
-                    "data1",
+                    self._datacols("magn", dataFormat),
                     self.magn_proj_out,
                     self.magn_proj_out,
                 )
@@ -3244,15 +3473,16 @@ class Tomofast_x:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_magn, self.global_outputFolderPath, 2
+                self._datacols("magn", dataFormat), self.global_outputFolderPath, 2
             )
+            self.forward_data_magn_nData = self.data2tomofast.nData
         else:  # grav and mag
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_grav,
                     self.ycol_grav,
                     self.xcol_grav,
-                    self.datacol_grav,
+                    self._datacols("grav", dataFormat),
                     self.grav_proj_in,
                     self.grav_proj_out,
                 )
@@ -3263,7 +3493,7 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
                     y_col,
                     x_col,
-                    "data1",
+                    self._datacols("grav", dataFormat),
                     self.grav_proj_out,
                     self.grav_proj_out,
                 )
@@ -3280,15 +3510,16 @@ class Tomofast_x:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_grav, self.global_outputFolderPath, 1
+                self._datacols("grav", dataFormat), self.global_outputFolderPath, 1
             )
+            self.forward_data_grav_nData = self.data2tomofast.nData
 
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_magn,
                     self.ycol_magn,
                     self.xcol_magn,
-                    self.datacol_magn,
+                    self._datacols("magn", dataFormat),
                     self.magn_proj_in,
                     self.magn_proj_out,
                 )
@@ -3299,7 +3530,7 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
                     y_col,
                     x_col,
-                    "data1",
+                    self._datacols("magn", dataFormat),
                     self.magn_proj_out,
                     self.magn_proj_out,
                 )
@@ -3316,8 +3547,9 @@ class Tomofast_x:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_magn, self.global_outputFolderPath, 2
+                self._datacols("magn", dataFormat), self.global_outputFolderPath, 2
             )
+            self.forward_data_magn_nData = self.data2tomofast.nData
 
         if dataFormat == "points":
             if self.is_2d and self.profile_line_pts:
@@ -3351,10 +3583,6 @@ class Tomofast_x:
         self.dlg.ny_label.setText(str(self.data2tomofast.ny))
         self.dlg.nz_label.setText(str(self.data2tomofast.nz))
 
-        if self.global_experimentType == 1 or self.global_experimentType == 3:
-            self.forward_data_grav_nData = self.data2tomofast.nData
-        if self.global_experimentType == 2 or self.global_experimentType == 3:
-            self.forward_data_magn_nData = self.data2tomofast.nData
 
     def update_model_grid_size(self):
         self.setupMesh()
@@ -3483,10 +3711,19 @@ class Tomofast_x:
             local_nData = data_nx * data_ny
         else:
             local_nData = self.nData
-        if self.global_experimentType == 1 or self.global_experimentType == 2:
-            memory = 8 * compression * nx * ny * nz * local_nData
+        # Kernel size scales with the number of data components and, for the
+        # magnetic problem, the number of model components (MVI)
+        grav_factor = self.dlg.comboBox_grav_ncomp.currentData() or 1
+        magn_factor = (self.dlg.comboBox_magn_ncomp.currentData() or 1) * (
+            self.dlg.comboBox_magn_nmodel.currentData() or 1
+        )
+        if self.global_experimentType == 1:
+            factor = grav_factor
+        elif self.global_experimentType == 2:
+            factor = magn_factor
         else:
-            memory = 8 * compression * nx * ny * nz * local_nData * 2
+            factor = grav_factor + magn_factor
+        memory = 8 * compression * nx * ny * nz * local_nData * factor
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
@@ -3742,6 +3979,13 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/model_grid.txt"
                 )
             )
+            # Only written for MVI so files for scalar runs are unchanged
+            if self.modelGrid_magn_nModelComponents != 1:
+                self.f_params.write(
+                    "modelGrid.magn.nModelComponents     = {}\n".format(
+                        self.modelGrid_magn_nModelComponents
+                    )
+                )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.spacer("MAGNETIC FIELD constants")
@@ -3789,6 +4033,19 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
+            # Gradiometry settings are only written when non-default
+            if self.forward_data_grav_type != 1:
+                self.f_params.write(
+                    "forward.data.grav.type              = {}\n".format(
+                        self.forward_data_grav_type
+                    )
+                )
+            if self.forward_data_grav_nDataComponents != 1:
+                self.f_params.write(
+                    "forward.data.grav.nDataComponents   = {}\n".format(
+                        self.forward_data_grav_nDataComponents
+                    )
+                )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
@@ -3802,6 +4059,12 @@ class Tomofast_x:
                     self.global_outputFolderPath + "/data_magn.csv"
                 )
             )
+            if self.forward_data_magn_nDataComponents != 1:
+                self.f_params.write(
+                    "forward.data.magn.nDataComponents   = {}\n".format(
+                        self.forward_data_magn_nDataComponents
+                    )
+                )
 
         else:
             self.f_params.write(
@@ -3823,10 +4086,10 @@ class Tomofast_x:
         )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
+            # Gradiometry falls off faster with depth, so it uses power 3
+            grav_power = 3 if self.forward_data_grav_type == 2 else self.forward_depthWeighting_grav_power
             self.f_params.write(
-                "forward.depthWeighting.grav.power   = {}\n".format(
-                    self.forward_depthWeighting_grav_power
-                )
+                "forward.depthWeighting.grav.power   = {}\n".format(grav_power)
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
@@ -4231,13 +4494,23 @@ pv.Render()
             # Revert Z-axis
             positions[:, 2] = -positions[:, 2]
 
+            # Scalar models have one value per cell; MVI models have one column per
+            # magnetisation component (Mx, My, Mz).
+            n_values = 1 if model_values.ndim == 1 else model_values.shape[1]
+            if n_values == 1:
+                value_header = "data"
+            elif n_values == 3:
+                value_header = "Mx,My,Mz"
+            else:
+                value_header = ",".join(f"data_{i + 1}" for i in range(n_values))
+
             # Combine and save
             combined = np.column_stack((positions, model_values))
             np.savetxt(
                 filename_model_csv,
                 combined,
                 delimiter=",",
-                header="x,y,z,data",
+                header="x,y,z," + value_header,
                 comments="",
                 fmt="%.6f",
             )
@@ -4412,6 +4685,11 @@ pv.Render()
         self.filename_grav = self.dlg.lineEdit_grav_data_path.text()
         self.filename_magn = self.dlg.lineEdit_magn_data_path.text()
 
+        self.forward_data_grav_type = self.dlg.comboBox_grav_type.currentData()
+        self.forward_data_grav_nDataComponents = self.dlg.comboBox_grav_ncomp.currentData()
+        self.forward_data_magn_nDataComponents = self.dlg.comboBox_magn_ncomp.currentData()
+        self.modelGrid_magn_nModelComponents = self.dlg.comboBox_magn_nmodel.currentData()
+
         self.global_elevFilename = self.dlg.lineEdit_dtm_path.text()
         self.ROIFileName = self.dlg.lineEdit_ROI_path.text()
 
@@ -4491,6 +4769,10 @@ pv.Render()
                             if p[-1] == "value":
 
                                 p[1].setValue(p[-2](p[0]))
+                            elif p[-1] == "combo":
+                                idx = p[1].findData(p[0])
+                                if idx >= 0:
+                                    p[1].setCurrentIndex(idx)
                             elif p[-1] == "plainText":
                                 p[1].setText(p[-2](p[0]))
                             elif p[-1] == "text":
@@ -4553,6 +4835,8 @@ pv.Render()
 
             if p[-1] == "value":
                 p[1].setValue(p[-2](p[0]))
+            elif p[-1] == "combo":
+                p[1].setCurrentIndex(max(p[1].findData(p[0]), 0))
             elif p[-1] == "value_both":
                 p[1].setValue(p[-2](p[0]))
                 p[2].setValue(p[-2](p[0]))
@@ -4972,6 +5256,10 @@ pv.Render()
         self.forward_data_grav_dataGridFile = ""
         # self.forward_data_grav_dataValuesFile = ""
         self.modelGrid_magn_file = ""
+        self.modelGrid_magn_nModelComponents = 1
+        self.forward_data_grav_type = 1
+        self.forward_data_grav_nDataComponents = 1
+        self.forward_data_magn_nDataComponents = 1
         self.forward_data_magn_nData = 0
         self.forward_data_magn_dataGridFile = ""
         # self.forward_data_magn_dataValuesFile = ""
