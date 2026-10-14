@@ -78,7 +78,7 @@ except AttributeError:
 
 # import functions from scripts
 from .Data2Tomofast import Data2Tomofast
-from .viz import display_voxet_files_clipped_qgis
+from .viz import display_voxet_files_clipped_qgis, core_bounds_from_model_grid
 
 import numpy as np
 import pandas as pd
@@ -942,14 +942,52 @@ class Tomofast_x:
         paramPath = self.paramfile_Path
         path, filename = os.path.split(paramPath)
         if os.path.exists(paramPath) and paramPath != "":
+            experimentType = None
+            output_folder = None
             with open(paramPath, "r", encoding="utf-8") as file:
                 contents = file.readlines()
                 for line in contents:
-                    if "global.experimentType" in line:
+                    if "global.experimentType" in line and experimentType is None:
                         experimentType = line.split("=")[1].strip()
-                        break
+                    elif line.strip().startswith("global.outputFolderPath"):
+                        output_folder = line.split("=", 1)[1].strip()
 
-            paraview_dir = path + "/OUTPUT/Paraview/"
+            # Parameter files not written by this plugin (e.g. exported from
+            # Noddy) have no experimentType comment: infer it from which
+            # problems the file defines.
+            if experimentType is None:
+                text = "".join(contents)
+                has_grav = "modelGrid.grav.file" in text
+                has_magn = "modelGrid.magn.file" in text
+                if has_grav and has_magn:
+                    experimentType = "3"
+                elif has_magn:
+                    experimentType = "2"
+                else:
+                    experimentType = "1"
+
+            # Use the output folder the file itself names; the plugin's own
+            # files always use <folder>/OUTPUT.
+            if output_folder:
+                paraview_dir = output_folder.rstrip("/\\") + "/Paraview/"
+            else:
+                paraview_dir = path + "/OUTPUT/Paraview/"
+
+            # Core (unbuffered) X/Y extent, so the padding cells are ignored
+            # in the display and in the colour-range calculation.
+            model_grid_file = None
+            for line in contents:
+                stripped = line.strip()
+                if stripped.startswith(("modelGrid.grav.file", "modelGrid.magn.file")):
+                    candidate = stripped.split("=", 1)[1].strip()
+                    if os.path.exists(candidate):
+                        model_grid_file = candidate
+                        break
+            if model_grid_file is None and os.path.exists(os.path.join(path, "model_grid.txt")):
+                model_grid_file = os.path.join(path, "model_grid.txt")
+            core_bounds = (
+                core_bounds_from_model_grid(model_grid_file) if model_grid_file else None
+            )
 
             if self.is_2d:
                 # 2D profile inversion: load the single full model VTK (no half-slices)
@@ -963,6 +1001,7 @@ class Tomofast_x:
                     cmap="jet",
                     opacity=1.0,
                     show_edges=False,
+                    core_bounds=core_bounds,
                 )
             elif experimentType == "1":
                 xyzfiles = [
@@ -971,7 +1010,8 @@ class Tomofast_x:
                     paraview_dir + "grav_final_model3D_half_z.vtk",
                 ]
                 display_voxet_files_clipped_qgis(
-                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
+                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False,
+                    core_bounds=core_bounds,
                 )
             elif experimentType == "2":
                 xyzfiles = [
@@ -980,7 +1020,8 @@ class Tomofast_x:
                     paraview_dir + "mag_final_model3D_half_z.vtk",
                 ]
                 display_voxet_files_clipped_qgis(
-                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
+                    xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False,
+                    core_bounds=core_bounds,
                 )
             else:
                 for prefix in ("grav", "mag"):
@@ -990,7 +1031,8 @@ class Tomofast_x:
                         paraview_dir + f"{prefix}_final_model3D_half_z.vtk",
                     ]
                     display_voxet_files_clipped_qgis(
-                        xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False
+                        xyzfiles, clip_percentile=95, cmap="jet", opacity=1.0, show_edges=False,
+                        core_bounds=core_bounds,
                     )
 
     def replace_text_in_file(self, file_path, old_text, new_text):
@@ -3631,15 +3673,29 @@ class Tomofast_x:
 
         data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
         data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
+        if self.global_experimentType in {1, 3}:
+            data_path = self.dlg.lineEdit_grav_data_path.text()
+        else:
+            data_path = self.dlg.lineEdit_magn_data_path.text()
+        if data_path.split(".")[-1].lower() == "csv" and getattr(self, "nData", 0):
+            n_data = self.nData
+        else:
+            n_data = data_nx * data_ny
         self.update_memory_size()
-        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
+        self.update_ideal_compression_ratio(nx * ny * nz, n_data)
 
-    def update_ideal_compression_ratio(self, nx, ny, nz):
+    def update_ideal_compression_ratio(self, n_cells, n_data):
         # Assumes Haar wavelet
         # From Bruce et al. 2025 in prep.
+        # n_cells: number of model cells including padding (nx * ny * nz).
+        # n_data: number of observation points.
+        # Compress when the sensitivity matrix (n_data x n_cells, 8 bytes per
+        # element) would exceed 1 GB, rather than on the model size alone: a
+        # modest model with many data points still gives a large matrix.
+        matrix_gb = 8.0 * n_cells * n_data / (1024.0 ** 3)
 
-        if nx * ny * nz > 400000:
-            ideal_cr = 35.07 * (0.01**-0.872) * ((nx * ny * nz) ** -0.884)
+        if matrix_gb > 1.0:
+            ideal_cr = 35.07 * (0.01**-0.872) * (n_cells ** -0.884)
             val = ideal_cr * 2
             if self.is_2d:
                 val *= 100.0
@@ -4449,10 +4505,17 @@ pv.Render()
         else:  # joint - export both
             codes = ["grav", "mag"]
 
+        # Output folder named in the parameter file (OUTPUT for files written
+        # by this plugin, but e.g. OUTPUT_magn / OUTPUT_grav / OUTPUT_joint
+        # for files exported from Noddy).
+        output_dir = self._get_output_dir_from_parfile() or os.path.join(
+            paramfile_Dir, "OUTPUT"
+        )
+
         for code in codes:
             # Path to the output model after inversion
             filename_model_final = os.path.join(
-                paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
+                output_dir, "model", code + "_final_model_full.txt"
             )
 
             if not os.path.exists(filename_model_final):
@@ -4467,7 +4530,7 @@ pv.Render()
 
             # Path to exported model in csv format
             filename_model_csv = os.path.join(
-                paramfile_Dir, "OUTPUT/" + code + "_final_model3D_full.csv"
+                output_dir, code + "_final_model3D_full.csv"
             )
 
             # Reading the model grid
@@ -4602,7 +4665,7 @@ pv.Render()
         if self.dlg.checkBox_use_compression.isChecked():
             self.forward_matrixCompression_type = 1
         else:
-            self.forward_matrixCompression_type = 2
+            self.forward_matrixCompression_type = 0
 
         self.forward_matrixCompression_rate = (
             self.dlg.mQgsDoubleSpinBox_compression_ratio.value()

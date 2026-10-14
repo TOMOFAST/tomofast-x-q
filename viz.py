@@ -3,9 +3,57 @@ import numpy as np
 import sys
 
 
-def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', opacity=1.0, show_edges=False):
+def core_bounds_from_model_grid(model_grid_file):
+    """
+    Return (xmin, xmax, ymin, ymax) of the core (unbuffered) part of a
+    Tomofast-x model grid, or None if it cannot be determined.
+
+    The core cells all share one X and one Y width (the most common width),
+    while the padding cells grow by a factor per cell, so the core is the set
+    of cells with the modal width in each horizontal direction.
+    """
+    try:
+        grid = np.loadtxt(model_grid_file, dtype=float, usecols=(0, 1, 2, 3), skiprows=1)
+    except Exception as e:
+        print(f"Could not read model grid {model_grid_file}: {e}")
+        return None
+
+    def core_range(lo, hi):
+        width = np.round(hi - lo, 3)
+        values, counts = np.unique(width, return_counts=True)
+        modal = values[np.argmax(counts)]
+        core = width == modal
+        return lo[core].min(), hi[core].max()
+
+    xmin, xmax = core_range(grid[:, 0], grid[:, 1])
+    ymin, ymax = core_range(grid[:, 2], grid[:, 3])
+    return xmin, xmax, ymin, ymax
+
+
+def crop_to_core(grid, core_bounds):
+    """
+    Keep only the cells whose centre lies inside the core extent in X and Y
+    (Z is left alone). Returns the original grid if nothing would remain.
+    """
+    xmin, xmax, ymin, ymax = core_bounds
+    centers = grid.cell_centers().points
+    mask = (
+        (centers[:, 0] >= xmin) & (centers[:, 0] <= xmax)
+        & (centers[:, 1] >= ymin) & (centers[:, 1] <= ymax)
+    )
+    if not mask.any() or mask.all():
+        return grid
+    return grid.extract_cells(np.where(mask)[0])
+
+
+def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', opacity=1.0,
+                                     show_edges=False, core_bounds=None):
     """
     Display multiple VTK voxet files with colors clipped to a specific percentile in QGIS.
+
+    core_bounds: optional (xmin, xmax, ymin, ymax). When given, the buffer
+    (padding) cells outside it are dropped, so they are neither displayed nor
+    counted in the colour range.
     """
     # Check if PyVista is installed
     try:
@@ -30,7 +78,11 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
             
             # Read the VTK file
             grid = pv.read(file_path)
-            
+
+            # Ignore the buffer (padding) cells in X and Y
+            if core_bounds is not None:
+                grid = crop_to_core(grid, core_bounds)
+
             # Get active scalar data
             scalar_name = grid.active_scalars_name
             if not scalar_name:
