@@ -969,6 +969,9 @@ class Tomofast_x:
             # Use the output folder the file itself names; the plugin's own
             # files always use <folder>/OUTPUT.
             if output_folder:
+                output_folder = self._resolve_param_path(
+                    output_folder, os.path.dirname(os.path.abspath(paramPath))
+                )
                 paraview_dir = output_folder.rstrip("/\\") + "/Paraview/"
             else:
                 paraview_dir = path + "/OUTPUT/Paraview/"
@@ -979,7 +982,10 @@ class Tomofast_x:
             for line in contents:
                 stripped = line.strip()
                 if stripped.startswith(("modelGrid.grav.file", "modelGrid.magn.file")):
-                    candidate = stripped.split("=", 1)[1].strip()
+                    candidate = self._resolve_param_path(
+                        stripped.split("=", 1)[1].strip(),
+                        os.path.dirname(os.path.abspath(paramPath)),
+                    )
                     if os.path.exists(candidate):
                         model_grid_file = candidate
                         break
@@ -1201,7 +1207,10 @@ class Tomofast_x:
                 for line in fh:
                     stripped = line.strip()
                     if stripped.startswith("global.outputFolderPath") and "=" in stripped:
-                        return stripped.split("=", 1)[1].strip()
+                        return self._resolve_param_path(
+                            stripped.split("=", 1)[1].strip(),
+                            os.path.dirname(os.path.abspath(self.paramfile_Path)),
+                        )
         except Exception:
             pass
         return ""
@@ -1592,11 +1601,13 @@ class Tomofast_x:
         self._wsl_param_path = wsl_param_path
 
         wsl_debug_path = wsl_param_path + "_debug.txt"
+        # Relative paths in the parameter file are relative to its folder
+        wsl_param_dir = wsl_param_path.rsplit("/", 1)[0] or "/"
 
         if noProc == 1:
-            base_command = f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+            base_command = f"cd '{wsl_param_dir}' && '{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
         else:
-            base_command = f"{mpirun_path} -np {noProc} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+            base_command = f"cd '{wsl_param_dir}' && {mpirun_path} -np {noProc} '{wsl_tomo_path}' -j '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
 
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         CREATE_NO_WINDOW = 0x08000000
@@ -1635,6 +1646,8 @@ class Tomofast_x:
             command,
             shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
             env=os.environ.copy(),
+            # relative paths in the parameter file are relative to its folder
+            cwd=os.path.dirname(os.path.abspath(self.paramfile_Path)),
             **kwargs,
         )
         return process, distro, mpirun_path
@@ -1665,6 +1678,8 @@ class Tomofast_x:
             command,
             shell=True,  # nosec B602 - shell required for `start` built-in and pipe operators
             env=os.environ.copy(),
+            # relative paths in the parameter file are relative to its folder
+            cwd=os.path.dirname(os.path.abspath(self.paramfile_Path)),
             **kwargs,
         )
         return process, distro, mpirun_path
@@ -3943,6 +3958,28 @@ class Tomofast_x:
             "===================================================================================\n"
         )
 
+    def _param_path(self, path):
+        """Path as written into the parameter file: relative to the parameter
+        file's own folder (the output folder) when it lies inside it, so the
+        folder can be moved, zipped or run from WSL; otherwise left absolute.
+        Tomofast-x resolves relative paths against its working directory,
+        which the run commands set to the parameter file's folder."""
+        base = os.path.normpath(self.global_outputFolderPath)
+        full = os.path.normpath(path)
+        try:
+            if os.path.commonpath([base, full]) == base and full != base:
+                return os.path.relpath(full, base).replace("\\", "/")
+        except ValueError:  # different drives
+            pass
+        return path
+
+    def _resolve_param_path(self, path, param_dir):
+        """Inverse of _param_path: absolute path for a value read from a
+        parameter file (relative values are relative to its folder)."""
+        if not path or os.path.isabs(path):
+            return path
+        return os.path.normpath(os.path.join(param_dir, path)).replace("\\", "/")
+
     # write out parameter file
     def save_parameter_file(self):
         self.parse_parameters()
@@ -3956,7 +3993,7 @@ class Tomofast_x:
         self.spacer("GLOBAL")
         self.f_params.write(
             "global.outputFolderPath             = {}\n".format(
-                self.global_outputFolderPath + "/OUTPUT"
+                self._param_path(self.global_outputFolderPath + "/OUTPUT")
             )
         )
         if not self.global_description:
@@ -4030,13 +4067,13 @@ class Tomofast_x:
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             self.f_params.write(
                 "modelGrid.grav.file                 = {}\n".format(
-                    self.global_outputFolderPath + "/model_grid.txt"
+                    self._param_path(self.global_outputFolderPath + "/model_grid.txt")
                 )
             )
         if self.global_experimentType == 2 or self.global_experimentType == 3:
             self.f_params.write(
                 "modelGrid.magn.file                 = {}\n".format(
-                    self.global_outputFolderPath + "/model_grid.txt"
+                    self._param_path(self.global_outputFolderPath + "/model_grid.txt")
                 )
             )
             # Only written for MVI so files for scalar runs are unchanged
@@ -4090,7 +4127,7 @@ class Tomofast_x:
             )
             self.f_params.write(
                 "forward.data.grav.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_grav.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_grav.csv")
                 )
             )
             # Gradiometry settings are only written when non-default
@@ -4116,7 +4153,7 @@ class Tomofast_x:
             """if self.global_elevType == 1:"""
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_magn.csv")
                 )
             )
             if self.forward_data_magn_nDataComponents != 1:
@@ -4129,7 +4166,7 @@ class Tomofast_x:
         else:
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn_topo.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_magn_topo.csv")
                 )
             )
             """self.f_params.write(
@@ -4169,13 +4206,13 @@ class Tomofast_x:
         if self.sensit_readFromFiles == 0:
             self.f_params.write(
                 "sensit.folderPath                   = {}\n".format(
-                    self.global_outputFolderPath + "/OUTPUT/SENSIT/"
+                    self._param_path(self.global_outputFolderPath + "/OUTPUT/SENSIT") + "/"
                 )
             )
         else:
             self.f_params.write(
                 "sensit.folderPath                   = {}\n".format(
-                    self.kernelfiledirectory + "/"
+                    self._param_path(self.kernelfiledirectory) + "/"
                 )
             )
 
@@ -4809,6 +4846,12 @@ pv.Render()
 
                     if len(pls) == 2:
                         pval = pls[1].strip()
+
+                        # Relative paths in a parameter file are relative to its folder
+                        if pkey == "global.outputFolderPath":
+                            pval = self._resolve_param_path(
+                                pval, os.path.dirname(os.path.abspath(self.parfilename))
+                            )
 
                         if (
                             self.d_params[pkey][-2] == float
