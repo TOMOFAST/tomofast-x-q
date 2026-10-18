@@ -1265,7 +1265,9 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_run_inversion.setFont(font)
         self.groupBox_run_inversion.setObjectName("groupBox_run_inversion")
         self.groupBox_run_inversion.setMinimumSize(QtCore.QSize(600, 730))
-        self.textEdit_4 = QtWidgets.QTextEdit(self.groupBox_run_inversion)
+        # QTextBrowser (a read-only QTextEdit) so the URLs below are clickable
+        self.textEdit_4 = QtWidgets.QTextBrowser(self.groupBox_run_inversion)
+        self.textEdit_4.setOpenExternalLinks(True)
         self.textEdit_4.setEnabled(True)
         self.textEdit_4.setGeometry(QtCore.QRect(10, 240, 571, 130))
         font = QtGui.QFont()
@@ -1549,7 +1551,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:6pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">The native windows version of tomofast-x can be downloaded from</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">https://tectonique.net/tomofast-x-q/OpenMP_version/tomofastx_win.zip</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\"><a href=\"https://tectonique.net/tomofast-x-q/OpenMP_version/tomofastx_win.zip\"><span style=\" text-decoration: underline; color:#0000ff;\">https://tectonique.net/tomofast-x-q/OpenMP_version/tomofastx_win.zip</span></a></span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">simply unzip and store in a permanent location on your drive.</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
@@ -1561,7 +1563,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">2) Tomofast source code and installation instructions available here:</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">https://github.com/TOMOFAST/Tomofast-x/</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\"><a href=\"https://github.com/TOMOFAST/Tomofast-x/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://github.com/TOMOFAST/Tomofast-x/</span></a></span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">3) Once you have saved the parameter file in the previous tab, you can copy the entire directory that contains the parfile to your machine </span><span style=\" font-size:10pt; text-decoration: underline;\">but then you will need to update the paths in the paramfile to match the new machine</span><span style=\" font-size:10pt;\">,  with tomofast-x installed and from the tomofast-x directory you can run the inversion by entering either of the following lines on the command line:</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
