@@ -3778,17 +3778,20 @@ class Tomofast_x:
         # From Bruce et al. 2025 in prep.
         # n_cells: number of model cells including padding (nx * ny * nz).
         # The same rule is used in the QGIS and ArcGIS versions.
-        if n_cells > 400000:
+        #
+        # The rate varies continuously with the mesh size and is capped at 1
+        # (no compression), which applies below about 11,000 cells. There is no
+        # cutoff, so refining the mesh never lowers the estimated memory.
+        if n_cells > 0:
             ideal_cr = 35.07 * (0.01**-0.872) * (n_cells ** -0.884)
             val = ideal_cr * 2
             if self.is_2d:
                 val *= 100.0
             val = min(val, 1.0)  # compression ratio must not exceed 1
-            self.forward_matrixCompression_rate = val
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(val)
         else:
-            self.forward_matrixCompression_rate = 1.0
-            self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(1.0)
+            val = 1.0
+        self.forward_matrixCompression_rate = val
+        self.dlg.mQgsDoubleSpinBox_compression_ratio.setValue(val)
 
     def update_memory_size(self):
         self.setupMesh()
