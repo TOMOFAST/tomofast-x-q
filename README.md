@@ -1,10 +1,17 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.18
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.19
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.18   
+changelog=0.2.19   
+    * Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data   
+    * Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components   
+    * Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name   
+    * Parameter file writes the new MVI and gradiometry settings (only when non-default); memory estimate accounts for the extra components   
+    * Joint inversion: gravity and magnetic nData are now set separately; loading a joint-mode data file only fills that dataset's column selectors   
+    * Exported and displayed MVI models use Mx,My,Mz columns and magnitude   
+    0.2.18   
     * Native Windows runs: set GFORTRAN_UNBUFFERED_ALL / FORT_BUFFERED so Fortran output is unbuffered and the log updates live   
     * Result preview: x/y/z slices now share one clipped colour range   
     * Setting the number of lithologies above zero sets the ADMM weight to 1000 and major iterations to 50; back to zero sets the weight to 0 and major iterations to 3   
@@ -111,6 +118,31 @@ Otherwise copy these files to another machine and run tomofast-x there (but you 
 - **data_magn.csv and/or data_grav.csv**: observed geophysical response   
 - **model_grid.txt**: Model mesh   
 - **paramfile.txt**: parameter definition file   
+
+## Magnetisation vector inversion (MVI) and gravity gradiometry
+Each data group on the Data/Mesh tab has two dropdowns. Their tooltips show the parameter name written to the paramfile.   
+
+| Dropdown | Choices | Paramfile parameter |
+|---|---|---|
+| Gravity: type | Gravity / Gradiometry | forward.data.grav.type = 1 / 2 |
+| Gravity: components | 1 (Gz/Gzz) / 6 (full tensor: xx, yy, zz, xy, yz, xz). Fixed at 1 for plain gravity | forward.data.grav.nDataComponents |
+| Magnetic: data | TMI (1) / Bx,By,Bz (3) | forward.data.magn.nDataComponents |
+| Magnetic: model | Scalar / Vector (MVI, solves for Mx, My, Mz per cell) | modelGrid.magn.nModelComponents = 1 / 3 |
+
+Non-default values only are written to the paramfile, so scalar gravity and magnetic runs produce the same file as before. Gradiometry also sets the depth weighting power to 3 and changes the default target misfit (data are in Eotvos). Magnetic inversion defaults the target misfit to 5. The memory estimate grows with (data components x model components).   
+
+**csv files**: the column selected as **Data** is the first component, and the following columns of the file are the other components, in file order. All components are written to data_grav.csv / data_magn.csv after the three position columns.   
+- Gravity, 1 component: that column only. 6 components: the selected column is xx, then yy, zz, xy, yz, xz must follow it.   
+- Magnetic, TMI: that column only. Bx,By,Bz: the selected column is Bx, then By and Bz must follow it.   
+
+**GeoTIFF files**: select any one of the component files and the others are found in the same folder. The file names must be identical except for a tag naming the component, in any upper or lower case and set off from the rest of the name by a non-alphanumeric character such as _ - or .   
+- Gravity gradiometry (6): xx, yy, zz, xy, yz, xz, e.g. gg_xx.tif, gg_yy.tif, gg_zz.tif, gg_xy.tif, gg_yz.tif, gg_xz.tif   
+- Magnetic Bx,By,Bz (3): Bx, By, Bz, e.g. mag_Bx.tif, mag_By.tif, mag_Bz.tif   
+- All component files must be on the same grid and projection. A missing file or a mismatched grid gives an error message when the data are loaded.   
+
+**MVI results**: Visualise colours the model by the magnitude of the magnetisation vector, and Export writes the columns x, y, z, Mx, My, Mz.   
+
+**Troubleshooting**: if the run log ends with exit code 3221225725 (0xC00000FD) the Windows tomofastx.exe has run out of stack space, which large problems such as MVI can cause. Raise its stack size with `python scripts/set_exe_stack.py path/to/tomofastx.exe`, or link the executable with `-Wl,--stack,536870912`.   
 
 ## Credits    
 Plugin construction - Mark Jessell using QGIS Plugin Builder Plugin and code from Vitaliy Ogarko   

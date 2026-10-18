@@ -107,6 +107,13 @@ class ParamsMixin:
                     self.global_outputFolderPath + "/model_grid.txt"
                 )
             )
+            # Only written for MVI so files for scalar runs are unchanged
+            if self.modelGrid_magn_nModelComponents != 1:
+                self.f_params.write(
+                    "modelGrid.magn.nModelComponents     = {}\n".format(
+                        self.modelGrid_magn_nModelComponents
+                    )
+                )
 
         if self.global_experimentType in (2, 3):
             self.spacer("MAGNETIC FIELD constants")
@@ -153,6 +160,19 @@ class ParamsMixin:
                     self.global_outputFolderPath + "/data_grav.csv"
                 )
             )
+            # Gradiometry settings are only written when non-default
+            if self.forward_data_grav_type != 1:
+                self.f_params.write(
+                    "forward.data.grav.type              = {}\n".format(
+                        self.forward_data_grav_type
+                    )
+                )
+            if self.forward_data_grav_nDataComponents != 1:
+                self.f_params.write(
+                    "forward.data.grav.nDataComponents   = {}\n".format(
+                        self.forward_data_grav_nDataComponents
+                    )
+                )
 
         if self.global_experimentType in (2, 3):
             self.f_params.write(
@@ -165,6 +185,12 @@ class ParamsMixin:
                     self.global_outputFolderPath + "/data_magn.csv"
                 )
             )
+            if self.forward_data_magn_nDataComponents != 1:
+                self.f_params.write(
+                    "forward.data.magn.nDataComponents   = {}\n".format(
+                        self.forward_data_magn_nDataComponents
+                    )
+                )
         else:
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
@@ -179,9 +205,11 @@ class ParamsMixin:
             )
         )
         if self.global_experimentType in (1, 3):
+            # Gradiometry falls off faster with depth, so it uses power 3
+            grav_power = 3 if self.forward_data_grav_type == 2 else self.forward_depthWeighting_grav_power
             self.f_params.write(
                 "forward.depthWeighting.grav.power   = {}\n".format(
-                    self.forward_depthWeighting_grav_power
+                    grav_power
                 )
             )
         if self.global_experimentType in (2, 3):
@@ -599,6 +627,11 @@ pv.Render()
         self.filename_grav = self.ui.lineEdit_grav_data_path.text()
         self.filename_magn = self.ui.lineEdit_magn_data_path.text()
 
+        self.forward_data_grav_type = self.ui.comboBox_grav_type.currentData()
+        self.forward_data_grav_nDataComponents = self.ui.comboBox_grav_ncomp.currentData()
+        self.forward_data_magn_nDataComponents = self.ui.comboBox_magn_ncomp.currentData()
+        self.modelGrid_magn_nModelComponents = self.ui.comboBox_magn_nmodel.currentData()
+
         self.global_elevFilename = self.ui.lineEdit_dtm_path.text()
         self.ROIFileName = self.ui.lineEdit_ROI_path.text()
 
@@ -654,6 +687,8 @@ pv.Render()
                     if p[0] != "":
                         if p[-1] == "value":
                             p[1].setValue(p[-2](p[0]))
+                        elif p[-1] == "combo":
+                            p[1].setData(p[0])
                         elif p[-1] == "plainText":
                             p[1].setText(p[-2](p[0]))
                         elif p[-1] == "text":
@@ -694,6 +729,8 @@ pv.Render()
             p = self.d_params[pkey]
             if p[-1] == "value":
                 p[1].setValue(p[-2](p[0]))
+            elif p[-1] == "combo":
+                p[1].setData(p[0])
             elif p[-1] == "value_both":
                 p[1].setValue(p[-2](p[0]))
                 p[2].setValue(p[-2](p[0]))
@@ -747,6 +784,24 @@ pv.Render()
             self.ui.mQgsSpinBox_mesh_east,
         ):
             w.setEnabled(True)
+
+    # ------------------------------------------------------------------
+    def _on_inversion_type_changed(self):
+        """Update the GUI for the new inversion type and its default target misfit."""
+        self.inversion_type_reset_gui()
+        if self.ui.radioButton_magn_inv.isChecked():
+            new = "5"
+        elif (
+            self.ui.radioButton_grav_inv.isChecked()
+            and self.ui.comboBox_grav_type.currentData() == 2
+        ):
+            new = "3"  # gradiometry, in Eotvos (placeholder -- confirm)
+        else:
+            new = "1e-7"
+        # Only replace a default; keep anything the user typed
+        current = self.ui.lineEdit_targetMisfit.text().strip()
+        if current in ("", "1e-7", "3", "5"):
+            self.ui.lineEdit_targetMisfit.setText(new)
 
     # ------------------------------------------------------------------
     def enable_boxes(self):

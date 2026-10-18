@@ -51,7 +51,10 @@ class DataMixin:
         if suffix.lower() == "csv":
             self.data = pd.read_csv(filename)
 
-            if self.global_experimentType in (1, 3):
+            # In joint mode each file only fills its own dataset's combo boxes
+            if self.global_experimentType == 1 or (
+                self.global_experimentType == 3 and dataType == "grav"
+            ):
                 self.ui.comboBox_grav_field_x.addItems(self.data.columns)
                 self.ui.comboBox_grav_field_y.addItems(self.data.columns)
                 self.ui.comboBox_grav_field_y.setCurrentIndex(1)
@@ -59,7 +62,9 @@ class DataMixin:
                 self.ui.comboBox_grav_field_data.setCurrentIndex(2)
                 self.input_data_grav = filename
 
-            if self.global_experimentType in (2, 3):
+            if self.global_experimentType == 2 or (
+                self.global_experimentType == 3 and dataType == "magn"
+            ):
                 self.ui.comboBox_magn_field_x.addItems(self.data.columns)
                 self.ui.comboBox_magn_field_y.addItems(self.data.columns)
                 self.ui.comboBox_magn_field_y.setCurrentIndex(1)

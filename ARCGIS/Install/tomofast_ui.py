@@ -120,6 +120,30 @@ class _WidgetProxy:
     def setDisplayFormat(self, fmt):    pass
 
 
+class _DataComboProxy(_WidgetProxy):
+    """Combobox whose labels map to the numeric values used in the parfile."""
+
+    def __init__(self, var, widget, items):
+        super().__init__(var, widget)
+        self._items = list(items)  # [(label, value), ...]
+
+    def currentData(self):
+        for label, value in self._items:
+            if label == self._var.get():
+                return value
+        return self._items[0][1]
+
+    def setData(self, value):
+        for label, v in self._items:
+            if v == value:
+                self._var.set(label)
+                return
+        self._var.set(self._items[0][0])
+
+    def setEnabled(self, state):
+        self._widget.configure(state="readonly" if state else "disabled")
+
+
 class _RadioProxy(_WidgetProxy):
     """Proxy for one radio button in a shared IntVar group."""
 
@@ -286,6 +310,13 @@ class TomofastUI:
                          increment=inc, width=wid, format="%.6f")
         return sb, _WidgetProxy(var, sb)
 
+    def _data_combo(self, parent, items, width=14):
+        """Readonly combobox over [(label, parfile value), ...]."""
+        sv = tk.StringVar(value=items[0][0])
+        cb = ttk.Combobox(parent, textvariable=sv, values=[l for l, _ in items],
+                          width=width, state="readonly")
+        return cb, _DataComboProxy(sv, cb, items), sv
+
     def _combobox(self, parent, var, width=20):
         cb = ttk.Combobox(parent, textvariable=var, width=width, state="readonly")
         return cb, _WidgetProxy(var, cb)
@@ -399,6 +430,33 @@ class TomofastUI:
         cb_gd.grid(row=0, column=5, padx=2)
         self.pushButton_assign_grav_fields = ttk.Button(f_gf, text="Assign")
         self.pushButton_assign_grav_fields.grid(row=0, column=6, padx=4)
+        ttk.Label(f_gf, text="Type:").grid(row=2, column=0, sticky="w", padx=2)
+        cb_gt, self.comboBox_grav_type, sv_gt = self._data_combo(
+            f_gf, [("Gravity", 1), ("Gradiometry", 2)])
+        cb_gt.grid(row=2, column=1, sticky="w", padx=2)
+        ttk.Label(f_gf, text="Components:").grid(row=2, column=2, sticky="w", padx=2)
+        cb_gn, self.comboBox_grav_ncomp, _ = self._data_combo(
+            f_gf, [("1 component", 1), ("6 components", 6)])
+        cb_gn.grid(row=2, column=3, sticky="w", padx=2)
+
+        def _sync_grav_components(*_):
+            # Plain gravity is always one component; gradiometry allows 1 or 6
+            gradiometry = self.comboBox_grav_type.currentData() == 2
+            if not gradiometry:
+                self.comboBox_grav_ncomp.setData(1)
+            self.comboBox_grav_ncomp.setEnabled(gradiometry)
+
+            # Gradiometry data is in Eotvos, so its target misfit differs from
+            # gravity's (placeholder: "a few Eotvos" -- confirm the recommended
+            # value). Only swap it if the user hasn't typed their own.
+            if hasattr(self, "lineEdit_targetMisfit") and hasattr(self, "radioButton_grav_inv"):
+                old, new = (("1e-7", "3") if gradiometry else ("3", "1e-7"))
+                if self.radioButton_grav_inv.isChecked():
+                    if self.lineEdit_targetMisfit.text().strip() in ("", old):
+                        self.lineEdit_targetMisfit.setText(new)
+        sv_gt.trace_add("write", _sync_grav_components)
+        _sync_grav_components()
+
         self.pushButton_load_grav_data = ttk.Button(f_gf, text="Load Grav")
         self.pushButton_load_grav_data.grid(row=1, column=0, columnspan=3, sticky="w", padx=2, pady=2)
         r += 1
@@ -440,6 +498,15 @@ class TomofastUI:
         cb_md.grid(row=0, column=5, padx=2)
         self.pushButton_assign_magn_fields = ttk.Button(f_mf, text="Assign")
         self.pushButton_assign_magn_fields.grid(row=0, column=6, padx=4)
+        ttk.Label(f_mf, text="Data:").grid(row=2, column=0, sticky="w", padx=2)
+        cb_mn, self.comboBox_magn_ncomp, _ = self._data_combo(
+            f_mf, [("TMI data", 1), ("Bx,By,Bz data", 3)])
+        cb_mn.grid(row=2, column=1, sticky="w", padx=2)
+        ttk.Label(f_mf, text="Model:").grid(row=2, column=2, sticky="w", padx=2)
+        cb_mm, self.comboBox_magn_nmodel, _ = self._data_combo(
+            f_mf, [("Scalar model", 1), ("Vector (MVI)", 3)])
+        cb_mm.grid(row=2, column=3, sticky="w", padx=2)
+
         self.pushButton_load_magn_data = ttk.Button(f_mf, text="Load Magn")
         self.pushButton_load_magn_data.grid(row=1, column=0, columnspan=3, sticky="w", padx=2, pady=2)
         r += 1

@@ -155,6 +155,17 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         font.setPointSize(10)
         self.pushButton_load_grav_data.setFont(font)
         self.pushButton_load_grav_data.setObjectName("pushButton_load_grav_data")
+        # Data type / number of data components (item data holds the parfile value)
+        self.comboBox_grav_type = QtWidgets.QComboBox(self.groupBox_grav_data_file)
+        self.comboBox_grav_type.setGeometry(QtCore.QRect(10, 106, 110, 22))
+        self.comboBox_grav_type.addItem("Gravity", 1)
+        self.comboBox_grav_type.addItem("Gradiometry", 2)
+        self.comboBox_grav_type.setObjectName("comboBox_grav_type")
+        self.comboBox_grav_ncomp = QtWidgets.QComboBox(self.groupBox_grav_data_file)
+        self.comboBox_grav_ncomp.setGeometry(QtCore.QRect(125, 106, 110, 22))
+        self.comboBox_grav_ncomp.addItem("1 component", 1)
+        self.comboBox_grav_ncomp.addItem("6 components", 6)
+        self.comboBox_grav_ncomp.setObjectName("comboBox_grav_ncomp")
         self.groupBox_grav_fields = QtWidgets.QGroupBox(self.Import_data)
         self.groupBox_grav_fields.setEnabled(False)
         self.groupBox_grav_fields.setGeometry(QtCore.QRect(340, 90, 261, 131))
@@ -551,6 +562,17 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         font.setPointSize(10)
         self.pushButton_load_magn_data.setFont(font)
         self.pushButton_load_magn_data.setObjectName("pushButton_load_magn_data")
+        # Data type / model components (item data holds the parfile value)
+        self.comboBox_magn_ncomp = QtWidgets.QComboBox(self.groupBox_magn_data_file)
+        self.comboBox_magn_ncomp.setGeometry(QtCore.QRect(10, 106, 110, 22))
+        self.comboBox_magn_ncomp.addItem("TMI data", 1)
+        self.comboBox_magn_ncomp.addItem("Bx,By,Bz data", 3)
+        self.comboBox_magn_ncomp.setObjectName("comboBox_magn_ncomp")
+        self.comboBox_magn_nmodel = QtWidgets.QComboBox(self.groupBox_magn_data_file)
+        self.comboBox_magn_nmodel.setGeometry(QtCore.QRect(125, 106, 110, 22))
+        self.comboBox_magn_nmodel.addItem("Scalar model", 1)
+        self.comboBox_magn_nmodel.addItem("Vector (MVI)", 3)
+        self.comboBox_magn_nmodel.setObjectName("comboBox_magn_nmodel")
         self.lineEdit_magn_data_path = QtWidgets.QLineEdit(self.groupBox_magn_data_file)
         self.lineEdit_magn_data_path.setGeometry(QtCore.QRect(86, 28, 151, 18))
         self.lineEdit_magn_data_path.setStyleSheet("QLineEdit {\n"
@@ -1317,7 +1339,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_grav_fields.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 2b : Define grav input fields"))
         self.label_grav_field_long_x.setText(_translate("mQgsSpinBox_mesh_south_2", "long_x"))
         self.label_grav_field_lat_y.setText(_translate("mQgsSpinBox_mesh_south_2", "lat_y"))
-        self.label_grav_field_data_col.setText(_translate("mQgsSpinBox_mesh_south_2", "Data Column"))
+        self.label_grav_field_data_col.setText(_translate("mQgsSpinBox_mesh_south_2", "Data"))
         self.pushButton_assign_grav_fields.setText(_translate("mQgsSpinBox_mesh_south_2", "Assign fields"))
         self.groupBox_mesh_params.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 5 : Specify Mesh Parameters"))
         self.label_mesh_cell_size_y.setText(_translate("mQgsSpinBox_mesh_south_2", "Cell Size y"))
@@ -1470,6 +1492,12 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:6pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">The native windows version of tomofast-x can be downloaded from</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">https://tectonique.net/tomofast-x-q/OpenMP_version/tomofastx_win.zip</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">simply unzip and store in a permanent location on your drive.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">If you have direct access to tomofast-x on your own machine, you can run the inversion in the background by defining the path to the tomofast executable and parfile above (the Command text, which can be left as is, and the WSL Distro, which should be the one you use, are required for running tomofast-x on WSL under Windows, but can be ignore for other OS including Windows Native).</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">Otherwise:</span></p>\n"

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import time
 import tempfile
 import numpy as np
@@ -119,6 +120,98 @@ class MeshMixin:
         self.data2tomofast.df["POINT_X"] = (pts_x - x1) * ux + (pts_y - y1) * uy
         self.data2tomofast.df["POINT_Y"] = 0.0
 
+    # Component names expected in multi-component GeoTIFF file names
+    COMPONENT_TOKENS = {
+        "grav": ["xx", "yy", "zz", "xy", "yz", "xz"],
+        "magn": ["bx", "by", "bz"],
+    }
+
+    def _n_components(self, kind):
+        """Number of data components selected in the GUI for 'grav' or 'magn'."""
+        combo = self.ui.comboBox_grav_ncomp if kind == "grav" else self.ui.comboBox_magn_ncomp
+        return int(combo.currentData() or 1)
+
+    def find_component_rasters(self, path, kind):
+        """Return the raster paths for each data component of 'grav' or 'magn'.
+
+        For one component this is just [path]. For several, the selected file's
+        name must contain a component token (xx/yy/zz/xy/yz/xz or Bx/By/Bz, any
+        case, delimited by non-alphanumerics). The other components are the files
+        in the same folder whose names differ only in that token. Returned in
+        token order.
+        """
+        n = self._n_components(kind)
+        if n == 1:
+            return [path]
+        tokens = self.COMPONENT_TOKENS[kind][:n]
+        folder, base = os.path.split(path)
+        stem, ext = os.path.splitext(base)
+        match = re.search(
+            r"(?<![A-Za-z0-9])(%s)(?![A-Za-z0-9])" % "|".join(tokens), stem, re.I
+        )
+        if match is None:
+            raise ValueError(
+                f"{base}: file name must contain one of {', '.join(tokens)} "
+                f"(upper or lower case, separated by _ - or . ) to load {n} components."
+            )
+        prefix, suffix = stem[: match.start()], stem[match.end():]
+        siblings = os.listdir(folder or ".")
+        found, missing = [], []
+        for token in tokens:
+            pattern = re.compile(
+                "^" + re.escape(prefix) + re.escape(token) + re.escape(suffix)
+                + re.escape(ext) + "$", re.I
+            )
+            hits = [f for f in siblings if pattern.match(f)]
+            if hits:
+                found.append(os.path.join(folder, hits[0]))
+            else:
+                missing.append(token)
+        if missing:
+            raise ValueError(
+                f"Could not find component file(s) for {', '.join(missing)} next to {base} "
+                f"(expected names like {prefix}<{'|'.join(tokens)}>{suffix}{ext})."
+            )
+        # All components must be on the same grid
+        ref = gdal.Open(found[0])
+        for other in found[1:]:
+            ds = gdal.Open(other)
+            if ds is None or (
+                ds.RasterXSize, ds.RasterYSize, ds.GetGeoTransform()
+            ) != (ref.RasterXSize, ref.RasterYSize, ref.GetGeoTransform()) or (
+                ds.GetProjection() != ref.GetProjection()
+            ):
+                raise ValueError(
+                    f"{os.path.basename(other)} is not on the same grid as "
+                    f"{os.path.basename(found[0])}."
+                )
+        return found
+
+    def _datacols(self, kind, dataFormat):
+        """Data column names to write for 'grav' or 'magn'.
+
+        Raster data is sampled into data1..dataN. For CSV the selected data
+        column is the first component and the next N-1 columns of the file
+        (in file order) are the remaining components.
+        """
+        n = self._n_components(kind)
+        if dataFormat != "points":
+            return [f"data{i + 1}" for i in range(n)]
+        first = self.datacol_grav if kind == "grav" else self.datacol_magn
+        if n == 1:
+            return [first]
+        path = self.filename_grav if kind == "grav" else self.filename_magn
+        columns = list(pd.read_csv(path, nrows=0).columns)
+        start = columns.index(first)
+        cols = columns[start:start + n]
+        if len(cols) < n:
+            raise ValueError(
+                f"{kind} data needs {n} component columns starting at '{first}', "
+                f"but {os.path.basename(path)} only has {len(cols)} from there. "
+                f"Select an earlier first data column."
+            )
+        return cols
+
     # ------------------------------------------------------------------
     def convert_raster_data(self, filename, proj_out, dataType):
         if dataType == 1:
@@ -189,32 +282,37 @@ class MeshMixin:
                 (df["y_world"] <= self.meshBox["north"])
             ].reset_index(drop=True)
 
-        # Reproject raster
-        reproj_raster_path = self.global_outputFolderPath + reprojDataName
-        src_ds = gdal.Open(filename)
-        if src_ds is None:
-            raise RuntimeError(f"Could not open input raster: {filename}")
-        warp_options = gdal.WarpOptions(
-            srcSRS=source_proj,
-            dstSRS=proj_out,
-            resampleAlg=gdal.GRA_NearestNeighbour,
-        )
-        out_ds = gdal.Warp(reproj_raster_path, src_ds, options=warp_options)
-        if out_ds is None:
-            raise RuntimeError(f"gdal.Warp failed for input: {filename}")
-        out_ds = None
-        src_ds = None
-
-        # Sample raster at mesh cell centres using _sample_raster_at_points
+        # Reproject and sample each component raster at the mesh cell centres.
+        # The first component keeps the original file name so single-component
+        # runs produce exactly the same files as before.
+        kind = "grav" if dataType == 1 else "magn"
+        raster_paths = self.find_component_rasters(filename, kind)
         xs = df["x_world"].values
         ys = df["y_world"].values
-        sampled_vals = self._sample_raster_at_points(reproj_raster_path, xs, ys)
-
-        data_df = pd.DataFrame({
-            "POINT_X": df["x_world"].values,
-            "POINT_Y": df["y_world"].values,
-            "data1": sampled_vals,
-        })
+        data_df = pd.DataFrame({"POINT_X": xs, "POINT_Y": ys})
+        for k, raster_path in enumerate(raster_paths):
+            if k == 0:
+                reproj_raster_path = self.global_outputFolderPath + reprojDataName
+            else:
+                reproj_raster_path = self.global_outputFolderPath + reprojDataName.replace(
+                    ".tif", f"_{k + 1}.tif"
+                )
+            src_ds = gdal.Open(raster_path)
+            if src_ds is None:
+                raise RuntimeError(f"Could not open input raster: {raster_path}")
+            warp_options = gdal.WarpOptions(
+                srcSRS=source_proj,
+                dstSRS=proj_out,
+                resampleAlg=gdal.GRA_NearestNeighbour,
+            )
+            out_ds = gdal.Warp(reproj_raster_path, src_ds, options=warp_options)
+            if out_ds is None:
+                raise RuntimeError(f"gdal.Warp failed for input: {raster_path}")
+            out_ds = None
+            src_ds = None
+            data_df[f"data{k + 1}"] = self._sample_raster_at_points(
+                reproj_raster_path, xs, ys
+            )
 
         if self.is_2d and self.profile_line_pts:
             data_df["x_world"] = data_df["POINT_X"]
@@ -236,14 +334,14 @@ class MeshMixin:
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_grav, self.ycol_grav, self.xcol_grav,
-                    self.datacol_grav, self.grav_proj_in, self.grav_proj_out,
+                    self._datacols("grav", dataFormat), self.grav_proj_in, self.grav_proj_out,
                 )
             else:
                 y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
                 x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
-                    y_col, x_col, "data1", self.grav_proj_out, self.grav_proj_out,
+                    y_col, x_col, self._datacols("grav", dataFormat), self.grav_proj_out, self.grav_proj_out,
                 )
                 self.datacol_grav = "data1"
             if self.data2tomofast.df is not None and len(self.data2tomofast.df) == 0:
@@ -260,21 +358,22 @@ class MeshMixin:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_grav, self.global_outputFolderPath, 1
+                self._datacols("grav", dataFormat), self.global_outputFolderPath, 1
             )
+            self.forward_data_grav_nData = self.data2tomofast.nData
 
         elif self.global_experimentType == 2:
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_magn, self.ycol_magn, self.xcol_magn,
-                    self.datacol_magn, self.magn_proj_in, self.magn_proj_out,
+                    self._datacols("magn", dataFormat), self.magn_proj_in, self.magn_proj_out,
                 )
             else:
                 y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
                 x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
-                    y_col, x_col, "data1", self.magn_proj_out, self.magn_proj_out,
+                    y_col, x_col, self._datacols("magn", dataFormat), self.magn_proj_out, self.magn_proj_out,
                 )
                 self.datacol_magn = "data1"
             if self.data2tomofast.df is not None and len(self.data2tomofast.df) == 0:
@@ -291,21 +390,22 @@ class MeshMixin:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_magn, self.global_outputFolderPath, 2
+                self._datacols("magn", dataFormat), self.global_outputFolderPath, 2
             )
+            self.forward_data_magn_nData = self.data2tomofast.nData
 
         else:  # joint
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_grav, self.ycol_grav, self.xcol_grav,
-                    self.datacol_grav, self.grav_proj_in, self.grav_proj_out,
+                    self._datacols("grav", dataFormat), self.grav_proj_in, self.grav_proj_out,
                 )
             else:
                 y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
                 x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_grav.csv",
-                    y_col, x_col, "data1", self.grav_proj_out, self.grav_proj_out,
+                    y_col, x_col, self._datacols("grav", dataFormat), self.grav_proj_out, self.grav_proj_out,
                 )
                 self.datacol_grav = "data1"
             if self.global_elevType == 1:
@@ -316,20 +416,21 @@ class MeshMixin:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_grav, self.global_outputFolderPath, 1
+                self._datacols("grav", dataFormat), self.global_outputFolderPath, 1
             )
+            self.forward_data_grav_nData = self.data2tomofast.nData
 
             if dataFormat == "points":
                 self.data2tomofast.read_data(
                     self.filename_magn, self.ycol_magn, self.xcol_magn,
-                    self.datacol_magn, self.magn_proj_in, self.magn_proj_out,
+                    self._datacols("magn", dataFormat), self.magn_proj_in, self.magn_proj_out,
                 )
             else:
                 y_col = "y_world" if (self.is_2d and self.profile_line_pts) else "POINT_Y"
                 x_col = "x_world" if (self.is_2d and self.profile_line_pts) else "POINT_X"
                 self.data2tomofast.read_data(
                     self.global_outputFolderPath + "/reproj_data_magn.csv",
-                    y_col, x_col, "data1", self.magn_proj_out, self.magn_proj_out,
+                    y_col, x_col, self._datacols("magn", dataFormat), self.magn_proj_out, self.magn_proj_out,
                 )
                 self.datacol_magn = "data1"
             if self.global_elevType == 1:
@@ -340,8 +441,9 @@ class MeshMixin:
             if self.is_2d and self.profile_line_pts:
                 self._project_data_to_profile()
             self.data2tomofast.write_data_tomofast(
-                self.datacol_magn, self.global_outputFolderPath, 2
+                self._datacols("magn", dataFormat), self.global_outputFolderPath, 2
             )
+            self.forward_data_magn_nData = self.data2tomofast.nData
 
         if dataFormat == "points":
             if self.is_2d and self.profile_line_pts:
@@ -364,10 +466,6 @@ class MeshMixin:
         self.ui.ny_label.setText(str(self.data2tomofast.ny))
         self.ui.nz_label.setText(str(self.data2tomofast.nz))
 
-        if self.global_experimentType in (1, 3):
-            self.forward_data_grav_nData = self.data2tomofast.nData
-        if self.global_experimentType in (2, 3):
-            self.forward_data_magn_nData = self.data2tomofast.nData
 
     # ------------------------------------------------------------------
     def load_mesh_vector(self):
@@ -445,13 +543,25 @@ class MeshMixin:
         with open(fileName1, "r") as f:
             lines = f.readlines()[1:]
 
+        # Columns after x, y, height are the data components (1, 3 or 6). Count
+        # fields per line with single-space splitting: rows with missing (NaN)
+        # values are written as empty fields, so the first row can look shorter.
+        ncomp = max(
+            max((len(l.rstrip("\r\n").split(" ")) for l in lines), default=4) - 3, 1
+        )
+        if ncomp == 1:
+            data_names = [dataName1]
+        else:
+            data_names = [f"{dataName1}_{i + 1}" for i in range(ncomp)]
+
         with open(temp_file_path1, "w") as temp_file:
-            temp_file.writelines(f"x y height {dataName1}\n")
+            temp_file.writelines("x y height " + " ".join(data_names) + "\n")
             temp_file.writelines(lines)
             temp_file.flush()
 
+        # single space keeps empty (missing) fields aligned
         temp_data = pd.read_csv(
-            temp_file_path1, na_values=["", " "], sep=r"\s+"
+            temp_file_path1, na_values=["", " "], sep=" "
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
@@ -739,10 +849,19 @@ class MeshMixin:
             local_nData = data_nx * data_ny
         else:
             local_nData = self.nData
-        if self.global_experimentType in (1, 2):
-            memory = 8 * compression * nx * ny * nz * local_nData
+        # Kernel size scales with the number of data components and, for the
+        # magnetic problem, the number of model components (MVI)
+        grav_factor = self.ui.comboBox_grav_ncomp.currentData() or 1
+        magn_factor = (self.ui.comboBox_magn_ncomp.currentData() or 1) * (
+            self.ui.comboBox_magn_nmodel.currentData() or 1
+        )
+        if self.global_experimentType == 1:
+            factor = grav_factor
+        elif self.global_experimentType == 2:
+            factor = magn_factor
         else:
-            memory = 8 * compression * nx * ny * nz * local_nData * 2
+            factor = grav_factor + magn_factor
+        memory = 8 * compression * nx * ny * nz * local_nData * factor
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.ui.memory_label.setText(str(memory))
