@@ -13,12 +13,19 @@ class MeshMixin:
 
     # ------------------------------------------------------------------
     def extract_depth_layers(self, z_cell_size_list, z_layer_thickness_list):
-        z_cell_size_list = [
-            float(x) for x in z_cell_size_list.split(",") if x.strip()
-        ]
-        z_layer_thickness_list = [
-            float(x) for x in z_layer_thickness_list.split(",") if x.strip()
-        ]
+        def to_floats(text):
+            # Skip entries that don't parse yet (e.g. "5e" while typing) rather
+            # than raising in the key handler and leaving the estimate stale.
+            values = []
+            for x in text.split(","):
+                try:
+                    values.append(float(x))
+                except ValueError:
+                    pass
+            return values
+
+        z_cell_size_list = to_floats(z_cell_size_list)
+        z_layer_thickness_list = to_floats(z_layer_thickness_list)
         depth_layers = []
         for cell_size, layer_thick in zip(z_cell_size_list, z_layer_thickness_list):
             depth_layers.append({"cell_size": cell_size, "layer_thick": layer_thick})
@@ -40,7 +47,8 @@ class MeshMixin:
         total_layers = 0
         if self.depth_layers:
             for layer in self.depth_layers:
-                total_layers += layer["layer_thick"] / layer["cell_size"]
+                if layer["cell_size"] > 0:
+                    total_layers += layer["layer_thick"] / layer["cell_size"]
 
         self.dz = self.ui.mQgsSpinBox_mesh_size_z.value()
 
@@ -716,6 +724,12 @@ class MeshMixin:
 
     # ------------------------------------------------------------------
     def update_model_grid_size(self):
+        try:
+            self._update_model_grid_size()
+        except Exception as e:
+            print(f"Could not update the model size / compression estimate: {e}")
+
+    def _update_model_grid_size(self):
         self.setupMesh()
         if (
             self.cell_x == 0
@@ -723,50 +737,27 @@ class MeshMixin:
             or int(self.ui.mQgsSpinBox_mesh_size_z.value()) == 0
         ):
             return
-        nx = int(
-            (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
-            / self.cell_x
-        )
-        ny = int(
-            (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
-            / self.cell_y
-        )
-        ncore = int(
-            float(self.ui.doubleSpinBox_coreDepth.value())
-            / float(self.ui.mQgsSpinBox_mesh_size_z.value())
-        )
-        try:
-            npad = int(
-                np.log(
-                    float(
-                        self.ui.doubleSpinBox_fullDepth.value()
-                        - float(self.ui.doubleSpinBox_coreDepth.value())
-                    )
-                    / (float(self.ui.mQgsSpinBox_mesh_size_z.value()))
-                )
-                / np.log(1.15)
-            )
-        except Exception:
-            npad = 0
-        nz = ncore + npad
+        nx, ny, nz, data_nx, data_ny = self._mesh_dimensions()
 
         self.ui.nx_label.setText(str(nx))
         self.ui.ny_label.setText(str(ny))
         self.ui.nz_label.setText(str(nz))
 
-        data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
-        data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
         self.update_memory_size()
-        self.update_ideal_compression_ratio(data_nx, data_ny, nz)
+        self.update_ideal_compression_ratio(nx * ny * nz)
 
     # ------------------------------------------------------------------
-    def update_ideal_compression_ratio(self, nx, ny, nz):
-        if nx * ny * nz > 400000:
-            ideal_cr = 35.07 * (0.01 ** -0.872) * ((nx * ny * nz) ** -0.884)
+    def update_ideal_compression_ratio(self, n_cells):
+        # Assumes Haar wavelet
+        # From Bruce et al. 2025 in prep.
+        # n_cells: number of model cells including padding (nx * ny * nz).
+        # The same rule is used in the QGIS and ArcGIS versions.
+        if n_cells > 400000:
+            ideal_cr = 35.07 * (0.01**-0.872) * (n_cells ** -0.884)
             val = ideal_cr * 2
             if self.is_2d:
                 val *= 100.0
-            val = min(val, 1.0)
+            val = min(val, 1.0)  # compression ratio must not exceed 1
             self.forward_matrixCompression_rate = val
             self.ui.mQgsDoubleSpinBox_compression_ratio.setValue(val)
         else:
@@ -774,13 +765,10 @@ class MeshMixin:
             self.ui.mQgsDoubleSpinBox_compression_ratio.setValue(1.0)
 
     # ------------------------------------------------------------------
-    def update_memory_size(self):
-        self.setupMesh()
-        if self.ui.checkBox_use_compression.isChecked():
-            compression = self.ui.mQgsDoubleSpinBox_compression_ratio.value()
-        else:
-            compression = 1.0
-
+    def _mesh_dimensions(self):
+        """Number of model cells (nx, ny, nz) including padding, and of data
+        cells (data_nx, data_ny) over the mesh extent. Needs setupMesh() first.
+        Handles 2D profile mode, which has a single row of cells in y."""
         if self.is_2d and self.profile_line_pts:
             (x1, y1) = self.profile_line_pts[0]
             (x2, y2) = self.profile_line_pts[1]
@@ -790,78 +778,74 @@ class MeshMixin:
             nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
             ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
         elif self.is_2d:
-            data_nx = (
-                int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
-                if self.cell_x > 0 else 0
-            )
+            # profile_line_pts not yet set: fall back to bbox estimate
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
             data_ny = 1
             nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
             ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
         else:
-            nx = (
-                int((self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding)) / self.cell_x)
-                if self.cell_x > 0 else 0
-            )
-            ny = (
-                int((self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding)) / self.cell_y)
-                if self.cell_y > 0 else 0
-            )
-            data_nx = (
-                int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
-                if self.cell_x > 0 else 0
-            )
-            data_ny = (
-                int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
-                if self.cell_y > 0 else 0
-            )
+            nx = int((self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding)) / self.cell_x) if self.cell_x > 0 else 0
+            ny = int((self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding)) / self.cell_y) if self.cell_y > 0 else 0
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y) if self.cell_y > 0 else 0
 
         if self.meshBox["total_layers"] > 0:
             nz = int(self.meshBox["total_layers"])
         else:
-            ncore = int(
-                float(self.ui.doubleSpinBox_coreDepth.value())
-                / float(self.ui.mQgsSpinBox_mesh_size_z.value())
-            )
+            size_z = float(self.ui.mQgsSpinBox_mesh_size_z.value())
+            core = float(self.ui.doubleSpinBox_coreDepth.value())
+            full = float(self.ui.doubleSpinBox_fullDepth.value())
+            ncore = int(core / size_z) if size_z > 0 else 0
             try:
-                npad = int(
-                    np.log(
-                        float(
-                            self.ui.doubleSpinBox_fullDepth.value()
-                            - float(self.ui.doubleSpinBox_coreDepth.value())
-                        )
-                        / (float(self.ui.mQgsSpinBox_mesh_size_z.value()))
-                    )
-                    / np.log(1.15)
-                )
-            except Exception:
+                npad = int(np.log((full - core) / size_z) / np.log(1.15))
+            except (ValueError, ZeroDivisionError):
                 npad = 0
             nz = ncore + npad
+        return nx, ny, nz, data_nx, data_ny
 
+    # ------------------------------------------------------------------
+    def _kernel_rows(self, data_nx, data_ny):
+        """Rows of the sensitivity matrix: for each dataset in the inversion,
+        stations x data components x model components (MVI is 3x wider).
+
+        CSV data use the loaded number of stations; raster data, or a csv that
+        has not been loaded yet, are estimated from the mesh extent.
+        """
+        def stations(path_edit, loaded):
+            if path_edit.text().split(".")[-1].lower() == "csv" and loaded:
+                return loaded
+            return data_nx * data_ny
+
+        rows = 0
         if self.global_experimentType in (1, 3):
-            data_path = self.ui.lineEdit_grav_data_path.text()
-        else:
-            data_path = self.ui.lineEdit_magn_data_path.text()
+            grav_factor = self.ui.comboBox_grav_ncomp.currentData() or 1
+            rows += stations(self.ui.lineEdit_grav_data_path, self.nData_grav) * grav_factor
+        if self.global_experimentType in (2, 3):
+            magn_factor = (self.ui.comboBox_magn_ncomp.currentData() or 1) * (
+                self.ui.comboBox_magn_nmodel.currentData() or 1
+            )
+            rows += stations(self.ui.lineEdit_magn_data_path, self.nData_magn) * magn_factor
+        return rows
 
-        suffix = data_path.split(".")[-1].lower()
-        self.suffix_known = suffix
-
-        if self.suffix_known != "csv":
-            local_nData = data_nx * data_ny
+    # ------------------------------------------------------------------
+    def update_memory_size(self):
+        self.setupMesh()
+        if self.ui.checkBox_use_compression.isChecked():
+            compression = self.ui.mQgsDoubleSpinBox_compression_ratio.value()
         else:
-            local_nData = self.nData
-        # Kernel size scales with the number of data components and, for the
-        # magnetic problem, the number of model components (MVI)
-        grav_factor = self.ui.comboBox_grav_ncomp.currentData() or 1
-        magn_factor = (self.ui.comboBox_magn_ncomp.currentData() or 1) * (
-            self.ui.comboBox_magn_nmodel.currentData() or 1
+            compression = 1.0
+
+        nx, ny, nz, data_nx, data_ny = self._mesh_dimensions()
+
+        # Remember the data suffix of the active dataset (used elsewhere)
+        data_path = (
+            self.ui.lineEdit_grav_data_path.text()
+            if self.global_experimentType in (1, 3)
+            else self.ui.lineEdit_magn_data_path.text()
         )
-        if self.global_experimentType == 1:
-            factor = grav_factor
-        elif self.global_experimentType == 2:
-            factor = magn_factor
-        else:
-            factor = grav_factor + magn_factor
-        memory = 8 * compression * nx * ny * nz * local_nData * factor
+        self.suffix_known = data_path.split(".")[-1].lower()
+
+        memory = 8 * compression * nx * ny * nz * self._kernel_rows(data_nx, data_ny)
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.ui.memory_label.setText(str(memory))

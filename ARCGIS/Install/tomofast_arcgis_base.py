@@ -28,6 +28,8 @@ class TomofastArcGISBase:
         self.dtm_raster_path = ""
         self.data_df = None
         self.nData = 0
+        self.nData_grav = 0
+        self.nData_magn = 0
         self.global_dataNameGrav = ""
         self.global_dataNameMagn = ""
         self.xcol_grav = ""
@@ -137,6 +139,15 @@ class TomofastArcGISBase:
 
         self.ui.doubleSpinBox_coreDepth._var.trace_add("write", _on_depth_change)
         self.ui.doubleSpinBox_fullDepth._var.trace_add("write", _on_depth_change)
+
+        # Data/model component choices change the size of the sensitivity matrix
+        for _attr in (
+            "comboBox_grav_type", "comboBox_grav_ncomp",
+            "comboBox_magn_ncomp", "comboBox_magn_nmodel",
+        ):
+            getattr(self.ui, _attr)._var.trace_add(
+                "write", lambda *_: self.update_memory_size()
+            )
 
         self.ui.mQgsDoubleSpinBox_compression_ratio._var.trace_add(
             "write", lambda *_: self.update_memory_size()
@@ -294,6 +305,8 @@ class TomofastArcGISBase:
         self.z_by_list = ""
         self.depth_layers = []
         self.nData = 0
+        self.nData_grav = 0
+        self.nData_magn = 0
         self.kernelfiledirectory = ""
 
     # ------------------------------------------------------------------

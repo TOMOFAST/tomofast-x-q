@@ -784,6 +784,7 @@ pv.Render()
             self.ui.mQgsSpinBox_mesh_east,
         ):
             w.setEnabled(True)
+        self.update_memory_size()
 
     # ------------------------------------------------------------------
     def _on_inversion_type_changed(self):
@@ -802,6 +803,8 @@ pv.Render()
         current = self.ui.lineEdit_targetMisfit.text().strip()
         if current in ("", "1e-7", "3", "5"):
             self.ui.lineEdit_targetMisfit.setText(new)
+        # The inversion type changes which datasets contribute to the memory estimate
+        self.update_memory_size()
 
     # ------------------------------------------------------------------
     def enable_boxes(self):

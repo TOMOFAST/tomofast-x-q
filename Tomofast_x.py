@@ -777,6 +777,22 @@ class Tomofast_x:
                     self.update_model_grid_size
                 )
 
+                # The number of data/model components and the inversion type change
+                # the size of the sensitivity matrix
+                for _combo in (
+                    self.dlg.comboBox_grav_type,
+                    self.dlg.comboBox_grav_ncomp,
+                    self.dlg.comboBox_magn_ncomp,
+                    self.dlg.comboBox_magn_nmodel,
+                ):
+                    _combo.currentIndexChanged.connect(self._refresh_memory_estimate)
+                for _radio in (
+                    self.dlg.radioButton_grav_inv,
+                    self.dlg.radioButton_magn_inv,
+                    self.dlg.radioButton_joint_inv,
+                ):
+                    _radio.toggled.connect(self._refresh_memory_estimate)
+
                 self.dlg.mQgsDoubleSpinBox_compression_ratio.valueChanged.connect(
                     self.update_memory_size
                 )
@@ -1520,6 +1536,13 @@ class Tomofast_x:
         if current in ("", self.GRAVITY_TARGET_MISFIT, self.GRADIOMETRY_TARGET_MISFIT, "5"):
             self.dlg.lineEdit_targetMisfit.setText(new)
 
+    def _refresh_memory_estimate(self, *_):
+        """Recompute mesh size, memory and the suggested compression."""
+        try:
+            self.update_model_grid_size()
+        except Exception as e:  # never break the GUI over an estimate
+            print(f"Could not update the memory estimate: {e}")
+
     def _update_component_widgets(self, *_):
         """Plain gravity is always a single component; gradiometry allows 1 or 6."""
         gradiometry = self.dlg.comboBox_grav_type.currentData() == 2
@@ -1936,6 +1959,7 @@ class Tomofast_x:
                     return
                 self.is_2d = True
                 self.profile_line_pts = [(pts[0].x(), pts[0].y()), (pts[1].x(), pts[1].y())]
+                self.update_model_grid_size()  # 2D changes the cell counts and compression
                 for w in (
                     self.dlg.mQgsSpinBox_mesh_south,
                     self.dlg.mQgsSpinBox_mesh_west,
@@ -1951,6 +1975,7 @@ class Tomofast_x:
             else:
                 self.is_2d = False
                 self.profile_line_pts = None
+                self.update_model_grid_size()
                 for w in (
                     self.dlg.mQgsSpinBox_mesh_south,
                     self.dlg.mQgsSpinBox_mesh_west,
@@ -2237,8 +2262,12 @@ class Tomofast_x:
             self.colour_points(result, datacol_grav, "Spectral", True)
             result.triggerRepaint()
             self.nData = result.featureCount()
+            self.nData_grav = self.nData
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
+            # The extent may be unchanged (e.g. a reload), so the spin boxes won't
+            # signal; refresh for the new number of stations explicitly
+            self.update_model_grid_size()
 
         else:
             self.iface.messageBar().pushMessage(
@@ -2274,9 +2303,13 @@ class Tomofast_x:
             self.colour_points(result, datacol_magn, "Spectral", True)
             result.triggerRepaint()
             self.nData = result.featureCount()
+            self.nData_magn = self.nData
 
             # Use the coordinates of the bounding box as limits of mesh (without padding)
             self.data_extents(result)
+            # The extent may be unchanged (e.g. a reload), so the spin boxes won't
+            # signal; refresh for the new number of stations explicitly
+            self.update_model_grid_size()
 
         else:
             self.iface.messageBar().pushMessage(
@@ -3012,10 +3045,20 @@ class Tomofast_x:
         self.iface.mapCanvas().refresh()
 
     def extract_depth_layers(self, z_cell_size_list, z_layer_thickness_list):
-        z_cell_size_list = [float(x) for x in z_cell_size_list.split(",") if x.strip()]
-        z_layer_thickness_list = [
-            float(x) for x in z_layer_thickness_list.split(",") if x.strip()
-        ]
+        def to_floats(text):
+            # Skip entries that don't parse yet (e.g. "5e" while typing) rather
+            # than raising inside the textChanged handler and leaving the
+            # mesh size and memory estimate stale.
+            values = []
+            for x in text.split(","):
+                try:
+                    values.append(float(x))
+                except ValueError:
+                    pass
+            return values
+
+        z_cell_size_list = to_floats(z_cell_size_list)
+        z_layer_thickness_list = to_floats(z_layer_thickness_list)
 
         depth_layers = []
         for cell_size, layer_thick in zip(z_cell_size_list, z_layer_thickness_list):
@@ -3039,7 +3082,8 @@ class Tomofast_x:
         total_layers = 0
         if self.depth_layers:
             for layer in self.depth_layers:
-                total_layers += layer["layer_thick"] / layer["cell_size"]
+                if layer["cell_size"] > 0:
+                    total_layers += layer["layer_thick"] / layer["cell_size"]
 
         self.dz = self.dlg.mQgsSpinBox_mesh_size_z.value()
 
@@ -3645,71 +3689,96 @@ class Tomofast_x:
         self.dlg.nz_label.setText(str(self.data2tomofast.nz))
 
 
+    def _mesh_dimensions(self):
+        """Number of model cells (nx, ny, nz) including padding, and of data
+        cells (data_nx, data_ny) over the mesh extent. Needs setupMesh() first.
+        Handles 2D profile mode, which has a single row of cells in y."""
+        if self.is_2d and self.profile_line_pts:
+            (x1, y1) = self.profile_line_pts[0]
+            (x2, y2) = self.profile_line_pts[1]
+            profile_length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            data_nx = int(profile_length / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = 1
+            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
+            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
+        elif self.is_2d:
+            # profile_line_pts not yet set: fall back to bbox estimate
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = 1
+            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
+            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
+        else:
+            nx = int((self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding)) / self.cell_x) if self.cell_x > 0 else 0
+            ny = int((self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding)) / self.cell_y) if self.cell_y > 0 else 0
+            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
+            data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y) if self.cell_y > 0 else 0
+
+        if self.meshBox["total_layers"] > 0:
+            nz = int(self.meshBox["total_layers"])
+        else:
+            size_z = float(self.dlg.mQgsSpinBox_mesh_size_z.value())
+            core = float(self.dlg.doubleSpinBox_coreDepth.value())
+            full = float(self.dlg.doubleSpinBox_fullDepth.value())
+            ncore = int(core / size_z) if size_z > 0 else 0
+            try:
+                npad = int(np.log((full - core) / size_z) / np.log(1.15))
+            except (ValueError, ZeroDivisionError):
+                npad = 0
+            nz = ncore + npad
+        return nx, ny, nz, data_nx, data_ny
+
     def update_model_grid_size(self):
-        self.setupMesh()
-        if (
-            self.cell_x == 0
-            or self.cell_y == 0
-            or int(self.dlg.mQgsSpinBox_mesh_size_z.value()) == 0
-        ):
-            return
-        nx = int(
-            (self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding))
-            / self.cell_x
-        )
-        ny = int(
-            (self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding))
-            / self.cell_y
-        )
-
-        ncore = int(
-            float(self.dlg.doubleSpinBox_coreDepth.value())
-            / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
-        )
-
+        """Refresh the cell counts, the memory estimate and the suggested
+        compression rate from the current mesh, data and component settings."""
         try:
-            npad = int(
-                np.log(
-                    float(
-                        self.dlg.doubleSpinBox_fullDepth.value()
-                        - float(self.dlg.doubleSpinBox_coreDepth.value())
-                    )
-                    / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
-                )
-                / np.log(1.15)
+            self.setupMesh()
+            if (
+                self.cell_x == 0
+                or self.cell_y == 0
+                or int(self.dlg.mQgsSpinBox_mesh_size_z.value()) == 0
+            ):
+                return
+            nx, ny, nz, data_nx, data_ny = self._mesh_dimensions()
+
+            self.dlg.nx_label.setText(str(nx))
+            self.dlg.ny_label.setText(str(ny))
+            self.dlg.nz_label.setText(str(nz))
+
+            self.update_memory_size()
+            self.update_ideal_compression_ratio(nx * ny * nz)
+        except Exception as e:
+            # Raising inside a Qt slot just leaves the old numbers on screen
+            print(f"Could not update the model size / compression estimate: {e}")
+
+    def _kernel_rows(self, data_nx, data_ny):
+        """Rows of the sensitivity matrix: for each dataset in the inversion,
+        stations x data components x model components (MVI is 3x wider).
+
+        CSV data use the loaded number of stations; raster data, or a csv that
+        has not been loaded yet, are estimated from the mesh extent.
+        """
+        def stations(path_edit, loaded):
+            if path_edit.text().split(".")[-1].lower() == "csv" and loaded:
+                return loaded
+            return data_nx * data_ny
+
+        rows = 0
+        if self.global_experimentType in (1, 3):
+            grav_factor = self.dlg.comboBox_grav_ncomp.currentData() or 1
+            rows += stations(self.dlg.lineEdit_grav_data_path, self.nData_grav) * grav_factor
+        if self.global_experimentType in (2, 3):
+            magn_factor = (self.dlg.comboBox_magn_ncomp.currentData() or 1) * (
+                self.dlg.comboBox_magn_nmodel.currentData() or 1
             )
-        except:
-            npad = 0
-        nz = ncore + npad
+            rows += stations(self.dlg.lineEdit_magn_data_path, self.nData_magn) * magn_factor
+        return rows
 
-        self.dlg.nx_label.setText(str(nx))
-        self.dlg.ny_label.setText(str(ny))
-        self.dlg.nz_label.setText(str(nz))
-
-        data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x)
-        data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y)
-        if self.global_experimentType in {1, 3}:
-            data_path = self.dlg.lineEdit_grav_data_path.text()
-        else:
-            data_path = self.dlg.lineEdit_magn_data_path.text()
-        if data_path.split(".")[-1].lower() == "csv" and getattr(self, "nData", 0):
-            n_data = self.nData
-        else:
-            n_data = data_nx * data_ny
-        self.update_memory_size()
-        self.update_ideal_compression_ratio(nx * ny * nz, n_data)
-
-    def update_ideal_compression_ratio(self, n_cells, n_data):
+    def update_ideal_compression_ratio(self, n_cells):
         # Assumes Haar wavelet
         # From Bruce et al. 2025 in prep.
         # n_cells: number of model cells including padding (nx * ny * nz).
-        # n_data: number of observation points.
-        # Compress when the sensitivity matrix (n_data x n_cells, 8 bytes per
-        # element) would exceed 1 GB, rather than on the model size alone: a
-        # modest model with many data points still gives a large matrix.
-        matrix_gb = 8.0 * n_cells * n_data / (1024.0 ** 3)
-
-        if matrix_gb > 1.0:
+        # The same rule is used in the QGIS and ArcGIS versions.
+        if n_cells > 400000:
             ideal_cr = 35.07 * (0.01**-0.872) * (n_cells ** -0.884)
             val = ideal_cr * 2
             if self.is_2d:
@@ -3727,78 +3796,18 @@ class Tomofast_x:
             compression = self.dlg.mQgsDoubleSpinBox_compression_ratio.value()
         else:
             compression = 1.0
-            
-        if self.is_2d and self.profile_line_pts:
-            (x1, y1) = self.profile_line_pts[0]
-            (x2, y2) = self.profile_line_pts[1]
-            profile_length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-            data_nx = int(profile_length / self.cell_x) if self.cell_x > 0 else 0
-            data_ny = 1
-            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
-            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
-        elif self.is_2d:
-            # profile_line_pts not yet set — fall back to bbox estimate
-            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
-            data_ny = 1
-            nx = data_nx + int(2 * self.padding / self.cell_x) if self.cell_x > 0 else 0
-            ny = 1 + int(2 * self.padding / self.cell_y) if self.cell_y > 0 else 0
-        else:
-            nx = int((self.meshBox["east"] - self.meshBox["west"] + (2 * self.padding)) / self.cell_x) if self.cell_x > 0 else 0
-            ny = int((self.meshBox["north"] - self.meshBox["south"] + (2 * self.padding)) / self.cell_y) if self.cell_y > 0 else 0
-            data_nx = int((self.meshBox["east"] - self.meshBox["west"]) / self.cell_x) if self.cell_x > 0 else 0
-            data_ny = int((self.meshBox["north"] - self.meshBox["south"]) / self.cell_y) if self.cell_y > 0 else 0
 
-        if self.meshBox["total_layers"] > 0:
-            nz = int(self.meshBox["total_layers"])
-        else:
-            ncore = int(
-                float(self.dlg.doubleSpinBox_coreDepth.value())
-                / float(self.dlg.mQgsSpinBox_mesh_size_z.value())
-            )
+        nx, ny, nz, data_nx, data_ny = self._mesh_dimensions()
 
-            try:
-                npad = int(
-                    np.log(
-                        float(
-                            self.dlg.doubleSpinBox_fullDepth.value()
-                            - float(self.dlg.doubleSpinBox_coreDepth.value())
-                        )
-                        / (float(self.dlg.mQgsSpinBox_mesh_size_z.value()))
-                    )
-                    / np.log(1.15)
-                )
-            except:
-                npad = 0
-            nz = ncore + npad
-
-        # if not self.suffix_known:
-        # Determine which input path to use based on experiment type
-        if self.global_experimentType in {1, 3}:
-            data_path = self.dlg.lineEdit_grav_data_path.text()
-        else:
-            data_path = self.dlg.lineEdit_magn_data_path.text()
-
-        # Extract suffix and store it
-        suffix = data_path.split(".")[-1].lower()
-        self.suffix_known = suffix
-
-        if self.suffix_known != "csv":
-            local_nData = data_nx * data_ny
-        else:
-            local_nData = self.nData
-        # Kernel size scales with the number of data components and, for the
-        # magnetic problem, the number of model components (MVI)
-        grav_factor = self.dlg.comboBox_grav_ncomp.currentData() or 1
-        magn_factor = (self.dlg.comboBox_magn_ncomp.currentData() or 1) * (
-            self.dlg.comboBox_magn_nmodel.currentData() or 1
+        # Remember the data suffix of the active dataset (used elsewhere)
+        data_path = (
+            self.dlg.lineEdit_grav_data_path.text()
+            if self.global_experimentType in {1, 3}
+            else self.dlg.lineEdit_magn_data_path.text()
         )
-        if self.global_experimentType == 1:
-            factor = grav_factor
-        elif self.global_experimentType == 2:
-            factor = magn_factor
-        else:
-            factor = grav_factor + magn_factor
-        memory = 8 * compression * nx * ny * nz * local_nData * factor
+        self.suffix_known = data_path.split(".")[-1].lower()
+
+        memory = 8 * compression * nx * ny * nz * self._kernel_rows(data_nx, data_ny)
 
         memory = round(memory / (1024 * 1024 * 1024), 3)
         self.dlg.memory_label.setText(str(memory))
@@ -5002,6 +5011,7 @@ pv.Render()
             self.dlg.mQgsSpinBox_mesh_east,
         ):
             w.setEnabled(True)
+        self.update_memory_size()
 
     # update gui
     def enable_boxes(self):
@@ -5510,6 +5520,8 @@ pv.Render()
         self.z_by_list = ""
         self.depth_layers = []
         self.nData = 0
+        self.nData_grav = 0
+        self.nData_magn = 0
         #self.tomo_Path = ""
         self.paramfile_Path = ""
         self.kernelfiledirectory = ""

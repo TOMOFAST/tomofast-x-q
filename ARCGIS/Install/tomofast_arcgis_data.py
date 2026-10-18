@@ -348,9 +348,13 @@ class DataMixin:
                 df[xcol_grav].values, df[ycol_grav].values
             )
             self.nData = len(df)
+            self.nData_grav = self.nData
             self.data_extents(
                 float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys))
             )
+            # The extent may be unchanged (e.g. a reload), so the spin boxes won't
+            # trigger an update; refresh for the new number of stations explicitly
+            self.update_model_grid_size()
         except Exception as e:
             self.show_message(f"Could not load grav data: {e}", level="warning")
 
@@ -363,9 +367,13 @@ class DataMixin:
             )
             xs, ys = transformer.transform(df[xcol].values, df[ycol].values)
             self.nData = len(df)
+            self.nData_magn = self.nData
             self.data_extents(
                 float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys))
             )
+            # The extent may be unchanged (e.g. a reload), so the spin boxes won't
+            # trigger an update; refresh for the new number of stations explicitly
+            self.update_model_grid_size()
         except Exception as e:
             self.show_message(f"Could not load magn data: {e}", level="warning")
 
@@ -528,6 +536,7 @@ class DataMixin:
             self.show_message(
                 "2D profile mode: mesh will be oriented along the profile line"
             )
+            self.update_model_grid_size()  # 2D changes the cell counts and compression
         else:
             self.is_2d = False
             self.profile_line_pts = None
