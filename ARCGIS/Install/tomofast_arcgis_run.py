@@ -3,6 +3,7 @@ import os
 import sys
 import re
 import shutil
+import signal
 import platform
 import subprocess
 import tkinter as tk
@@ -14,6 +15,9 @@ class RunMixin:
     def _poll_debug_log(self):
         if not self._debug_polling_active:
             return
+        ended = self._process is not None and self._process.poll() is not None
+        if ended:
+            self.ui.pushButton_cancel_inversion.setEnabled(False)
         if self._debug_log_path and os.path.exists(self._debug_log_path):
             try:
                 with open(self._debug_log_path, "r", errors="replace") as fh:
@@ -25,11 +29,73 @@ class RunMixin:
                         self.ui.textEdit_inversion_log.moveCursor(None)
                         if "THE END." in new_text:
                             self._debug_polling_active = False
+                            self.ui.pushButton_cancel_inversion.setEnabled(False)
                             self._check_inversion_results()
                             return
             except Exception:
                 pass
+        if ended:
+            # The job has finished without printing THE END. (usually a crash):
+            # say so, since the exit code is the only clue
+            self._debug_polling_active = False
+            self._report_process_exit()
+            return
         self.ui.root.after(500, self._poll_debug_log)
+
+    # ------------------------------------------------------------------
+    def _report_process_exit(self):
+        if self._exit_reported or self._process is None:
+            return
+        self._exit_reported = True
+        code = self._process.returncode
+        log = self.ui.textEdit_inversion_log
+        log.insertPlainText(f"\n*** Process ended (exit code {code}) ***\n")
+        if code in (0xC00000FD, -1073741571):
+            log.insertPlainText(
+                "Stack overflow in tomofastx.exe (its default stack is only 2 MB, "
+                "too small for large problems such as MVI).\n"
+                "Fix: python scripts/set_exe_stack.py <path to tomofastx.exe> "
+                "(in the plugin folder), or relink with gfortran -Wl,--stack,536870912\n"
+            )
+        log.moveCursor(None)
+
+    # ------------------------------------------------------------------
+    def cancel_inversion(self):
+        """Kill the running tomofast job (and any child processes)."""
+        process = self._process
+        if process is None or process.poll() is not None:
+            self.ui.pushButton_cancel_inversion.setEnabled(False)
+            return
+        try:
+            if platform.system() == "Windows":
+                # /T kills the whole process tree, /F forces it
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                    creationflags=0x08000000,  # CREATE_NO_WINDOW
+                    check=False,
+                )
+                if self._wsl_distro.strip() and self._wsl_param_path:
+                    # Killing wsl.exe does not stop the Linux-side job. Match only
+                    # processes whose command line contains this job's (unique)
+                    # parfile path, so other tomofast runs are left alone.
+                    subprocess.run(
+                        ["wsl", "-d", self._wsl_distro.strip(), "--exec",
+                         "pkill", "-f", "--", re.escape(self._wsl_param_path)],
+                        creationflags=0x08000000,
+                        check=False,
+                    )
+            else:
+                # Job was started in its own session/process group
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        except Exception as e:
+            print(f"Could not cancel the inversion: {e}")
+            return
+        self._debug_polling_active = False
+        self._exit_reported = True
+        self.ui.textEdit_inversion_log.insertPlainText("\n*** Inversion cancelled by user ***\n")
+        self.ui.textEdit_inversion_log.moveCursor(None)
+        self.ui.pushButton_cancel_inversion.setEnabled(False)
+        self.show_message("Inversion cancelled")
 
     # ------------------------------------------------------------------
     def _log_colored(self, text, color, bold=False):
@@ -56,7 +122,10 @@ class RunMixin:
                         stripped.startswith("global.outputFolderPath")
                         and "=" in stripped
                     ):
-                        return stripped.split("=", 1)[1].strip()
+                        return self._resolve_param_path(
+                            stripped.split("=", 1)[1].strip(),
+                            os.path.dirname(os.path.abspath(self.paramfile_Path)),
+                        )
         except Exception:
             pass
         return ""
@@ -145,6 +214,8 @@ class RunMixin:
                     pass
         if last_rmse is None:
             ok("Data RMSE check skipped (not found in log)")
+        elif self.forward_data_grav_type != 1 and self.global_experimentType in (1, 3):
+            ok("Data RMSE check skipped (gradiometry data has different units)")
         elif last_rmse < 4e-7 and self.global_experimentType in (1, 3):
             warn(
                 f"Possible overfitting of data (data RMSE = {last_rmse:.4g})\n"
@@ -223,6 +294,9 @@ class RunMixin:
                         pass
             if last_min is None:
                 ok("Mag sus range check skipped (min/max not found in log)")
+            elif self.modelGrid_magn_nModelComponents != 1:
+                # MVI solves for magnetisation, not susceptibility, so the limit doesn't apply
+                ok(f"MVI magnetisation range (min={last_min:.4g}, max={last_max:.4g}); susceptibility scaling check not applied")
             elif abs(last_min) > 1 or abs(last_max) > 1:
                 warn(
                     f"Check magnetic susceptibility unit scaling "
@@ -269,6 +343,12 @@ class RunMixin:
                     pass
 
                 self._debug_log_pos = 0
+                self._exit_reported = False
+                self._process = process
+                self._wsl_distro = (
+                    distro if platform.system() == "Windows" and not use_native_windows else ""
+                )
+                self.ui.pushButton_cancel_inversion.setEnabled(True)
                 self.ui.textEdit_inversion_log.clear()
                 self._debug_polling_active = True
                 self.ui.root.after(500, self._poll_debug_log)
@@ -281,9 +361,7 @@ class RunMixin:
                     tpfile.write(distro + "\n")
                     tpfile.write("\n")
                     tpfile.write(mpi_path + "\n")
-                    tpfile.write(
-                        self.ui.lineEdit_setvarsPath.text().strip() + "\n"
-                    )
+                    tpfile.write("\n")  # legacy setvars line, kept for file layout
                     tpfile.write(("1" if use_native_windows else "0") + "\n")
                     tpfile.write(str(noProc) + "\n")
 
@@ -293,6 +371,9 @@ class RunMixin:
                 )
             except Exception as e:
                 print(f"An error occurred: {e}")
+                self.show_message(
+                    "Could not start the inversion", str(e), level="warning"
+                )
         else:
             self.show_message(
                 "Paths to tomofastx and paramfile must be defined", level="warning"
@@ -300,54 +381,53 @@ class RunMixin:
 
     # ------------------------------------------------------------------
     def _run_windows_native(self, noProc):
-        tomo_path = self._validate_path(self.tomo_Path)
-        param_path = self._validate_path(self.paramfile_Path)
-        mpiexec_path = (
-            self._validate_path(
-                self.ui.lineEdit_2_mpirunPath_2.text().strip()
-            )
-            if hasattr(self.ui, "lineEdit_2_mpirunPath_2")
-            else r"C:\Program Files (x86)\Intel\oneAPI\mpi\2021.17\bin\mpiexec.exe"
-        )
-        oneapi_path = self._validate_path(
-            self.ui.lineEdit_setvarsPath.text().strip()
-        )
+        """Launch the MPI-free native Windows executable directly (no console window)."""
+        tomo_path = os.path.normpath(self.tomo_Path)
+        param_path = os.path.normpath(self.paramfile_Path)
         distro = " "
 
-        debug_path = param_path.replace('"', "") + "_debug.txt"
-        oneapi_path_bat = oneapi_path.replace("/", "\\")
-        tomo_path_bat = tomo_path.replace("/", "\\")
-        param_path_bat = param_path.replace("/", "\\")
-        debug_path_bat = debug_path.replace("/", "\\")
+        debug_path = param_path + "_debug.txt"
 
-        if noProc == 1:
-            run_command = f'"{tomo_path_bat}" -p "{param_path_bat}"'
-        else:
-            run_command = (
-                f'"{mpiexec_path}" -n {noProc} "{tomo_path_bat}" -p "{param_path_bat}"'
-            )
-
-        batch_content = (
-            f'@echo off\nsetlocal\n\ncall "{oneapi_path_bat}"\n'
-            f'if errorlevel 1 (\n    exit /b 1\n)\n\n'
-            f'set GFORTRAN_UNBUFFERED_ALL=y\nset FORT_BUFFERED=false\n'
-            f'if not defined OMP_STACKSIZE set OMP_STACKSIZE=512M\n'
-            f'{run_command} > "{debug_path_bat}" 2>&1\n\nendlocal\n'
-        )
-        batch_file_path = os.path.join(
-            os.path.dirname(self.paramfile_Path), "run_tomofastx.bat"
-        )
-        with open(batch_file_path, "w") as batch_file:
-            batch_file.write(batch_content)
+        # The exe shells out to Unix `cp` to archive the parfile in the output
+        # folder, which fails on Windows, so do the copy here instead.
+        out_dir = self._get_output_dir_from_parfile()
+        if out_dir and os.path.isdir(out_dir):
+            try:
+                shutil.copyfile(
+                    param_path, os.path.join(out_dir, os.path.basename(param_path))
+                )
+            except Exception as e:
+                print(f"Could not copy parfile to output folder: {e}")
 
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         CREATE_NO_WINDOW = 0x08000000
-        process = subprocess.Popen(
-            [batch_file_path],
-            shell=False,
-            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
-        )
-        return process, distro, mpiexec_path
+        # Redirect stdout/stderr to the debug log, which the GUI tails.
+        # OpenMP build: thread count is set through OMP_NUM_THREADS
+        env = os.environ.copy()
+        env["OMP_NUM_THREADS"] = str(noProc)
+        # Worker threads default to a small stack (a few MB), which the larger
+        # MVI / gradiometry problems overflow (exit code 0xC00000FD). Honoured by
+        # both gfortran (libgomp) and Intel (libiomp) OpenMP runtimes.
+        env.setdefault("OMP_STACKSIZE", "512M")
+        # stdout is a file, so Fortran runtimes buffer it by default; force
+        # unbuffered output so the GUI can tail the log live.
+        env["GFORTRAN_UNBUFFERED_ALL"] = "y"  # gfortran
+        env["FORT_BUFFERED"] = "false"        # Intel ifort/ifx
+
+        debug_file = open(debug_path, "w")
+        try:
+            process = subprocess.Popen(
+                [tomo_path, "-p", param_path],
+                shell=False,
+                env=env,
+                stdout=debug_file,
+                stderr=subprocess.STDOUT,
+                cwd=os.path.dirname(param_path),
+                creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
+            )
+        finally:
+            debug_file.close()
+        return process, distro, ""
 
     # ------------------------------------------------------------------
     def _run_windows_wsl(self, noProc):
@@ -374,20 +454,26 @@ class RunMixin:
         wsl_tomo_path = self.tomo_Path.replace(wsl_path, "")
         mpirun_path = " mpirun "
         wsl_param_path = wsl_param_path.replace('"', "")
+        self._wsl_param_path = wsl_param_path
         wsl_debug_path = wsl_param_path + "_debug.txt"
+        # Relative paths in the parameter file are relative to its folder
+        wsl_param_dir = wsl_param_path.rsplit("/", 1)[0] or "/"
 
         if noProc == 1:
             base_command = (
-                f"'{wsl_tomo_path}' -p '{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
+                f"cd '{wsl_param_dir}' && '{wsl_tomo_path}' -p '{wsl_param_path}' "
+                f"2>&1 | tee '{wsl_debug_path}'"
             )
         else:
             base_command = (
-                f"{mpirun_path} -np {noProc} '{wsl_tomo_path}' -j "
+                f"cd '{wsl_param_dir}' && {mpirun_path} -np {noProc} '{wsl_tomo_path}' -j "
                 f"'{wsl_param_path}' 2>&1 | tee '{wsl_debug_path}'"
             )
 
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         CREATE_NO_WINDOW = 0x08000000
+        # bash -l so the login profile is sourced, giving the same PATH as an
+        # interactive WSL terminal (mpirun etc.)
         process = subprocess.Popen(
             ["wsl", "-d", distro, "bash", "-l", "-c", base_command],
             shell=False,
@@ -396,89 +482,57 @@ class RunMixin:
         return process, distro, mpirun_path
 
     # ------------------------------------------------------------------
+    def _run_unix(self, noProc):
+        """Launch the inversion on macOS or Linux."""
+        tomo_path = self._validate_path(self.tomo_Path)
+        param_path = self._validate_path(self.paramfile_Path)
+        mpirun_path = self._validate_path(
+            self.ui.lineEdit_2_mpirunPath_2.text().strip()
+        )
+        distro = " "
+        debug_path = param_path.replace('"', "") + "_debug.txt"
+
+        print("noProc - ", noProc)
+        print("tomo_path - ", tomo_path)
+        print("param_path - ", param_path)
+        print("debug_path - ", debug_path)
+        print("mpirun_path - ", mpirun_path)
+
+        if noProc == 1:
+            command = (
+                f"'{tomo_path}' -p '{param_path}' 2>&1 | tee '{debug_path}'"
+            )
+        else:
+            command = (
+                f"{mpirun_path} -np {noProc} '{tomo_path}' -j '{param_path}' "
+                f"2>&1 | tee '{debug_path}'"
+            )
+
+        print("command: ", command)
+        kwargs = (
+            {"preexec_fn": os.setsid}
+            if sys.version_info < (3, 2)
+            else {"start_new_session": True}
+        )
+        process = subprocess.Popen(
+            command,
+            shell=True,  # nosec B602
+            env=os.environ.copy(),
+            # relative paths in the parameter file are relative to its folder
+            cwd=os.path.dirname(os.path.abspath(self.paramfile_Path)),
+            **kwargs,
+        )
+        return process, distro, mpirun_path
+
     def _run_macos(self, noProc):
-        tomo_path = self._validate_path(self.tomo_Path)
-        param_path = self._validate_path(self.paramfile_Path)
-        mpirun_path = self._validate_path(
-            self.ui.lineEdit_2_mpirunPath_2.text().strip()
-        )
-        distro = " "
-        debug_path = param_path.replace('"', "") + "_debug.txt"
+        return self._run_unix(noProc)
 
-        print("noProc - ", noProc)
-        print("tomo_path - ", tomo_path)
-        print("param_path - ", param_path)
-        print("debug_path - ", debug_path)
-        print("mpirun_path - ", mpirun_path)
-
-        if noProc == 1:
-            command = (
-                f"'{tomo_path}' -p '{param_path}' 2>&1 | tee '{debug_path}'"
-            )
-        else:
-            command = (
-                f"{mpirun_path} -np {noProc} '{tomo_path}' -j '{param_path}' "
-                f"2>&1 | tee '{debug_path}'"
-            )
-
-        print("command: ", command)
-        kwargs = (
-            {"preexec_fn": os.setsid}
-            if sys.version_info < (3, 2)
-            else {"start_new_session": True}
-        )
-        process = subprocess.Popen(
-            command,
-            shell=True,  # nosec B602
-            env=os.environ.copy(),
-            **kwargs,
-        )
-        return process, distro, mpirun_path
-
-    # ------------------------------------------------------------------
     def _run_linux(self, noProc):
-        tomo_path = self._validate_path(self.tomo_Path)
-        param_path = self._validate_path(self.paramfile_Path)
-        mpirun_path = self._validate_path(
-            self.ui.lineEdit_2_mpirunPath_2.text().strip()
-        )
-        distro = " "
-        debug_path = param_path.replace('"', "") + "_debug.txt"
-
-        print("noProc - ", noProc)
-        print("tomo_path - ", tomo_path)
-        print("param_path - ", param_path)
-        print("debug_path - ", debug_path)
-        print("mpirun_path - ", mpirun_path)
-
-        if noProc == 1:
-            command = (
-                f"'{tomo_path}' -p '{param_path}' 2>&1 | tee '{debug_path}'"
-            )
-        else:
-            command = (
-                f"{mpirun_path} -np {noProc} '{tomo_path}' -j '{param_path}' "
-                f"2>&1 | tee '{debug_path}'"
-            )
-
-        print("command: ", command)
-        kwargs = (
-            {"preexec_fn": os.setsid}
-            if sys.version_info < (3, 2)
-            else {"start_new_session": True}
-        )
-        process = subprocess.Popen(
-            command,
-            shell=True,  # nosec B602
-            env=os.environ.copy(),
-            **kwargs,
-        )
-        return process, distro, mpirun_path
+        return self._run_unix(noProc)
 
     # ------------------------------------------------------------------
     def _update_run_controls(self):
         is_windows = platform.system() == "Windows"
-        native = is_windows and self.ui.radioButton_windowsNative.isChecked()
         wsl = is_windows and self.ui.radioButton_windowsWSL.isChecked()
 
         for w in (self.ui.radioButton_windowsNative, self.ui.radioButton_windowsWSL):
@@ -489,12 +543,13 @@ class RunMixin:
             self.ui.lineEdit_pre_command_2_WSL_Distro,
         ):
             w.setEnabled(wsl)
-        for w in (
-            self.ui.label_setvars_path,
-            self.ui.lineEdit_setvarsPath,
-            self.ui.pushButton_select_setvars,
-        ):
-            w.setEnabled(native)
+
+        # mpirun path is only needed on macOS/Linux; the native Windows exe needs no MPI
+        for w in getattr(self.ui, "_mpirun_widgets", ()):
+            if is_windows:
+                w.grid_remove()
+            else:
+                w.grid()
 
     # ------------------------------------------------------------------
     def select_tomo_Path(self):
@@ -520,15 +575,6 @@ class RunMixin:
         )
         if os.path.exists(self.mpi_runexec_path) and self.mpi_runexec_path != "":
             self.ui.lineEdit_2_mpirunPath_2.setText(self.mpi_runexec_path)
-
-    def select_setvars_path(self):
-        from tkinter import filedialog
-        self.setvars_Path = filedialog.askopenfilename(
-            title="Select setvars.bat",
-            filetypes=[("BAT", "*.bat *.BAT")],
-        )
-        if os.path.exists(self.setvars_Path) and self.setvars_Path != "":
-            self.ui.lineEdit_setvarsPath.setText(self.setvars_Path)
 
     def select_kernel_path(self):
         from tkinter import filedialog

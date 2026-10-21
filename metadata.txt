@@ -7,7 +7,7 @@ name=tomofast_x_q
 qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
 description=Supports Tomofast-x geophysical inversion code
-version=0.2.19
+version=0.2.20
 
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
@@ -22,7 +22,13 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.19
+changelog=0.2.20
+    * ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns
+    * ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links
+    * Memory estimate and suggested compression rate now refresh reliably (component dropdowns, inversion type, 2D profile, loaded stations, reset) and use the same padded mesh and rule in QGIS and ArcGIS
+    * Suggested compression rate varies continuously with mesh size (no 400,000-cell cutoff), so refining the mesh no longer lowers the estimated memory
+    * First tab fonts made consistent with the second tab; URLs on the Run Inversion tab are clickable
+    0.2.19
     * Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data
     * Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components
     * Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name

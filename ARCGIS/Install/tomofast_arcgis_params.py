@@ -20,6 +20,28 @@ class ParamsMixin:
         )
 
     # ------------------------------------------------------------------
+    def _param_path(self, path):
+        """Path as written into the parameter file: relative to the parameter
+        file's own folder (the output folder) when it lies inside it, so the
+        folder can be moved, zipped or run from WSL; otherwise left absolute.
+        Tomofast-x resolves relative paths against its working directory,
+        which the run commands set to the parameter file's folder."""
+        base = os.path.normpath(self.global_outputFolderPath)
+        full = os.path.normpath(path)
+        try:
+            if os.path.commonpath([base, full]) == base and full != base:
+                return os.path.relpath(full, base).replace("\\", "/")
+        except ValueError:  # different drives
+            pass
+        return path
+
+    def _resolve_param_path(self, path, param_dir):
+        """Inverse of _param_path: absolute path for a value read from a
+        parameter file (relative values are relative to its folder)."""
+        if not path or os.path.isabs(path):
+            return path
+        return os.path.normpath(os.path.join(param_dir, path)).replace("\\", "/")
+
     def save_parameter_file(self):
         self.parse_parameters()
 
@@ -32,7 +54,7 @@ class ParamsMixin:
         self.spacer("GLOBAL")
         self.f_params.write(
             "global.outputFolderPath             = {}\n".format(
-                self.global_outputFolderPath + "/OUTPUT"
+                self._param_path(self.global_outputFolderPath + "/OUTPUT")
             )
         )
         if not self.global_description:
@@ -98,13 +120,13 @@ class ParamsMixin:
         if self.global_experimentType in (1, 3):
             self.f_params.write(
                 "modelGrid.grav.file                 = {}\n".format(
-                    self.global_outputFolderPath + "/model_grid.txt"
+                    self._param_path(self.global_outputFolderPath + "/model_grid.txt")
                 )
             )
         if self.global_experimentType in (2, 3):
             self.f_params.write(
                 "modelGrid.magn.file                 = {}\n".format(
-                    self.global_outputFolderPath + "/model_grid.txt"
+                    self._param_path(self.global_outputFolderPath + "/model_grid.txt")
                 )
             )
             # Only written for MVI so files for scalar runs are unchanged
@@ -157,7 +179,7 @@ class ParamsMixin:
             )
             self.f_params.write(
                 "forward.data.grav.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_grav.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_grav.csv")
                 )
             )
             # Gradiometry settings are only written when non-default
@@ -182,7 +204,7 @@ class ParamsMixin:
             )
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_magn.csv")
                 )
             )
             if self.forward_data_magn_nDataComponents != 1:
@@ -194,7 +216,7 @@ class ParamsMixin:
         else:
             self.f_params.write(
                 "forward.data.magn.dataGridFile      = {}\n".format(
-                    self.global_outputFolderPath + "/data_magn_topo.csv"
+                    self._param_path(self.global_outputFolderPath + "/data_magn_topo.csv")
                 )
             )
 
@@ -226,13 +248,13 @@ class ParamsMixin:
         if self.sensit_readFromFiles == 0:
             self.f_params.write(
                 "sensit.folderPath                   = {}\n".format(
-                    self.global_outputFolderPath + "/OUTPUT/SENSIT/"
+                    self._param_path(self.global_outputFolderPath + "/OUTPUT/SENSIT") + "/"
                 )
             )
         else:
             self.f_params.write(
                 "sensit.folderPath                   = {}\n".format(
-                    self.kernelfiledirectory + "/"
+                    self._param_path(self.kernelfiledirectory) + "/"
                 )
             )
 
@@ -543,7 +565,7 @@ pv.Render()
             1 if self.ui.checkBox_read_sens_matrix.isChecked() else 0
         )
         self.forward_matrixCompression_type = (
-            1 if self.ui.checkBox_use_compression.isChecked() else 2
+            1 if self.ui.checkBox_use_compression.isChecked() else 0
         )
         self.forward_matrixCompression_rate = (
             self.ui.mQgsDoubleSpinBox_compression_ratio.value()
@@ -667,6 +689,12 @@ pv.Render()
             if pkey in self.d_params:
                 if len(pls) == 2:
                     pval = pls[1].strip()
+
+                    # Relative paths in a parameter file are relative to its folder
+                    if pkey == "global.outputFolderPath":
+                        pval = self._resolve_param_path(
+                            pval, os.path.dirname(os.path.abspath(self.parfilename))
+                        )
                     if self.d_params[pkey][-2] == float and "d" in pval:
                         pval = pval.replace("d", "e")
 
@@ -1001,9 +1029,16 @@ pv.Render()
         else:
             codes = ["grav", "mag"]
 
+        # Output folder named in the parameter file (OUTPUT for files written
+        # by this plugin, but e.g. OUTPUT_magn / OUTPUT_grav / OUTPUT_joint
+        # for files exported from Noddy).
+        output_dir = self._get_output_dir_from_parfile() or os.path.join(
+            paramfile_Dir, "OUTPUT"
+        )
+
         for code in codes:
             filename_model_final = os.path.join(
-                paramfile_Dir, "OUTPUT/model/" + code + "_final_model_full.txt"
+                output_dir, "model", code + "_final_model_full.txt"
             )
             if not os.path.exists(filename_model_final):
                 self.show_message(
@@ -1013,7 +1048,7 @@ pv.Render()
                 continue
 
             filename_model_csv = os.path.join(
-                paramfile_Dir, "OUTPUT/" + code + "_final_model3D_full.csv"
+                output_dir, code + "_final_model3D_full.csv"
             )
             model_grid = np.loadtxt(
                 filename_model_grid, dtype=float,
@@ -1034,10 +1069,20 @@ pv.Render()
             positions[:, 2] = (model_grid[:, 4] + model_grid[:, 5]) / 2.0
             positions[:, 2] = -positions[:, 2]
 
+            # Scalar models have one value per cell; MVI models have one column per
+            # magnetisation component (Mx, My, Mz).
+            n_values = 1 if model_values.ndim == 1 else model_values.shape[1]
+            if n_values == 1:
+                value_header = "data"
+            elif n_values == 3:
+                value_header = "Mx,My,Mz"
+            else:
+                value_header = ",".join(f"data_{i + 1}" for i in range(n_values))
+
             combined = np.column_stack((positions, model_values))
             np.savetxt(
                 filename_model_csv, combined, delimiter=",",
-                header="x,y,z,data", comments="", fmt="%.6f",
+                header="x,y,z," + value_header, comments="", fmt="%.6f",
             )
             self.show_message(
                 f"Model saved as {code}_final_model3D_full.csv in the OUTPUT directory"

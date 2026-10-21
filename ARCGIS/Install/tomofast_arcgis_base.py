@@ -43,6 +43,10 @@ class TomofastArcGISBase:
         self.parfilename = ""
         self.kernelfiledirectory = ""
         self._debug_polling_active = False
+        self._process = None
+        self._exit_reported = False
+        self._wsl_distro = ""
+        self._wsl_param_path = ""
         self._debug_log_path = ""
         self._debug_log_pos = 0
         self.initialise_variables()
@@ -89,10 +93,11 @@ class TomofastArcGISBase:
         self.ui.pushButton_select_mpirun_mipexec.configure(
             command=self.select_mpirunexec_path
         )
-        self.ui.pushButton_select_setvars.configure(command=self.select_setvars_path)
         self.ui.pushButton_3_visualise.configure(command=self.visualise_output)
         self.ui.pushButton_kernel_path_select.configure(command=self.select_kernel_path)
         self.ui.pushButton_3_runInversion.configure(command=self.run_inversion)
+        self.ui.pushButton_cancel_inversion.setEnabled(False)
+        self.ui.pushButton_cancel_inversion.configure(command=self.cancel_inversion)
         self.ui.pushButton_3_Export.configure(command=self.export_model)
         self.ui.pushButton_plugin_manual.configure(
             command=lambda: webbrowser.open(
@@ -195,9 +200,7 @@ class TomofastArcGISBase:
                 line = tpfile.readline()
                 self.ui.lineEdit_2_mpirunPath_2.setText(line.rstrip())
 
-                line = tpfile.readline()
-                self.ui.lineEdit_setvarsPath.setText(line.rstrip())
-                self.setvars_Path = line.rstrip()
+                tpfile.readline()  # legacy setvars line, unused
 
                 line = tpfile.readline().rstrip()
                 if line in ("0", "1"):
@@ -301,7 +304,6 @@ class TomofastArcGISBase:
         self.global_magn_sensor_height = 0
         self.paramfile_Path = ""
         self.suffix_known = False
-        self.setvars_Path = ""
         self.z_by_list = ""
         self.depth_layers = []
         self.nData = 0
@@ -668,7 +670,90 @@ class TomofastArcGISBase:
         pass
 
     def define_tips(self):
-        pass
+        """Attach the same tooltips as the QGIS plugin to the widgets that exist here."""
+        from tomofast_help import TOOLTIPS
+        for name, text in TOOLTIPS.items():
+            setter = getattr(getattr(self.ui, name, None), "setToolTip", None)
+            if setter is not None:
+                setter(text)
 
     def visualise_output(self):
-        pass
+        """Show the final model slices with PyVista (same display as the QGIS plugin)."""
+        from viz import display_voxet_files_clipped_qgis, core_bounds_from_model_grid
+
+        paramPath = self.paramfile_Path
+        path = os.path.dirname(paramPath)
+        if not paramPath or not os.path.exists(paramPath):
+            self.show_message("Select a parameter file first", level="warning")
+            return
+        param_dir = os.path.dirname(os.path.abspath(paramPath))
+
+        experimentType = None
+        output_folder = None
+        with open(paramPath, "r", encoding="utf-8") as file:
+            contents = file.readlines()
+        for line in contents:
+            if "global.experimentType" in line and experimentType is None:
+                experimentType = line.split("=")[1].strip()
+            elif line.strip().startswith("global.outputFolderPath"):
+                output_folder = line.split("=", 1)[1].strip()
+
+        # Parameter files not written by this plugin (e.g. exported from Noddy)
+        # have no experimentType comment: infer it from the problems they define.
+        if experimentType is None:
+            text = "".join(contents)
+            has_grav = "modelGrid.grav.file" in text
+            has_magn = "modelGrid.magn.file" in text
+            if has_grav and has_magn:
+                experimentType = "3"
+            elif has_magn:
+                experimentType = "2"
+            else:
+                experimentType = "1"
+
+        # Use the output folder the file itself names (relative to the parameter
+        # file); the plugin's own files always use <folder>/OUTPUT.
+        if output_folder:
+            output_folder = self._resolve_param_path(output_folder, param_dir)
+            paraview_dir = output_folder.rstrip("/\\") + "/Paraview/"
+        else:
+            paraview_dir = path + "/OUTPUT/Paraview/"
+
+        # Core (unbuffered) X/Y extent, so padding cells are ignored in the
+        # display and in the colour-range calculation.
+        model_grid_file = None
+        for line in contents:
+            stripped = line.strip()
+            if stripped.startswith(("modelGrid.grav.file", "modelGrid.magn.file")):
+                candidate = self._resolve_param_path(
+                    stripped.split("=", 1)[1].strip(), param_dir
+                )
+                if os.path.exists(candidate):
+                    model_grid_file = candidate
+                    break
+        if model_grid_file is None and os.path.exists(os.path.join(path, "model_grid.txt")):
+            model_grid_file = os.path.join(path, "model_grid.txt")
+        core_bounds = (
+            core_bounds_from_model_grid(model_grid_file) if model_grid_file else None
+        )
+
+        prefixes = []
+        if experimentType in ("1", "3"):
+            prefixes.append("grav")
+        if experimentType in ("2", "3"):
+            prefixes.append("mag")
+        # Gravity and magnetic models have different units, so each is shown in
+        # its own window with its own colour range.
+        for prefix in prefixes:
+            if self.is_2d:
+                # 2D profile inversion: just the single y slice
+                files = [paraview_dir + f"{prefix}_final_model3D_half_y.vtk"]
+            else:
+                files = [
+                    paraview_dir + f"{prefix}_final_model3D_half_{axis}.vtk"
+                    for axis in ("x", "y", "z")
+                ]
+            display_voxet_files_clipped_qgis(
+                files, clip_percentile=95, cmap="jet", opacity=1.0,
+                show_edges=False, core_bounds=core_bounds,
+            )

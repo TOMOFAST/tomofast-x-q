@@ -12,6 +12,70 @@ import platform
 # Widget proxy classes — expose Qt-style API on top of tkinter variables
 # ---------------------------------------------------------------------------
 
+class _ToolTip:
+    """Hover tooltip for a tk widget: appears after a short delay, hides on leave/click."""
+
+    def __init__(self, widget, text, delay=500, wrap=480):
+        self.widget = widget
+        self.text = text
+        self.delay = delay
+        self.wrap = wrap
+        self._after = None
+        self._tip = None
+        widget.bind("<Enter>", self._schedule, add="+")
+        widget.bind("<Leave>", self._hide, add="+")
+        widget.bind("<ButtonPress>", self._hide, add="+")
+
+    def _schedule(self, _event=None):
+        self._hide()
+        self._after = self.widget.after(self.delay, self._show)
+
+    def _show(self):
+        self._after = None
+        if self._tip is not None or not self.text:
+            return
+        tip = tk.Toplevel(self.widget)
+        tip.wm_overrideredirect(True)
+        tk.Label(
+            tip, text=self.text, justify="left", background="#ffffe0",
+            relief="solid", borderwidth=1, wraplength=self.wrap, padx=5, pady=3,
+        ).pack()
+        tip.update_idletasks()
+        # below the widget, kept on screen
+        x = self.widget.winfo_rootx() + 16
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 4
+        x = max(0, min(x, self.widget.winfo_screenwidth() - tip.winfo_reqwidth() - 8))
+        if y + tip.winfo_reqheight() > self.widget.winfo_screenheight() - 8:
+            y = max(0, self.widget.winfo_rooty() - tip.winfo_reqheight() - 4)
+        tip.wm_geometry(f"+{x}+{y}")
+        self._tip = tip
+
+    def _hide(self, _event=None):
+        if self._after is not None:
+            try:
+                self.widget.after_cancel(self._after)
+            except Exception:
+                pass
+            self._after = None
+        if self._tip is not None:
+            try:
+                self._tip.destroy()
+            except Exception:
+                pass
+            self._tip = None
+
+
+def attach_tooltip(widget, text):
+    """Show `text` when hovering over `widget` (replaces any earlier tooltip)."""
+    if widget is None:
+        return
+    existing = getattr(widget, "_tomofast_tooltip", None)
+    if existing is not None:
+        existing.text = text
+    else:
+        widget._tomofast_tooltip = _ToolTip(widget, text)
+
+
 class _WidgetProxy:
     """General-purpose wrapper around a tk variable + optional widget."""
 
@@ -76,7 +140,7 @@ class _WidgetProxy:
                 pass
 
     def setToolTip(self, txt):
-        pass   # tooltips not implemented in this version
+        attach_tooltip(self._widget, txt)
 
     def configure(self, **kw):
         if self._widget:
@@ -176,7 +240,8 @@ class _GroupBoxProxy:
         except Exception:
             pass
 
-    def setToolTip(self, txt):  pass
+    def setToolTip(self, txt):
+        attach_tooltip(self._frame, txt)
 
 
 class _LabelProxy:
@@ -186,7 +251,8 @@ class _LabelProxy:
         self._widget = widget
     def text(self):         return self._var.get()
     def setText(self, x):   self._var.set(str(x))
-    def setToolTip(self, x): pass
+    def setToolTip(self, x):
+        attach_tooltip(self._widget, x)
     def setEnabled(self, x): pass
 
 
@@ -242,9 +308,26 @@ class TomofastUI:
         for _attr_val in vars(self).values():
             if isinstance(_attr_val, ttk.Button):
                 _attr_val.setEnabled = _make_set_enabled(_attr_val)
-                _attr_val.setToolTip = lambda _: None
+                _attr_val.setToolTip = lambda text, _w=_attr_val: attach_tooltip(_w, text)
 
     # ---- helpers ----
+
+    def _make_links_clickable(self, text_widget):
+        """Turn every http(s) URL in a tk.Text into a link that opens in the browser."""
+        import re
+        import webbrowser
+        text_widget.tag_configure("link", foreground="#0000ee", underline=True)
+        content = text_widget.get("1.0", tk.END)
+        for n, m in enumerate(re.finditer(r"https?://[^\s<>\"']+", content)):
+            url = m.group(0).rstrip(".,;)")
+            start = f"1.0+{m.start()}c"
+            end = f"1.0+{m.start() + len(url)}c"
+            tag = f"link{n}"
+            text_widget.tag_add("link", start, end)
+            text_widget.tag_add(tag, start, end)
+            text_widget.tag_bind(tag, "<Button-1>", lambda _e, u=url: webbrowser.open(u))
+            text_widget.tag_bind(tag, "<Enter>", lambda _e: text_widget.configure(cursor="hand2"))
+            text_widget.tag_bind(tag, "<Leave>", lambda _e: text_widget.configure(cursor="arrow"))
 
     def _scrollable(self, parent):
         """Return a scrollable inner frame for a tab."""
@@ -404,11 +487,13 @@ class TomofastUI:
         self.pushButton_grav_data_path.grid(row=r, column=2, padx=2)
         r += 1
 
-        ttk.Label(p, text="Input CRS:").grid(row=r, column=0, sticky="w", padx=4)
+        self._w_label_grav_input_crs = ttk.Label(p, text="Input CRS:")
+        self._w_label_grav_input_crs.grid(row=r, column=0, sticky="w", padx=4)
         e_in, self.mQgsProjectionSelectionWidget_grav_in = self._crs_entry(p)
         e_in.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
-        ttk.Label(p, text="Output CRS:").grid(row=r, column=0, sticky="w", padx=4)
+        self._w_label_grav_output_crs = ttk.Label(p, text="Output CRS:")
+        self._w_label_grav_output_crs.grid(row=r, column=0, sticky="w", padx=4)
         e_out, self.mQgsProjectionSelectionWidget_grav_out = self._crs_entry(p)
         e_out.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
@@ -424,7 +509,8 @@ class TomofastUI:
         sv_gy = tk.StringVar()
         cb_gy, self.comboBox_grav_field_y = self._combobox(f_gf, sv_gy, 18)
         cb_gy.grid(row=0, column=3, padx=2)
-        ttk.Label(f_gf, text="Data:").grid(row=0, column=4, sticky="w", padx=2)
+        self._w_label_grav_data = ttk.Label(f_gf, text="Data:")
+        self._w_label_grav_data.grid(row=0, column=4, sticky="w", padx=2)
         sv_gd = tk.StringVar()
         cb_gd, self.comboBox_grav_field_data = self._combobox(f_gf, sv_gd, 18)
         cb_gd.grid(row=0, column=5, padx=2)
@@ -471,11 +557,13 @@ class TomofastUI:
         self.pushButton_magn_data_path.grid(row=r, column=2, padx=2)
         r += 1
 
-        ttk.Label(p, text="Input CRS:").grid(row=r, column=0, sticky="w", padx=4)
+        self._w_label_magn_input_crs = ttk.Label(p, text="Input CRS:")
+        self._w_label_magn_input_crs.grid(row=r, column=0, sticky="w", padx=4)
         e_mi, self.mQgsProjectionSelectionWidget_magn_in = self._crs_entry(p)
         e_mi.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
-        ttk.Label(p, text="Output CRS:").grid(row=r, column=0, sticky="w", padx=4)
+        self._w_label_magn_output_crs = ttk.Label(p, text="Output CRS:")
+        self._w_label_magn_output_crs.grid(row=r, column=0, sticky="w", padx=4)
         e_mo, self.mQgsProjectionSelectionWidget_magn_out = self._crs_entry(p)
         e_mo.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
@@ -492,7 +580,8 @@ class TomofastUI:
         sv_my = tk.StringVar()
         cb_my, self.comboBox_magn_field_y = self._combobox(f_mf, sv_my, 18)
         cb_my.grid(row=0, column=3, padx=2)
-        ttk.Label(f_mf, text="Data:").grid(row=0, column=4, sticky="w", padx=2)
+        self._w_label_magn_data = ttk.Label(f_mf, text="Data:")
+        self._w_label_magn_data.grid(row=0, column=4, sticky="w", padx=2)
         sv_md = tk.StringVar()
         cb_md, self.comboBox_magn_field_data = self._combobox(f_mf, sv_md, 18)
         cb_md.grid(row=0, column=5, padx=2)
@@ -543,15 +632,15 @@ class TomofastUI:
         # Stub proxies for code compatibility
         self.label_grav_params_header = _LabelProxy(tk.StringVar(value="Gravity Params"))
         self.label_magn_params_header = _LabelProxy(tk.StringVar(value="Magn Params"))
-        self.label_grav_input_crs  = _LabelProxy(tk.StringVar())
-        self.label_grav_output_crs = _LabelProxy(tk.StringVar())
-        self.label_magn_input_crs  = _LabelProxy(tk.StringVar())
-        self.label_magn_output_crs = _LabelProxy(tk.StringVar())
+        self.label_grav_input_crs  = _LabelProxy(tk.StringVar(), self._w_label_grav_input_crs)
+        self.label_grav_output_crs = _LabelProxy(tk.StringVar(), self._w_label_grav_output_crs)
+        self.label_magn_input_crs  = _LabelProxy(tk.StringVar(), self._w_label_magn_input_crs)
+        self.label_magn_output_crs = _LabelProxy(tk.StringVar(), self._w_label_magn_output_crs)
+        self.label_magn_field_data_col = _LabelProxy(tk.StringVar(), self._w_label_magn_data)
         self.label_grav_field_long_x  = _LabelProxy(tk.StringVar())
         self.label_grav_field_lat_y   = _LabelProxy(tk.StringVar())
-        self.label_grav_field_data_col = _LabelProxy(tk.StringVar())
+        self.label_grav_field_data_col = _LabelProxy(tk.StringVar(), self._w_label_grav_data)
         self.label_wsl_distro = _LabelProxy(tk.StringVar())
-        self.label_setvars_path = _LabelProxy(tk.StringVar())
         self.groupBox_grav_data_file  = _GroupBoxProxy(ttk.Frame(p))
         self.pushButton_reset = ttk.Button(p, text="Reset Params")
         self.pushButton_reset.grid(row=r, column=0, columnspan=2, sticky="w", padx=4, pady=4)
@@ -871,12 +960,15 @@ class TomofastUI:
         sb_np.grid(row=r, column=1, sticky="w", padx=4)
         r += 1
 
-        ttk.Label(p, text="mpirun path:").grid(row=r, column=0, sticky="w", padx=4)
+        # mpirun is only needed on macOS/Linux (and WSL); the native Windows exe needs no MPI
+        lbl_mpi = ttk.Label(p, text="mpirun path:")
+        lbl_mpi.grid(row=r, column=0, sticky="w", padx=4)
         sv_mpi = tk.StringVar()
         e_mpi, self.lineEdit_2_mpirunPath_2 = self._entry(p, sv_mpi)
         e_mpi.grid(row=r, column=1, sticky="we", padx=4)
         self.pushButton_select_mpirun_mipexec = ttk.Button(p, text="Browse...")
         self.pushButton_select_mpirun_mipexec.grid(row=r, column=2, padx=2)
+        self._mpirun_widgets = (lbl_mpi, e_mpi, self.pushButton_select_mpirun_mipexec)
         r += 1
 
         r = self._section(p, r, "Platform")
@@ -898,18 +990,32 @@ class TomofastUI:
         e_wsl.grid(row=r, column=1, sticky="we", padx=4)
         r += 1
 
-        ttk.Label(p, text="setvars.bat:").grid(row=r, column=0, sticky="w", padx=4)
-        sv_sv = tk.StringVar()
-        e_sv, self.lineEdit_setvarsPath = self._entry(p, sv_sv)
-        e_sv.grid(row=r, column=1, sticky="we", padx=4)
-        self.pushButton_select_setvars = ttk.Button(p, text="Browse...")
-        self.pushButton_select_setvars.grid(row=r, column=2, padx=2)
+        r = self._section(p, r, "Run Inversion")
+        f_run = ttk.Frame(p)
+        f_run.grid(row=r, column=0, columnspan=3, pady=6, padx=4)
+        self.pushButton_3_runInversion = ttk.Button(f_run, text="Run Inversion",
+                                                     style="Accent.TButton" if "Accent.TButton" in ttk.Style().theme_names() else "TButton")
+        self.pushButton_3_runInversion.pack(side=tk.LEFT, padx=4)
+        # Kills a running job; only enabled while one is running
+        self.pushButton_cancel_inversion = ttk.Button(f_run, text="Cancel Inversion")
+        self.pushButton_cancel_inversion.pack(side=tk.LEFT, padx=4)
         r += 1
 
-        r = self._section(p, r, "Run Inversion")
-        self.pushButton_3_runInversion = ttk.Button(p, text="Run Inversion",
-                                                     style="Accent.TButton" if "Accent.TButton" in ttk.Style().theme_names() else "TButton")
-        self.pushButton_3_runInversion.grid(row=r, column=0, columnspan=3, pady=6, padx=4)
+        r = self._section(p, r, "Help")
+        from tomofast_help import HELP_TEXT
+        help_frame = ttk.Frame(p)
+        help_frame.grid(row=r, column=0, columnspan=3, padx=4, pady=2, sticky="nswe")
+        help_frame.columnconfigure(0, weight=1)
+        t_help = tk.Text(help_frame, height=14, width=90, wrap=tk.WORD,
+                         font=("TkDefaultFont", 9), cursor="arrow")
+        vsb_help = ttk.Scrollbar(help_frame, orient="vertical", command=t_help.yview)
+        t_help.configure(yscrollcommand=vsb_help.set)
+        t_help.grid(row=0, column=0, sticky="nswe")
+        vsb_help.grid(row=0, column=1, sticky="ns")
+        t_help.insert("1.0", HELP_TEXT)
+        self._make_links_clickable(t_help)
+        t_help.configure(state="disabled")   # read-only (tags and links still work)
+        self.textEdit_help = t_help
         r += 1
 
         r = self._section(p, r, "Inversion Log")

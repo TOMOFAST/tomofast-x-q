@@ -1,10 +1,16 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.19
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.20
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.19   
+changelog=0.2.20   
+    * ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns   
+    * ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links   
+    * Memory estimate and suggested compression rate now refresh reliably (component dropdowns, inversion type, 2D profile, loaded stations, reset) and use the same padded mesh and rule in QGIS and ArcGIS   
+    * Suggested compression rate varies continuously with mesh size (no 400,000-cell cutoff), so refining the mesh no longer lowers the estimated memory   
+    * First tab fonts made consistent with the second tab; URLs on the Run Inversion tab are clickable   
+    0.2.19   
     * Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data   
     * Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components   
     * Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name   
