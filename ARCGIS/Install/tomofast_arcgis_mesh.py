@@ -859,3 +859,21 @@ class MeshMixin:
     def mesh_layers(self):
         self.ui.doubleSpinBox_coreDepth.setEnabled(True)
         self.ui.doubleSpinBox_fullDepth.setEnabled(True)
+
+    # horizontal padding = total model depth: the sum of the z layer thicknesses
+    # when that list is filled in, otherwise the full depth
+    def _sync_padding_to_depth(self, *_):
+        if getattr(self, "_suppress_padding_sync", False):
+            return
+        total = 0.0
+        for x in self.ui.textEdit_z_layer_thickness_list.toPlainText().split(","):
+            try:
+                total += float(x)
+            except ValueError:
+                pass  # ignore empty / half-typed entries
+        try:
+            if total <= 0:
+                total = self.ui.doubleSpinBox_fullDepth.value()
+            self.ui.mQgsSpinBox_mesh_padding.setValue(int(round(total)))
+        except Exception:
+            pass  # full depth is mid-edit (empty / not a number yet)

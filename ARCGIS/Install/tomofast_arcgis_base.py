@@ -144,6 +144,10 @@ class TomofastArcGISBase:
 
         self.ui.doubleSpinBox_coreDepth._var.trace_add("write", _on_depth_change)
         self.ui.doubleSpinBox_fullDepth._var.trace_add("write", _on_depth_change)
+        # horizontal padding follows the model depth
+        self.ui.doubleSpinBox_fullDepth._var.trace_add(
+            "write", lambda *_: self._sync_padding_to_depth()
+        )
 
         # Data/model component choices change the size of the sensitivity matrix
         for _attr in (
@@ -166,7 +170,8 @@ class TomofastArcGISBase:
             "<KeyRelease>", lambda e: self.update_model_grid_size()
         )
         self.ui.textEdit_z_layer_thickness_list._widget.bind(
-            "<KeyRelease>", lambda e: self.update_model_grid_size()
+            "<KeyRelease>",
+            lambda e: (self._sync_padding_to_depth(), self.update_model_grid_size()),
         )
 
         # ---- Initial widget state ------------------------------------

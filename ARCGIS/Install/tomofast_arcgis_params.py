@@ -675,6 +675,13 @@ pv.Render()
 
     # ------------------------------------------------------------------
     def load_parfile(self):
+        self._suppress_padding_sync = True
+        try:
+            self._load_parfile()
+        finally:
+            self._suppress_padding_sync = False
+
+    def _load_parfile(self):
         if not (os.path.exists(self.parfilename) and self.parfilename):
             return
         parfile = open(self.parfilename, "r")
@@ -749,6 +756,13 @@ pv.Render()
 
     # ------------------------------------------------------------------
     def reset_params(self):
+        self._suppress_padding_sync = True
+        try:
+            self._reset_params()
+        finally:
+            self._suppress_padding_sync = False
+
+    def _reset_params(self):
         self.initialise_variables()
         # d_params holds copies of the variable values taken when it was built,
         # so rebuild it or reset would restore stale values

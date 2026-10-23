@@ -241,6 +241,8 @@ TOOLTIPS = {
     'mQgsSpinBox_mesh_padding': (
         'Define uniform padding distance around model\n'
         '\n'
+        'Set automatically to the model depth (sum of the z layer thicknesses, or the full depth) when those change, but can be edited afterwards\n'
+        '\n'
         '[#mesh.padding]'
     ),
     'nx_label': (

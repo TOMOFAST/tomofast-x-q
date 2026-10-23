@@ -763,6 +763,13 @@ class Tomofast_x:
 
                 self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
                 self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
+                # horizontal padding follows the model depth
+                self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(
+                    self._sync_padding_to_depth
+                )
+                self.dlg.textEdit_z_layer_thickness_list.textChanged.connect(
+                    self._sync_padding_to_depth
+                )
 
                 # updating model grid size
                 self.dlg.mQgsSpinBox_mesh_south.valueChanged.connect(
@@ -5000,6 +5007,13 @@ pv.Render()
 
     # load and parse existing parfile updating gui and storing parameters
     def load_parfile(self):
+        self._suppress_padding_sync = True
+        try:
+            self._load_parfile()
+        finally:
+            self._suppress_padding_sync = False
+
+    def _load_parfile(self):
 
         #   set up dict with form
         #
@@ -5104,6 +5118,13 @@ pv.Render()
 
     # reset params to deafults and update gui
     def reset_params(self):
+        self._suppress_padding_sync = True
+        try:
+            self._reset_params()
+        finally:
+            self._suppress_padding_sync = False
+
+    def _reset_params(self):
 
         #   set up dict with form
         #
@@ -5276,6 +5297,21 @@ pv.Render()
             if not self.dlg.lineEdit_targetMisfit.text().strip():
                 self.dlg.lineEdit_targetMisfit.setText("1e-7")
 
+    # horizontal padding = total model depth: the sum of the z layer thicknesses
+    # when that list is filled in, otherwise the full depth
+    def _sync_padding_to_depth(self, *_):
+        if getattr(self, "_suppress_padding_sync", False):
+            return
+        total = 0.0
+        for x in self.dlg.textEdit_z_layer_thickness_list.toPlainText().split(","):
+            try:
+                total += float(x)
+            except ValueError:
+                pass  # ignore empty / half-typed entries
+        if total <= 0:
+            total = self.dlg.doubleSpinBox_fullDepth.value()
+        self.dlg.mQgsSpinBox_mesh_padding.setValue(int(round(total)))
+
     # update mesh parameters to allow multiple layer thicknesses
     def mesh_layers(self):
 
@@ -5432,7 +5468,7 @@ pv.Render()
             "Define model grid layer thicknesses as comma separated list of thickness of layers for each z cell size in the adjacent list\n\ne.g. 200,400,800 \n\nLeave blank to use core/full depth system[#mesh.cellz_z_thickness_list]"
         )
         self.dlg.mQgsSpinBox_mesh_padding.setToolTip(
-            "Define uniform padding distance around model\n\n[#mesh.padding]"
+            "Define uniform padding distance around model\n\nSet automatically to the model depth (sum of the z layer thicknesses, or the full depth) when those change, but can be edited afterwards\n\n[#mesh.padding]"
         )
         self.dlg.nx_label.setToolTip(
             "Number of model grid cells in the x direction (this will be calculated from the cell dimensions and model extents)\n\n[modelGrid.size]"
