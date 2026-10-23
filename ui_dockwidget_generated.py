@@ -103,7 +103,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "\n"
 "")
         self.tabWidget.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
-        self.tabWidget.setUsesScrollButtons(False)
+        self.tabWidget.setUsesScrollButtons(True)
         self.tabWidget.setObjectName("tabWidget")
         self.Import_data = QtWidgets.QWidget()
         self.Import_data.setStyleSheet("#Import_data {\n"
