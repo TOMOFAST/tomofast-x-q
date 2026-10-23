@@ -26,6 +26,7 @@ changelog=0.2.21
     * Grav/mag data, DTM and mesh ROI can be chosen from layers already open in QGIS (only layers saved to disk are listed: CSV or GeoTIFF/ERS data, GeoTIFF DTM, polygon/line ROI) as well as loaded from disk; the layer's file path is stored for the parameter file, an open raster is reused rather than added again, and a CSV layer's CRS and X/Y columns pre-fill the data fields
     * Mesh ROI (including a 2D profile line) is re-applied automatically after a new data file is loaded when the CRS is unchanged; a changed CRS warns that the ROI and DTM need reloading
     * Horizontal padding is set automatically to the model depth when Full Depth or the z cell layer thickness list changes (the sum of the thicknesses if that list is filled in, otherwise the Full Depth); it can still be edited afterwards (QGIS and ArcGIS)
+    * Fix the mpirun file selector on macOS/Linux, which hid files without an extension (QGIS and ArcGIS); mpirun labels and tooltips no longer mention mpiexec or Windows
     0.2.20
     * ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns
     * ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links

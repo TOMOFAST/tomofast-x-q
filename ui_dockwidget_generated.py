@@ -1670,7 +1670,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.label_num_processors.setText(_translate("mQgsSpinBox_mesh_south_2", "Number of processors"))
         self.lineEdit_pre_command_2_WSL_Distro.setText(_translate("mQgsSpinBox_mesh_south_2", "Ubuntu-20.04"))
         self.label_wsl_distro.setText(_translate("mQgsSpinBox_mesh_south_2", "WSL Distro"))
-        self.label_mpirun_path.setText(_translate("mQgsSpinBox_mesh_south_2", "Path to mpirun/mpiexec"))
+        self.label_mpirun_path.setText(_translate("mQgsSpinBox_mesh_south_2", "Path to mpirun"))
         self.pushButton_3_visualise.setText(_translate("mQgsSpinBox_mesh_south_2", "Visualise"))
         self.pushButton_plugin_manual.setText(_translate("mQgsSpinBox_mesh_south_2", "Download Plugin Manual"))
         self.pushButton_tomofast_manual.setText(_translate("mQgsSpinBox_mesh_south_2", "Download Tomofast-x  Manual"))

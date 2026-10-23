@@ -555,7 +555,7 @@ class RunMixin:
     def select_tomo_Path(self):
         from tkinter import filedialog
         self.tomo_Path = filedialog.askopenfilename(
-            title="Select tomofast executable", filetypes=[("All", "*.*")]
+            title="Select tomofast executable", filetypes=[("All", "*")]
         )
         if os.path.exists(self.tomo_Path) and self.tomo_Path != "":
             self.ui.lineEdit_tomoPath.setText(self.tomo_Path)
@@ -571,7 +571,7 @@ class RunMixin:
     def select_mpirunexec_path(self):
         from tkinter import filedialog
         self.mpi_runexec_path = filedialog.askopenfilename(
-            title="Select mpirun or mpiexec.exe path", filetypes=[("All", "*.*")]
+            title="Select mpirun path", filetypes=[("All", "*")]
         )
         if os.path.exists(self.mpi_runexec_path) and self.mpi_runexec_path != "":
             self.ui.lineEdit_2_mpirunPath_2.setText(self.mpi_runexec_path)

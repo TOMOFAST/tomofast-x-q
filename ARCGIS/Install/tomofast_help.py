@@ -416,7 +416,7 @@ TOOLTIPS = {
     ),
     'pushButton_select_mpirun_mipexec': (
         'Path to mpirun executable, if not in PATH, \n'
-        " e.g. for MacOS '/opt/homebrew/bin/mpirun' (not needed on Windows)"
+        " e.g. for MacOS '/opt/homebrew/bin/mpirun' or Linux '/usr/bin/mpirun'"
     ),
     'lineEdit_pre_command_2_WSL_Distro': (
         "Name of WSL Distro to run the inversion in, e.g. 'Ubuntu-20.04' (Windows WSL only)\n"

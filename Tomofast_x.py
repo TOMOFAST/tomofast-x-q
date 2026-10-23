@@ -1801,9 +1801,9 @@ class Tomofast_x:
 
         self.mpi_runexec_path, _filter = QFileDialog.getOpenFileName(
             None,
-            "Select mpirun or mpiexec.exe path",
+            "Select mpirun path",
             ".",
-            "All (*.*)",
+            "All (*)",  # "*.*" would hide extensionless files such as mpirun
         )
         if os.path.exists(self.mpi_runexec_path) and self.mpi_runexec_path != "":
             self.dlg.lineEdit_2_mpirunPath_2.setText(self.mpi_runexec_path)
@@ -5603,7 +5603,7 @@ pv.Render()
             "Select a parfile to run the inversion (prefilled with the parfile created by this plugin)"
         )
         self.dlg.pushButton_select_mpirun_mipexec.setToolTip(
-            "Path to mpirun executable, if not in PATH, \n e.g. for MacOS '/opt/homebrew/bin/mpirun' (not needed on Windows)"
+            "Path to mpirun executable, if not in PATH, \n e.g. for MacOS '/opt/homebrew/bin/mpirun' or Linux '/usr/bin/mpirun'"
         )
 
         self.dlg.lineEdit_pre_command_2_WSL_Distro.setToolTip(
