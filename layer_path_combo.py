@@ -86,7 +86,7 @@ def _accepts(kind, layer, path):
 class LayerPathCombo(QtWidgets.QComboBox):
     """Lists eligible saved layers, plus the current on-disk file if any."""
 
-    PLACEHOLDER = "(select a saved layer)"
+    PLACEHOLDER = "(select layer)"
 
     def __init__(self, parent, kind):
         super().__init__(parent)
