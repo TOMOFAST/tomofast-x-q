@@ -27,6 +27,7 @@ from qgis.PyQt.QtCore import (
     QCoreApplication,
     QFileInfo,
     QVariant,
+    QMetaType,
     QUrl,
     QTimer,
     Qt,
@@ -74,6 +75,20 @@ except AttributeError:
 
     # Qt5 style enums
     RightDockWidgetArea = Qt.RightDockWidgetArea
+
+
+# Field type / geometry type constants that work on QGIS 3 (Qt5) and QGIS 4 (Qt6)
+try:
+    _FIELD_DOUBLE = QMetaType.Type.Double
+    _FIELD_INT = QMetaType.Type.Int
+except AttributeError:
+    _FIELD_DOUBLE = QVariant.Double
+    _FIELD_INT = QVariant.Int
+
+try:
+    _LINE_GEOMETRY = Qgis.GeometryType.Line
+except AttributeError:
+    _LINE_GEOMETRY = QgsWkbTypes.LineGeometry
 
 
 # import functions from scripts
@@ -1162,7 +1177,7 @@ class Tomofast_x:
         self.dlg.textEdit_inversion_log.appendPlainText("\n*** Inversion cancelled by user ***")
         self.dlg.pushButton_cancel_inversion.setEnabled(False)
         self.iface.messageBar().pushMessage(
-            "Inversion cancelled", level=Qgis.Info, duration=10
+            "Inversion cancelled", level=Qgis.MessageLevel.Info, duration=10
         )
 
     def _poll_debug_log(self):
@@ -1190,9 +1205,9 @@ class Tomofast_x:
                 new_text = fh.read()
                 if new_text:
                     self._debug_log_pos = fh.tell()
-                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
+                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.MoveOperation.End)
                     self.dlg.textEdit_inversion_log.insertPlainText(new_text)
-                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.End)
+                    self.dlg.textEdit_inversion_log.moveCursor(QTextCursor.MoveOperation.End)
                     if "THE END." in new_text:
                         self._debug_log_timer.stop()
                         self._check_inversion_results()
@@ -1203,7 +1218,7 @@ class Tomofast_x:
         """Append a colored line to the inversion log widget."""
         widget = self.dlg.textEdit_inversion_log
         cursor = widget.textCursor()
-        cursor.movePosition(QTextCursor.End)
+        cursor.movePosition(QTextCursor.MoveOperation.End)
         fmt = cursor.charFormat()
         fmt.setForeground(QColor(color))
         fmt.setFontWeight(75 if bold else 50)
@@ -1214,7 +1229,7 @@ class Tomofast_x:
         fmt.setFontWeight(50)
         cursor.setCharFormat(fmt)
         widget.setTextCursor(cursor)
-        widget.moveCursor(QTextCursor.End)
+        widget.moveCursor(QTextCursor.MoveOperation.End)
 
     def _get_output_dir_from_parfile(self):
         """Read global.outputFolderPath from the active paramfile."""
@@ -1448,18 +1463,18 @@ class Tomofast_x:
                 self.iface.messageBar().pushMessage(
                     f"Process started with PID: {process.pid}",
                     "Command is running in the background ",
-                    level=Qgis.Success,
+                    level=Qgis.MessageLevel.Success,
                     duration=45,
                 )
             except Exception as e:
                 print(f"An error occurred: {e}")
                 self.iface.messageBar().pushMessage(
-                    "Could not start the inversion", str(e), level=Qgis.Critical, duration=30
+                    "Could not start the inversion", str(e), level=Qgis.MessageLevel.Critical, duration=30
                 )
         else:
             self.iface.messageBar().pushMessage(
                 "Paths to tomofastx and paramfile must be defined",
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
                 duration=15,
             )
 
@@ -1784,7 +1799,7 @@ class Tomofast_x:
             self._load_layers_from_parfile()
 
             self.iface.messageBar().pushMessage(
-                "Parfile loaded ", "OK ", level=Qgis.Success, duration=45
+                "Parfile loaded ", "OK ", level=Qgis.MessageLevel.Success, duration=45
             )
 
     def _load_layers_from_parfile(self):
@@ -1945,7 +1960,7 @@ class Tomofast_x:
 
             geom_type = QgsWkbTypes.geometryType(result.wkbType())
 
-            if geom_type == QgsWkbTypes.LineGeometry:
+            if geom_type == _LINE_GEOMETRY:
                 features = list(result.getFeatures())
                 if not features:
                     return
@@ -1953,7 +1968,7 @@ class Tomofast_x:
                 if len(pts) != 2:
                     self.iface.messageBar().pushMessage(
                         "2D profile must be a straight line with exactly 2 nodes",
-                        level=Qgis.Warning,
+                        level=Qgis.MessageLevel.Warning,
                         duration=10,
                     )
                     return
@@ -1969,7 +1984,7 @@ class Tomofast_x:
                     w.setEnabled(False)
                 self.iface.messageBar().pushMessage(
                     "2D profile mode: mesh will be oriented along the profile line",
-                    level=Qgis.Info,
+                    level=Qgis.MessageLevel.Info,
                     duration=8,
                 )
             else:
@@ -2271,7 +2286,7 @@ class Tomofast_x:
 
         else:
             self.iface.messageBar().pushMessage(
-                "Invalid grav layer", level=Qgis.Warning, duration=15
+                "Invalid grav layer", level=Qgis.MessageLevel.Warning, duration=15
             )
 
     # process load magn point data and display as layer
@@ -2313,7 +2328,7 @@ class Tomofast_x:
 
         else:
             self.iface.messageBar().pushMessage(
-                "Invalid magn layer", level=Qgis.Warning, duration=15
+                "Invalid magn layer", level=Qgis.MessageLevel.Warning, duration=15
             )
 
     # calc data extends and update widget
@@ -2390,7 +2405,7 @@ class Tomofast_x:
 
         # Creation of my fields
         for head in df:
-            myField = QgsField(str(head), QVariant.Double)
+            myField = QgsField(str(head), _FIELD_DOUBLE)
             temp.addAttribute(myField)
         # Update
         temp.updateFields()
@@ -2456,7 +2471,7 @@ class Tomofast_x:
             self.iface.messageBar().pushMessage(
                 f"{missing} mesh points had no DTM coverage.",
                 "Elevations set to zero for those points.",
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
                 duration=45,
             )
 
@@ -2566,7 +2581,7 @@ class Tomofast_x:
             self.iface.messageBar().pushMessage(
                 "The DTM does not cover the full extent of the mesh including padding.",
                 "Outside elevations set to zero",
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
                 duration=45,
             )
 
@@ -2628,7 +2643,7 @@ class Tomofast_x:
             self.iface.messageBar().pushMessage(
                 "invalid layer",
                 "file:///" + self.dtm_filename,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
                 duration=45,
             )
 
@@ -2658,7 +2673,7 @@ class Tomofast_x:
             else:
                 # dataType was neither grav nor magn, bail out safely
                 self.iface.messageBar().pushMessage(
-                    "Unknown data type", level=Qgis.Warning, duration=15
+                    "Unknown data type", level=Qgis.MessageLevel.Warning, duration=15
                 )
                 return
 
@@ -2719,7 +2734,7 @@ class Tomofast_x:
                 self.find_component_rasters(filename, _kind)
             except ValueError as e:
                 self.iface.messageBar().pushMessage(
-                    "Data components", str(e), level=Qgis.Critical, duration=30
+                    "Data components", str(e), level=Qgis.MessageLevel.Critical, duration=30
                 )
                 return
 
@@ -2802,7 +2817,7 @@ class Tomofast_x:
                             "Files saved to ",
                             self.dlg.lineEdit_output_directory_path.text(),
                             "Directory",
-                            level=Qgis.Success,
+                            level=Qgis.MessageLevel.Success,
                             duration=15,
                         )
                         self.update_memory_size()
@@ -2815,7 +2830,7 @@ class Tomofast_x:
                     self.iface.messageBar().pushMessage(
                         "Error saving files",
                         str(_e),
-                        level=Qgis.Critical,
+                        level=Qgis.MessageLevel.Critical,
                         duration=60,
                     )
                     print("Tomofast-x save error:\n" + traceback.format_exc())
@@ -2834,7 +2849,7 @@ class Tomofast_x:
         ):
             self.iface.messageBar().pushMessage(
                 f"Please define Magnetic Field Parameters",
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
                 duration=30,
             )
             return False
@@ -3288,7 +3303,7 @@ class Tomofast_x:
 
         # Define the fields (attributes) for the layer
         fields = QgsFields()
-        fields.append(QgsField("id", QVariant.Int))
+        fields.append(QgsField("id", _FIELD_INT))
 
         # Add the fields to the provider
         provider.addAttributes(fields)
@@ -3868,10 +3883,10 @@ class Tomofast_x:
 
             # Define the fields (attributes) for the layer
             fields = QgsFields()
-            fields.append(QgsField("id", QVariant.Int))
-            fields.append(QgsField("POINT_X", QVariant.Double))
-            fields.append(QgsField("POINT_Y", QVariant.Double))
-            fields.append(QgsField(data_column, QVariant.Double))
+            fields.append(QgsField("id", _FIELD_INT))
+            fields.append(QgsField("POINT_X", _FIELD_DOUBLE))
+            fields.append(QgsField("POINT_Y", _FIELD_DOUBLE))
+            fields.append(QgsField(data_column, _FIELD_DOUBLE))
 
             # Add the fields to the provider
             provider.addAttributes(fields)
@@ -4465,7 +4480,7 @@ class Tomofast_x:
         self.iface.messageBar().pushMessage(
             "parfile.txt saved to  {}".format(self.global_outputFolderPath),
             "OK ",
-            level=Qgis.Success,
+            level=Qgis.MessageLevel.Success,
             duration=45,
         )
 
@@ -4570,7 +4585,7 @@ pv.Render()
             if not os.path.exists(filename_model_final):
                 self.iface.messageBar().pushMessage(
                     f"Model file not found for {code}: {filename_model_final}",
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                     duration=15,
                 )
                 continue
@@ -4593,7 +4608,7 @@ pv.Render()
             if model_grid.shape[0] != model_values.shape[0]:
                 self.iface.messageBar().pushMessage(
                     f"Inconsistent model dimensions for {code}!",
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                     duration=15,
                 )
                 continue
@@ -4633,7 +4648,7 @@ pv.Render()
             self.iface.messageBar().pushMessage(
                 f"Model saved as {code}_final_model3D_full.csv in the OUTPUT directory",
                 "",
-                level=Qgis.Success,
+                level=Qgis.MessageLevel.Success,
                 duration=45,
             )
 

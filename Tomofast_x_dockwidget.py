@@ -65,8 +65,8 @@ class Tomofast_xDockWidget(QtWidgets.QDockWidget, Ui_mQgsSpinBox_mesh_south_2):
 
         for page, tab_text in pages_and_texts:
             scroll = QtWidgets.QScrollArea()
-            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             scroll.setMinimumSize(200, 200)
 
             if page.layout() is not None:
