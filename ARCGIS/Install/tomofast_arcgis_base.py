@@ -4,7 +4,7 @@ import sys
 import json
 import tempfile
 import platform
-import subprocess
+import subprocess  # nosec B404 - needed to launch Tomofast-x
 import shutil
 import re
 import time
@@ -620,7 +620,7 @@ class TomofastArcGISBase:
                 paths.append(path)
             with open(pending_file, "w") as f:
                 json.dump(paths, f)
-        except Exception:
+        except (OSError, ValueError):
             pass
 
     def _sample_raster_at_points(self, raster_path, xs, ys):

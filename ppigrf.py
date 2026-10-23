@@ -279,7 +279,8 @@ def read_shc(filename = shc_fn):
         h[key] = 0
 
     # this must be true:
-    assert len(g.keys()) == len(h.keys())
+    if len(g.keys()) != len(h.keys()):
+        raise ValueError("inconsistent Gauss coefficient dictionaries")
 
     gdf = pd.DataFrame(g, index = times)
     hdf = pd.DataFrame(h, index = times)

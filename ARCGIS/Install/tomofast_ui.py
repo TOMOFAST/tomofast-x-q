@@ -54,13 +54,13 @@ class _ToolTip:
         if self._after is not None:
             try:
                 self.widget.after_cancel(self._after)
-            except Exception:
+            except tk.TclError:
                 pass
             self._after = None
         if self._tip is not None:
             try:
                 self._tip.destroy()
-            except Exception:
+            except tk.TclError:
                 pass
             self._tip = None
 
@@ -117,7 +117,7 @@ class _WidgetProxy:
         if self._widget and hasattr(self._widget, "get"):
             try:
                 return self._widget.get("1.0", tk.END).strip()
-            except Exception:
+            except tk.TclError:
                 pass
         return str(self._var.get())
 
@@ -136,7 +136,7 @@ class _WidgetProxy:
         if self._widget:
             try:
                 self._widget.configure(state="normal" if state else "disabled")
-            except Exception:
+            except tk.TclError:
                 pass
 
     def setToolTip(self, txt):
@@ -146,7 +146,7 @@ class _WidgetProxy:
         if self._widget:
             try:
                 self._widget.configure(**kw)
-            except Exception:
+            except tk.TclError:
                 pass
 
     # ---- CRS widget interface ----
@@ -235,9 +235,9 @@ class _GroupBoxProxy:
             for child in self._frame.winfo_children():
                 try:
                     child.configure(state=s)
-                except Exception:
+                except tk.TclError:
                     pass
-        except Exception:
+        except tk.TclError:
             pass
 
     def setToolTip(self, txt):
@@ -301,7 +301,7 @@ class TomofastUI:
             def _se(enabled, _btn=w):
                 try:
                     _btn.configure(state="normal" if enabled else "disabled")
-                except Exception:
+                except tk.TclError:
                     pass
             return _se
 

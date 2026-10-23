@@ -104,7 +104,7 @@ import os
 from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
 import signal
-import subprocess
+import subprocess  # nosec B404 - needed to launch Tomofast-x
 import shlex
 import platform
 import sys
@@ -1152,7 +1152,7 @@ class Tomofast_x:
         try:
             if platform.system() == "Windows":
                 # /T kills the whole process tree, /F forces it
-                subprocess.run(
+                subprocess.run(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
                     ["taskkill", "/F", "/T", "/PID", str(process.pid)],
                     creationflags=0x08000000,  # CREATE_NO_WINDOW
                     check=False,
@@ -1161,7 +1161,7 @@ class Tomofast_x:
                     # Killing wsl.exe does not stop the Linux-side job. Match only
                     # processes whose command line contains this job's (unique)
                     # parfile path, so other tomofast runs are left alone.
-                    subprocess.run(
+                    subprocess.run(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
                         ["wsl", "-d", self._wsl_distro.strip(), "--exec",
                          "pkill", "-f", "--", re.escape(self._wsl_param_path)],
                         creationflags=0x08000000,
@@ -1211,7 +1211,7 @@ class Tomofast_x:
                     if "THE END." in new_text:
                         self._debug_log_timer.stop()
                         self._check_inversion_results()
-        except Exception:
+        except OSError:
             pass
 
     def _log_colored(self, text, color, bold=False):
@@ -1242,7 +1242,7 @@ class Tomofast_x:
                             stripped.split("=", 1)[1].strip(),
                             os.path.dirname(os.path.abspath(self.paramfile_Path)),
                         )
-        except Exception:
+        except OSError:
             pass
         return ""
 
@@ -1294,7 +1294,7 @@ class Tomofast_x:
                                     admm_cost_ok = False
                         if admm_cost_ok:
                             ok("ADMM cost within acceptable range")
-                except Exception:
+                except (OSError, ValueError, IndexError):
                     pass
 
         # --- 2. Compression error ---
@@ -1437,7 +1437,7 @@ class Tomofast_x:
                 try:
                     if os.path.exists(self._debug_log_path):
                         os.remove(self._debug_log_path)
-                except Exception:
+                except OSError:
                     pass
                 self._debug_log_pos = 0
                 self._exit_reported = False
@@ -1516,7 +1516,7 @@ class Tomofast_x:
         try:
             process = subprocess.Popen(
                 [tomo_path, "-p", param_path],
-                shell=False,
+                shell=False,  # nosec B603 - fixed command / user-selected Tomofast-x executable, shell not used
                 env=env,
                 stdout=debug_file,
                 stderr=subprocess.STDOUT,
@@ -1651,9 +1651,9 @@ class Tomofast_x:
         CREATE_NO_WINDOW = 0x08000000
         # Use bash -l so the login profile (~/.bash_profile / ~/.profile) is
         # sourced, giving the same PATH as an interactive WSL terminal (mpirun etc.)
-        process = subprocess.Popen(
+        process = subprocess.Popen(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
             ["wsl", "-d", distro, "bash", "-l", "-c", base_command],
-            shell=False,
+            shell=False,  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
             creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
         )
         return process, distro, mpirun_path

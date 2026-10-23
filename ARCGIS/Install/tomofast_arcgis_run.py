@@ -5,7 +5,7 @@ import re
 import shutil
 import signal
 import platform
-import subprocess
+import subprocess  # nosec B404 - needed to launch Tomofast-x
 import tkinter as tk
 
 
@@ -32,7 +32,7 @@ class RunMixin:
                             self.ui.pushButton_cancel_inversion.setEnabled(False)
                             self._check_inversion_results()
                             return
-            except Exception:
+            except OSError:
                 pass
         if ended:
             # The job has finished without printing THE END. (usually a crash):
@@ -69,7 +69,7 @@ class RunMixin:
         try:
             if platform.system() == "Windows":
                 # /T kills the whole process tree, /F forces it
-                subprocess.run(
+                subprocess.run(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
                     ["taskkill", "/F", "/T", "/PID", str(process.pid)],
                     creationflags=0x08000000,  # CREATE_NO_WINDOW
                     check=False,
@@ -78,7 +78,7 @@ class RunMixin:
                     # Killing wsl.exe does not stop the Linux-side job. Match only
                     # processes whose command line contains this job's (unique)
                     # parfile path, so other tomofast runs are left alone.
-                    subprocess.run(
+                    subprocess.run(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
                         ["wsl", "-d", self._wsl_distro.strip(), "--exec",
                          "pkill", "-f", "--", re.escape(self._wsl_param_path)],
                         creationflags=0x08000000,
@@ -109,7 +109,7 @@ class RunMixin:
             )
             widget.insert(tk.END, text + "\n", tag_name)
             widget.see(tk.END)
-        except Exception:
+        except tk.TclError:
             pass
 
     # ------------------------------------------------------------------
@@ -126,7 +126,7 @@ class RunMixin:
                             stripped.split("=", 1)[1].strip(),
                             os.path.dirname(os.path.abspath(self.paramfile_Path)),
                         )
-        except Exception:
+        except OSError:
             pass
         return ""
 
@@ -186,7 +186,7 @@ class RunMixin:
                                     admm_cost_ok = False
                         if admm_cost_ok:
                             ok("ADMM cost within acceptable range")
-                except Exception:
+                except (OSError, ValueError, IndexError):
                     pass
 
         # --- 2. Compression error ---
@@ -339,7 +339,7 @@ class RunMixin:
                 try:
                     if os.path.exists(self._debug_log_path):
                         os.remove(self._debug_log_path)
-                except Exception:
+                except OSError:
                     pass
 
                 self._debug_log_pos = 0
@@ -418,7 +418,7 @@ class RunMixin:
         try:
             process = subprocess.Popen(
                 [tomo_path, "-p", param_path],
-                shell=False,
+                shell=False,  # nosec B603 - fixed command / user-selected Tomofast-x executable, shell not used
                 env=env,
                 stdout=debug_file,
                 stderr=subprocess.STDOUT,
@@ -474,9 +474,9 @@ class RunMixin:
         CREATE_NO_WINDOW = 0x08000000
         # bash -l so the login profile is sourced, giving the same PATH as an
         # interactive WSL terminal (mpirun etc.)
-        process = subprocess.Popen(
+        process = subprocess.Popen(  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
             ["wsl", "-d", distro, "bash", "-l", "-c", base_command],
-            shell=False,
+            shell=False,  # nosec B603 B607 - fixed command / user-selected Tomofast-x executable, shell not used
             creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
         )
         return process, distro, mpirun_path
