@@ -1,10 +1,13 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.20
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.21
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.20   
+changelog=0.2.21   
+    * Grav/mag data, DTM and mesh ROI can be chosen from layers already open in QGIS (only layers saved to disk are listed: CSV or GeoTIFF/ERS data, GeoTIFF DTM, polygon/line ROI) as well as loaded from disk; the layer's file path is stored for the parameter file, an open raster is reused rather than added again, and a CSV layer's CRS and X/Y columns pre-fill the data fields   
+    * Mesh ROI (including a 2D profile line) is re-applied automatically after a new data file is loaded when the CRS is unchanged; a changed CRS warns that the ROI and DTM need reloading   
+    0.2.20   
     * ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns   
     * ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links   
     * Memory estimate and suggested compression rate now refresh reliably (component dropdowns, inversion type, 2D profile, loaded stations, reset) and use the same padded mesh and rule in QGIS and ArcGIS   
@@ -66,11 +69,11 @@ changelog=0.2.20
  
     
 ## QGIS Plugin Install
-Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (experimental) or download the zip file of this repository (QT6 branch) and use Install in QGIS 3.xx or QGIS 4.xx from Zip file in the QGIS Plugin Manager.   
+Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from the Plugin Repository (experimental). To get the newest version, download the zip file of the **main** branch of this repository and use Install from Zip file in the QGIS Plugin Manager of QGIS 3.xx or QGIS 4.xx.   
 
 ## ArcGIS Pro: THIS IS VERY BETA!!!
-1) Download and unzip this respository and store somewhere safe.
-2) In order to run python code in ARCGIS Pro you will need to manually add some python libraries so SGTool has everything it needs:
+1) Download the zip file of the **main** branch of this repository, unzip it and store it somewhere safe.
+2) In order to run python code in ARCGIS Pro you will need to manually add some python libraries so Tomofast-x has everything it needs:
 - a) Open Package Manager: Click the Project tab on the ribbon and select Package Manager from the side menu. Access Environment Manager (Gear icon to right of active environemnt): 
   - i) Click the Environment Manager button (top right) to open the management dialog.
   - ii) Clone the Environment: Locate the environment you wish to copy (usually arcgispro-py3) and click the Clone button next to it.
@@ -78,6 +81,7 @@ Use QGIS Plugin Manager in QGIS 3.xx to load directly the Plugin Repository (exp
   - iv) Finalize: Click OK. The cloning process may take several minutes.
 - b) Once the cloned environment has been created, search for and install the following packages, **if they are not already installed**:
   - pandas
+  - pyvista (needed for Visualise)
 - c) In the ArcGIS Pro Catalogue area, go to Add toolbox and select the file **Tomofast_X.pyt** in the **ARCGIS** directory in this repository. 
 - d) Double click on the new **Tomofast_X.pyt** Toolbox to get the list of functions that can be run, and select  **Open Tomofast-x Panel** then **run** to launch the Tomofast_x_q GUI.     
 
@@ -94,26 +98,27 @@ See the [Installation instructions](https://github.com/TOMOFAST/Tomofast-manual/
 ![tomofast dialog tab 1](plugin.png)    
 A. Optionally pre-load an existing paramfile from disk [Step 0]      
 B. Select Grav, mag or both Inversion stype [Step 1]   
-C. Select a data layer (csv or tif format), define input and output projections, and Load data [Step 2a or Step 3a]   
+C. Select a data layer already open in QGIS (must be saved to disk: csv points or tif/ers raster) from the drop-down, or load a csv, tif or ers file from disk with the ... button; define input and output projections, and Load data [Step 2a or Step 3a; Load Grav / Load Mag]   
 D. If csv data, select fields for lat_x, long_y & data [Step 2b or Step 3b, data loaded to QGIS once Assign fields button selected]   
-E. Select DTM tif file or use constant value [Step 4 reprojected dtm loaded to QGIS]   
-F. Specify mesh parameters (optionally defined from max/min x,y extents of a polygon shapefile, or define a 2D section with a straight line polyline shapefile). Check Model Grid Size to make sure the mesh is not stupidly large. z cell parameters can either be defined as a two layer system (with finer cells in the upper layer then progressively coarser cells beneath that) or as a multi z cell system (with comma separated lists of cell size and layer thicknesses, with the latter being multiples of the equivalent cell size)   
+E. Select an open, saved DTM tif layer from the drop-down and press Load dtm (or load a tif from disk with the ... button), or use constant value [Step 4 reprojected dtm loaded to QGIS]   
+F. Specify mesh parameters [Step 5] (optionally defined from max/min x,y extents of a polygon layer, or a 2D section defined by a straight line polyline layer, chosen from the open saved layers with Load mesh ROI or loaded from disk with the ... button; the ROI is re-applied if you load a new data file with the same CRS, otherwise reload it and the DTM). Check Model Grid Size to make sure the mesh is not stupidly large. z cell parameters can either be defined as a two layer system (with finer cells in the upper layer then progressively coarser cells beneath that) or as a multi z cell system (with comma separated lists of cell size and layer thicknesses, with the latter being multiples of the equivalent cell size)   
 G. Define compression amount. Check the Estimated Memory Requirements to make sure you run the inversion on a computer with enough memory.    
     
 **Select Grav/Mag Parameters tab**   
 ![tomofast dialog tab 2](plugin2.png)    
-H. For mag survey autofill (using centroid of mesh) or define Magnetic Field parameters   
+H. For mag survey autofill (Calculate from Survey Parameters, using IGRF at the centroid of the mesh, or the inclination, declination and intensity stored in the metadata of a Noddy GeoTIFF) or define Magnetic Field parameters   
    
 **Select Global Parameters tab**   
 ![tomofast dialog tab 3](plugin3.png)     
 I. Specify Global Inversion parameters   
 J. Modify parameters and then save out  File by clicking on Save Files button [Data and Parameter file written out]  
 K. Define output directory and mesh and data files will then be written out and loaded to QGIS     
+The **Reset Dialog** button on the Data/Mesh tab restores all defaults.   
  
    
 **Run tomofast-x from plugin using the just-generated files**   
 ![tomofast dialog tab 4](plugin4.png)    
-L. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use.    
+L. If you have tomofast-x installed on your machine, you can run it directly from this tab, after defining the path to the tomofastx executable and the paramfile, and the number of processors to use. Press **Run Inversion** to start; the tomofast-x output is shown live in the log window, with PASS/FAIL checks after the run, and **Cancel Inversion** stops a running job. When it finishes, **Visualise** shows the resulting model (requires pyvista) and **Export** writes it to csv. The tab also has buttons to download the plugin manual, the Tomofast-x manual and the plugin cheat sheet.    
    
 Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Windows Subsystem For Linux v2), so you will need to specify which type of Windows you will run and:
 - For **Native Windows** use you only need the path to the MPI-free tomofastx.exe; no OpenMPI, setvars.bat or mpiexec is required; the "number of processors" box sets the number of OpenMP threads
@@ -123,7 +128,8 @@ Under Windows this can be run as a native tomofastx.exe file or via WSL2 (Window
 Otherwise copy these files to another machine and run tomofast-x there (but you will have to fix the paths in the **paramfile.txt** file first)    
 - **data_magn.csv and/or data_grav.csv**: observed geophysical response   
 - **model_grid.txt**: Model mesh   
-- **paramfile.txt**: parameter definition file   
+- **elevation_grid.csv**: elevations (topography) on the mesh grid   
+- **paramfile.txt**: parameter definition file (on native Windows the plugin also copies it into the output folder)   
 
 ## Magnetisation vector inversion (MVI) and gravity gradiometry
 Each data group on the Data/Mesh tab has two dropdowns. Their tooltips show the parameter name written to the paramfile.   
