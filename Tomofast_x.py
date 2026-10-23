@@ -117,6 +117,7 @@ from .resources import *
 
 # Import the code for the DockWidget
 from .Tomofast_x_dockwidget import Tomofast_xDockWidget
+from .layer_path_combo import layer_disk_path, delimited_text_xy
 import os.path
 
 
@@ -732,11 +733,23 @@ class Tomofast_x:
                 self.dlg.lineEdit_output_directory_path_select.clicked.connect(
                     self.select_ouput_directory
                 )
-                self.dlg.pushButton_select_dtm_path.clicked.connect(self.select_dtm)
+                self.dlg.pushButton_select_dtm_path.clicked.connect(
+                    self.load_dtm_from_layer
+                )
+                self.dlg.pushButton_dtm_browse.clicked.connect(self.select_dtm)
+                self.dlg.pushButton_ROI_browse.clicked.connect(self.load_ROI)
+                self.dlg.comboBox_layer_grav_data_path.activated.connect(
+                    lambda _i: self._on_data_layer_chosen("grav")
+                )
+                self.dlg.comboBox_layer_magn_data_path.activated.connect(
+                    lambda _i: self._on_data_layer_chosen("magn")
+                )
                 self.dlg.pushButton_param_load_path.clicked.connect(
                     self.process_parameter_file
                 )
-                self.dlg.lineEdit_ROI_path_select.clicked.connect(self.load_ROI)
+                self.dlg.lineEdit_ROI_path_select.clicked.connect(
+                    self.load_ROI_from_layer
+                )
 
                 self.dlg.radioButton_grav_inv.toggled.connect(
                     self._on_inversion_type_toggled
@@ -1900,6 +1913,8 @@ class Tomofast_x:
                     }
                     result = processing.run("native:reprojectlayer", parameter)["OUTPUT"]
                     QgsProject.instance().addMapLayer(result)
+                    self._roi_layer_id = result.id()
+                    self._roi_crs = proj
                     if self.is_2d:
                         # Restore profile line endpoints and disable rectangular mesh spinboxes
                         features = list(result.getFeatures())
@@ -1940,9 +1955,26 @@ class Tomofast_x:
     # select existing ROI shapefile
     def load_ROI(self):
 
-        self.ROIFileName, _filter = QFileDialog.getOpenFileName(
+        path, _filter = QFileDialog.getOpenFileName(
             None, "Select ROI File", ".", "SHP (*.shp)"
         )
+        if path:
+            self._load_ROI_path(path)
+
+    # use a ROI layer that is already open in the project (path is read from the layer)
+    def load_ROI_from_layer(self):
+        path = self.dlg.comboBox_layer_ROI_path.selected_path()
+        if not path:
+            self.iface.messageBar().pushMessage(
+                "Select a saved polygon or line layer for the mesh ROI",
+                level=Qgis.MessageLevel.Warning,
+                duration=10,
+            )
+            return
+        self._load_ROI_path(path)
+
+    def _load_ROI_path(self, path):
+        self.ROIFileName = path
         self.dlg.lineEdit_ROI_path.setText(self.ROIFileName)
         layer = QgsVectorLayer(self.ROIFileName, "ROI", "ogr")
         if layer.isValid():
@@ -2000,8 +2032,50 @@ class Tomofast_x:
                     w.setEnabled(True)
                 self.data_extents(result)
 
+            # replace the previous reprojected ROI so reloads don't pile up layers
+            if self._roi_layer_id:
+                QgsProject.instance().removeMapLayer(self._roi_layer_id)
             QgsProject.instance().addMapLayer(result)
+            self._roi_layer_id = result.id()
+            self._roi_crs = proj
             self._move_layer_to_top(result)
+
+    # a data load overwrites the mesh limits with the data extent; put the ROI back
+    def _restore_roi_after_data(self):
+        if not self._roi_crs or not self.ROIFileName:
+            return
+        if self._roi_crs == self._main_crs()[1]:
+            self._load_ROI_path(self.ROIFileName)
+            return
+        self.profile_line_pts = None
+        for w in (
+            self.dlg.mQgsSpinBox_mesh_south,
+            self.dlg.mQgsSpinBox_mesh_west,
+            self.dlg.mQgsSpinBox_mesh_north,
+            self.dlg.mQgsSpinBox_mesh_east,
+        ):
+            w.setEnabled(True)
+        self.iface.messageBar().pushMessage(
+            "Data CRS changed",
+            "Mesh ROI was not re-applied; reload the mesh ROI.",
+            level=Qgis.MessageLevel.Warning,
+            duration=15,
+        )
+
+    def _warn_if_dtm_crs_changed(self):
+        if self._dtm_crs and self._dtm_crs != self._main_crs():
+            self.iface.messageBar().pushMessage(
+                "Data CRS changed",
+                "The DTM was loaded for a different CRS; reload the DTM.",
+                level=Qgis.MessageLevel.Warning,
+                duration=15,
+            )
+
+    # (input, output) CRS that the DTM and ROI are reprojected to
+    def _main_crs(self):
+        if self.global_experimentType in (1, 3):
+            return (self.grav_proj_in, self.grav_proj_out)
+        return (self.magn_proj_in, self.magn_proj_out)
 
     def select_data_file(self, dataType):
 
@@ -2035,7 +2109,22 @@ class Tomofast_x:
         self.dtm_filename, _filter = QFileDialog.getOpenFileName(
             None, "Select DTM File", ".", "TIFF (*.tif *.tiff *.TIF *.TIFF)"
         )
+        self._apply_dtm_path()
 
+    # use a DTM layer that is already open in the project (path is read from the layer)
+    def load_dtm_from_layer(self):
+        path = self.dlg.comboBox_layer_dtm_path.selected_path()
+        if not path:
+            self.iface.messageBar().pushMessage(
+                "Select a saved GeoTIFF layer for the DTM",
+                level=Qgis.MessageLevel.Warning,
+                duration=10,
+            )
+            return
+        self.dtm_filename = path
+        self._apply_dtm_path()
+
+    def _apply_dtm_path(self):
         self.dlg.lineEdit_dtm_path.setText(self.dtm_filename)
 
         if self.dtm_filename != "" and os.path.exists(self.dtm_filename):
@@ -2044,10 +2133,55 @@ class Tomofast_x:
             self.global_elevType = 2
             self.forward_depthWeighting_type = 2
 
+    # a saved layer was picked in the grav/mag combo: enable Load (and CRS for csv)
+    def _on_data_layer_chosen(self, dataType):
+        combo = getattr(self.dlg, "comboBox_layer_{}_data_path".format(dataType))
+        path = combo.selected_path()
+        if not path:
+            return
+        load_button = getattr(self.dlg, "pushButton_load_{}_data".format(dataType))
+        load_button.setEnabled(True)
+        if path.lower().endswith(".csv"):
+            crs_in = getattr(
+                self.dlg, "mQgsProjectionSelectionWidget_{}_in".format(dataType)
+            )
+            crs_out = getattr(
+                self.dlg, "mQgsProjectionSelectionWidget_{}_out".format(dataType)
+            )
+            crs_in.setEnabled(True)
+            crs_out.setEnabled(True)
+            layer = combo.selected_layer()
+            if layer is not None and layer.crs().isValid():
+                crs_in.setCrs(layer.crs())
+
+    # a delimited-text layer already knows its X/Y columns: select them in the drop-downs
+    def _prefill_xy_from_layer(self, dataType):
+        combo = getattr(self.dlg, "comboBox_layer_{}_data_path".format(dataType))
+        xy = delimited_text_xy(combo.selected_layer())
+        if not xy:
+            return
+        for name, field in zip(
+            ("comboBox_{}_field_x", "comboBox_{}_field_y"), xy
+        ):
+            box = getattr(self.dlg, name.format(dataType))
+            index = box.findText(field)
+            if index >= 0:
+                box.setCurrentIndex(index)
+
+    # Load pressed with a layer selected: the layer is already open, so just store its path
+    def _grab_layer_path(self, dataType):
+        combo = getattr(self.dlg, "comboBox_layer_{}_data_path".format(dataType))
+        path = combo.selected_path()
+        if path:
+            getattr(self.dlg, "lineEdit_{}_data_path".format(dataType)).setText(path)
+            setattr(self, "filename_{}".format(dataType), path)
+
     # process input grav data and update gui to allow next stage of data to be defined
     def confirm_data_file(self, dataType):
+        self._grab_layer_path(dataType)
         self.is_2d = False   # reset 2D mode in case user changes data file
         self.process_data_file(dataType)
+        self._prefill_xy_from_layer(dataType)
         if dataType == "grav":
             suffix = self.dlg.lineEdit_grav_data_path.text().split(".")[-1]
         else:
@@ -2103,6 +2237,9 @@ class Tomofast_x:
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
 
             self.update_widgets()
+            self._restore_roi_after_data()
+
+        self._warn_if_dtm_crs_changed()
 
     def process_data_fields_grav(self):
         self.update_widgets()
@@ -2283,6 +2420,7 @@ class Tomofast_x:
             # The extent may be unchanged (e.g. a reload), so the spin boxes won't
             # signal; refresh for the new number of stations explicitly
             self.update_model_grid_size()
+            self._restore_roi_after_data()
 
         else:
             self.iface.messageBar().pushMessage(
@@ -2325,6 +2463,7 @@ class Tomofast_x:
             # The extent may be unchanged (e.g. a reload), so the spin boxes won't
             # signal; refresh for the new number of stations explicitly
             self.update_model_grid_size()
+            self._restore_roi_after_data()
 
         else:
             self.iface.messageBar().pushMessage(
@@ -2625,6 +2764,7 @@ class Tomofast_x:
 
             result = processing.runAndLoadResults("gdal:warpreproject", parameter)
 
+            self._dtm_crs = (proj_in, proj_out)
             temppath = result["OUTPUT"]
             gd = gdal.Open(temppath)
             self.dtm_array = gd.ReadAsArray()
@@ -2646,6 +2786,16 @@ class Tomofast_x:
                 level=Qgis.MessageLevel.Warning,
                 duration=45,
             )
+
+    # raster layer already open in the project for this file, or None
+    def _open_raster_for_path(self, path):
+        want = os.path.normcase(os.path.normpath(path))
+        for lyr in QgsProject.instance().mapLayers().values():
+            if isinstance(lyr, QgsRasterLayer):
+                have = layer_disk_path(lyr)
+                if have and os.path.normcase(os.path.normpath(have)) == want:
+                    return lyr
+        return None
 
     # load data
     def process_data_file(self, dataType=None):
@@ -2738,8 +2888,11 @@ class Tomofast_x:
                 )
                 return
 
-            # Load the TIFF file as a QgsRasterLayer
-            if self.global_experimentType == 1 or self.global_experimentType == 2:
+            # Reuse the raster if it is already open in the project, else load it
+            existing_layer = self._open_raster_for_path(filename)
+            if existing_layer is not None:
+                self.data_raster_layer = existing_layer
+            elif self.global_experimentType == 1 or self.global_experimentType == 2:
                 self.data_raster_layer = QgsRasterLayer(filename, "data")
             else:
                 if dataType == "grav":
@@ -2790,8 +2943,9 @@ class Tomofast_x:
             if not self.data_raster_layer.isValid():
                 print("Failed to load the raster layer!")
             else:
-                # Add the raster layer to the QGIS project
-                QgsProject.instance().addMapLayer(self.data_raster_layer)
+                # Add the raster layer to the QGIS project (unless it is already there)
+                if existing_layer is None:
+                    QgsProject.instance().addMapLayer(self.data_raster_layer)
                 self.update_model_grid_size()
 
             self.global_dataType = "raster"
@@ -5305,8 +5459,10 @@ pv.Render()
             "Select or create directory that will store all data, model grid and parfiles, then process data, dtm and model grid files\n\n[global.outputFolderPath]"
         )
         self.dlg.pushButton_select_dtm_path.setToolTip(
-            "Load TIF format Digital Terrane Model\n\n[global.elevFilename]"
+            "Use the GeoTIFF layer selected in the list (must be saved to disk) as the Digital Terrain Model; '...' loads one from disk instead\n\n[global.elevFilename]"
         )
+        self.dlg.pushButton_dtm_browse.setToolTip("Browse the disk for a DTM GeoTIFF")
+        self.dlg.pushButton_ROI_browse.setToolTip("Browse the disk for a mesh ROI shapefile")
         self.dlg.pushButton_param_load_path.setToolTip(
             "Optional: Load existing parfile as the basis for updating an experiment"
         )
@@ -5389,7 +5545,7 @@ pv.Render()
             "Date of Mag Survey, used for auto IGRF calculation"
         )
         self.dlg.lineEdit_ROI_path_select.setToolTip(
-            "Load a shapefile to define x,y limts of Mesh (converts max/min extents of shape into a rectangle)"
+            "Use the polygon/line layer selected in the list (must be saved to disk) to define x,y limits of Mesh (converts max/min extents of shape into a rectangle); '...' loads one from disk instead"
         )
         self.dlg.pushButton_calc_IGRF.setToolTip(
             "Generates estimated Magnetic Field parameters based on height of sensor, date of survey and centroid of Mesh\n\n[]"
@@ -5510,6 +5666,9 @@ pv.Render()
         self.dtm_array = None
         self.data_df = None
         self.ROIFileName = ""
+        self._roi_crs = None  # output CRS the ROI was last loaded against
+        self._roi_layer_id = None  # reprojected ROI layer added to the project
+        self._dtm_crs = None  # (in, out) CRS the DTM was last loaded against
         self.is_2d = False
         self.profile_line_pts = None  # [(x1,y1),(x2,y2)] in output CRS when is_2d
         self.modelGrid_size = [0, 0, 0]

@@ -12,6 +12,8 @@ import re
 
 from qgis.PyQt import QtCore, QtGui, QtWidgets
 
+from .layer_path_combo import FollowEnabled, LayerPathCombo
+
 _FONT_DECLARATION = re.compile(r"font-[a-z-]+\s*:[^;]*;?", re.IGNORECASE)
 
 
@@ -173,7 +175,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "")
         self.lineEdit_grav_data_path.setObjectName("lineEdit_grav_data_path")
         self.pushButton_grav_data_path = QtWidgets.QPushButton(self.groupBox_grav_data_file)
-        self.pushButton_grav_data_path.setGeometry(QtCore.QRect(274, 30, 41, 23))
+        self.pushButton_grav_data_path.setGeometry(QtCore.QRect(274, 26, 41, 24))
         self.pushButton_grav_data_path.setStyleSheet("background-color: rgb(220, 220, 220, 255);")
         self.pushButton_grav_data_path.setObjectName("pushButton_grav_data_path")
         self.label_grav_input_crs = QtWidgets.QLabel(self.groupBox_grav_data_file)
@@ -632,7 +634,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "")
         self.lineEdit_magn_data_path.setObjectName("lineEdit_magn_data_path")
         self.pushButton_magn_data_path = QtWidgets.QPushButton(self.groupBox_magn_data_file)
-        self.pushButton_magn_data_path.setGeometry(QtCore.QRect(270, 26, 41, 23))
+        self.pushButton_magn_data_path.setGeometry(QtCore.QRect(270, 24, 41, 24))
         self.pushButton_magn_data_path.setStyleSheet("background-color: rgb(220, 220, 220, 255);")
         self.pushButton_magn_data_path.setObjectName("pushButton_magn_data_path")
         self.label_magn_input_crs = QtWidgets.QLabel(self.groupBox_magn_data_file)
@@ -1369,6 +1371,8 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         mQgsSpinBox_mesh_south_2.setWidget(self.dockWidgetContents)
 
         self.retranslateUi(mQgsSpinBox_mesh_south_2)
+        self._add_layer_selectors()
+        self._spread_data_boxes()
         # First tab: match the second tab's fonts (the generated per-widget
         # overrides mixed Arial 13px, 9/10/12pt Helvetica and bold titles)
         _normalise_tab_fonts(self.Import_data, keep_small_bold=("label_continue_to_grav_mag",))
@@ -1378,6 +1382,84 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_sensor_height.setFont(_sensor_font)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(mQgsSpinBox_mesh_south_2)
+
+    def _add_layer_selectors(self):
+        """Saved-layer pickers beside the disk-browse buttons.
+
+        The path line edits stay as the stored value (hidden); each combo
+        mirrors them, so a path set from a parfile shows up in the combo too.
+        """
+        for kind, edit, parent, rect in (
+            ("grav_mag", self.lineEdit_grav_data_path, self.groupBox_grav_data_file, (86, 26, 183, 24)),
+            ("grav_mag", self.lineEdit_magn_data_path, self.groupBox_magn_data_file, (86, 24, 178, 24)),
+            ("dtm", self.lineEdit_dtm_path, self.groupBox_dtm, (10, 28, 125, 24)),
+            ("roi", self.lineEdit_ROI_path, self.groupBox_mesh_params, (10, 28, 120, 24)),
+        ):
+            combo = LayerPathCombo(parent, kind)
+            combo.setGeometry(QtCore.QRect(*rect))
+            edit.hide()
+            edit.textChanged.connect(combo.set_path)
+            combo.set_path(edit.text())
+            setattr(self, "comboBox_layer_" + edit.objectName()[len("lineEdit_"):], combo)
+
+        # DTM / ROI: the old "..." button is now "Load ...", and a small
+        # "..." beside it keeps the browse-the-disk option.
+        self.pushButton_select_dtm_path.setGeometry(QtCore.QRect(175, 28, 95, 24))
+        self.pushButton_dtm_browse = QtWidgets.QPushButton(self.groupBox_dtm)
+        self.pushButton_dtm_browse.setGeometry(QtCore.QRect(139, 28, 32, 24))
+        self.pushButton_dtm_browse.setStyleSheet("background-color: rgb(220, 220, 220, 255);")
+        self.pushButton_dtm_browse.setText("...")
+        self.pushButton_dtm_browse.setObjectName("pushButton_dtm_browse")
+        self.lineEdit_ROI_path_select.setGeometry(QtCore.QRect(170, 28, 110, 24))
+        self.pushButton_ROI_browse = QtWidgets.QPushButton(self.groupBox_mesh_params)
+        self.pushButton_ROI_browse.setGeometry(QtCore.QRect(134, 28, 32, 24))
+        self.pushButton_ROI_browse.setStyleSheet("background-color: rgb(220, 220, 220, 255);")
+        self.pushButton_ROI_browse.setText("...")
+        self.pushButton_ROI_browse.setObjectName("pushButton_ROI_browse")
+        # combo + browse button are enabled whenever the Load button is
+        self._dtm_enable_link = FollowEnabled(
+            self.pushButton_select_dtm_path,
+            [self.comboBox_layer_dtm_path, self.pushButton_dtm_browse],
+        )
+        self._roi_enable_link = FollowEnabled(
+            self.lineEdit_ROI_path_select,
+            [self.comboBox_layer_ROI_path, self.pushButton_ROI_browse],
+        )
+
+    def _spread_data_boxes(self, extra=45):
+        """Give the grav / mag data-file groups more vertical room.
+
+        Rows: layer picker, input CRS, output CRS, then the type combos with
+        the Load button in line with them. Everything below moves down.
+        """
+        page = self.Import_data
+
+        def shift(min_y, dy):
+            for w in page.children():
+                if isinstance(w, QtWidgets.QWidget) and w.y() >= min_y:
+                    w.move(w.x(), w.y() + dy)
+
+        def grow(group, fields, kind, combo_a, combo_b, browse_x):
+            for g in (group, fields):
+                g.resize(g.width(), g.height() + extra)
+            geo = QtCore.QRect
+            getattr(self, "label_%s_data_layer" % kind).move(10, 32)
+            getattr(self, "comboBox_layer_%s_data_path" % kind).move(86, 28)
+            getattr(self, "pushButton_%s_data_path" % kind).move(browse_x, 28)
+            getattr(self, "label_%s_input_crs" % kind).move(10, 65)
+            getattr(self, "mQgsProjectionSelectionWidget_%s_in" % kind).move(86, 62)
+            getattr(self, "label_%s_output_crs" % kind).move(10, 99)
+            getattr(self, "mQgsProjectionSelectionWidget_%s_out" % kind).move(86, 96)
+            combo_a.setGeometry(geo(10, 134, 100, 24))
+            combo_b.setGeometry(geo(114, 134, 108, 24))
+            getattr(self, "pushButton_load_%s_data" % kind).setGeometry(geo(230, 134, 88, 24))
+
+        grow(self.groupBox_grav_data_file, self.groupBox_grav_fields, "grav",
+             self.comboBox_grav_type, self.comboBox_grav_ncomp, 274)
+        shift(225, extra)
+        grow(self.groupBox_magn_data_file, self.groupBox_magn_fields, "magn",
+             self.comboBox_magn_ncomp, self.comboBox_magn_nmodel, 270)
+        shift(365 + extra, extra)
 
     def retranslateUi(self, mQgsSpinBox_mesh_south_2):
         _translate = QtCore.QCoreApplication.translate
@@ -1415,7 +1497,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.label_mesh_axis_y.setText(_translate("mQgsSpinBox_mesh_south_2", "Y"))
         self.label_mesh_num_cells.setText(_translate("mQgsSpinBox_mesh_south_2", "# Cells"))
         self.label_mesh_core_cell_size_z.setText(_translate("mQgsSpinBox_mesh_south_2", "Core Cell Size z"))
-        self.lineEdit_ROI_path_select.setText(_translate("mQgsSpinBox_mesh_south_2", "..."))
+        self.lineEdit_ROI_path_select.setText(_translate("mQgsSpinBox_mesh_south_2", "Load mesh ROI"))
         self.lineEdit_ROI_path.setPlaceholderText(_translate("mQgsSpinBox_mesh_south_2", "Define Mesh x,y Limits by shapefile"))
         self.label_mesh_full_depth.setText(_translate("mQgsSpinBox_mesh_south_2", "Full Depth"))
         self.label_mesh_core_depth.setText(_translate("mQgsSpinBox_mesh_south_2", "Core Depth"))
@@ -1455,7 +1537,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.pushButton_assign_magn_fields.setText(_translate("mQgsSpinBox_mesh_south_2", "Assign fields"))
         self.groupBox_dtm.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 4 : Select DTM (optional)"))
         self.lineEdit_dtm_path.setPlaceholderText(_translate("mQgsSpinBox_mesh_south_2", "Path to DTM file"))
-        self.pushButton_select_dtm_path.setText(_translate("mQgsSpinBox_mesh_south_2", "..."))
+        self.pushButton_select_dtm_path.setText(_translate("mQgsSpinBox_mesh_south_2", "Load dtm"))
         self.groupBox_load_parfile.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 0 : Load existing Parameter File (optional)"))
         self.pushButton_param_load_path.setText(_translate("mQgsSpinBox_mesh_south_2", "..."))
         self.lineEdit_param_load_path.setPlaceholderText(_translate("mQgsSpinBox_mesh_south_2", "Path to exisiting parameter file"))
