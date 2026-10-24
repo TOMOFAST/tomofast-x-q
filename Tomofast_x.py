@@ -1531,6 +1531,8 @@ class Tomofast_x:
         env.setdefault("OMP_STACKSIZE", "512M")
         env["GFORTRAN_UNBUFFERED_ALL"] = "y"  # gfortran
         env["FORT_BUFFERED"] = "false"        # Intel ifort/ifx
+        # Force OpenMP threads to sleep when idle (prevents WMI/CPU thrashing)
+        env["OMP_WAIT_POLICY"] = "PASSIVE"
 
         debug_file = open(debug_path, "w")
         try:
