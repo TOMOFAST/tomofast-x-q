@@ -1,11 +1,40 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
+import sys
 
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import pyqtSignal, Qt, QTimer
+from qgis.PyQt.QtCore import pyqtSignal, Qt, QTimer, QSettings
 
 from .ui_dockwidget_generated import Ui_mQgsSpinBox_mesh_south_2
+
+# The native macOS style pads buttons/combos heavily and the default font is
+# larger than on Windows, so the same layout comes out ~30% bigger. On macOS
+# the dock uses a smaller font and the compact Fusion style instead.
+# Set QSettings "Tomofast_x/compactMacUI" to false to keep the native look.
+IS_MACOS = sys.platform == "darwin"
+MACOS_FONT_SCALE = 0.85
+
+_FONT_SIZE = re.compile(r"(font-size\s*:\s*)(\d+(?:\.\d+)?)(px|pt)", re.IGNORECASE)
+
+
+def _compact_mac_ui():
+    if not IS_MACOS:
+        return False
+    return str(QSettings().value("Tomofast_x/compactMacUI", True)).lower() not in ("false", "0")
+
+
+COMPACT_MAC = _compact_mac_ui()
+
+
+def _scale_font_sizes(style):
+    def repl(m):
+        size = float(m.group(2)) * MACOS_FONT_SCALE
+        if m.group(3).lower() == "px":
+            return "%s%dpx" % (m.group(1), round(size))
+        return "%s%.1fpt" % (m.group(1), size)
+    return _FONT_SIZE.sub(repl, style)
 
 
 class Tomofast_xDockWidget(QtWidgets.QDockWidget, Ui_mQgsSpinBox_mesh_south_2):
@@ -23,7 +52,36 @@ class Tomofast_xDockWidget(QtWidgets.QDockWidget, Ui_mQgsSpinBox_mesh_south_2):
         layout.addWidget(self.tabWidget)
         self.tabWidget.setMinimumSize(0, 0)
         self._wrap_tabs_in_scroll_areas()
+        if COMPACT_MAC:
+            self._apply_compact_mac_style(self.dockWidgetContents)
         self._layout_finalized = False
+
+    def _apply_compact_mac_style(self, top):
+        # QGIS sets the font size through an application stylesheet, which
+        # overrides setFont(), so the smaller size has to be a stylesheet too.
+        try:
+            base = float(QSettings().value("qgis/stylesheet/fontPointSize", 0))
+        except (TypeError, ValueError):
+            base = 0
+        if base <= 0:
+            base = QtWidgets.QApplication.font().pointSizeF()
+        if base > 0:
+            top.setStyleSheet(
+                "QWidget { font-size: %.1fpt; }" % (base * MACOS_FONT_SCALE)
+            )
+        # Many widgets carry their own "font-size: 13px" style sheet, which
+        # beats the inherited rule above, so shrink those by the same factor.
+        for w in top.findChildren(QtWidgets.QWidget):
+            style = w.styleSheet()
+            if _FONT_SIZE.search(style):
+                w.setStyleSheet(_scale_font_sizes(style))
+        # Keep a reference: QWidget.setStyle does not take ownership.
+        self._compact_style = QtWidgets.QStyleFactory.create("Fusion")
+        if self._compact_style is None:
+            return
+        top.setStyle(self._compact_style)
+        for w in top.findChildren(QtWidgets.QWidget):
+            w.setStyle(self._compact_style)
 
     def showEvent(self, event):
         super().showEvent(event)
