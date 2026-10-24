@@ -3,6 +3,10 @@ import numpy as np
 import sys
 
 
+# Open viewer windows, kept referenced so they are not garbage collected
+_open_viewers = []
+
+
 def core_bounds_from_model_grid(model_grid_file):
     """
     Return (xmin, xmax, ymin, ymax) of the core (unbuffered) part of a
@@ -62,8 +66,14 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
         print("PyVista is not installed. Please install PyVista...")
         return
     
-    # Create a plotter
-    plotter = pv.Plotter()
+    # Show the scene in a Qt window (see show_plotter_in_qt_window). VTK's
+    # Qt widget needs a native X11/Cocoa/Win32 window, so under a Wayland
+    # session fall back to PyVista's own window.
+    from qgis.PyQt.QtGui import QGuiApplication
+    use_qt_window = QGuiApplication.platformName() != "wayland"
+
+    # Off-screen when the scene is moved into a Qt window below
+    plotter = pv.Plotter(off_screen=use_qt_window)
     
     print(f"Attempting to process {len(files)} voxet files...")
     
@@ -149,9 +159,6 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
         except Exception as e:
             print(f"Error processing {file_path}: {str(e)}")
     
-    # Add axes
-    plotter.add_axes()
-    
     # Only add a single scalar bar if meshes were successfully added
     if meshes_added > 0:
         try:
@@ -166,11 +173,85 @@ def display_voxet_files_clipped_qgis(files, clip_percentile=95, cmap='viridis', 
     # Only display if at least one mesh was added
     if meshes_added > 0:
         print("Displaying visualization...")
-        # Show the plotter
-        plotter.show(interactive=True)
-        print("Visualization closed")
+        if use_qt_window:
+            show_plotter_in_qt_window(plotter, title=os.path.basename(files[0]))
+        else:
+            plotter.add_axes()
+            plotter.show(interactive=True)
     else:
         print("No data to visualize, skipping display")
     
     return plotter
 
+
+def show_plotter_in_qt_window(plotter, title="3D model"):
+    """
+    Show a plotter's scene in a non-modal Qt window inside the running
+    QGIS application.
+
+    plotter.show() opens VTK's own native window, and on macOS closing
+    that window crashes QGIS. Rendering through VTK's Qt widget instead
+    lets QGIS's event loop own the window, so it opens and closes cleanly.
+    """
+    import vtkmodules.qt
+    from qgis.PyQt.QtCore import QT_VERSION_STR, Qt
+    from qgis.PyQt.QtWidgets import QApplication, QDialog, QVBoxLayout
+
+    # On Qt6 a plain QWidget base repaints endlessly (seen on macOS),
+    # freezing QGIS; VTK supports a QOpenGLWidget base there instead.
+    # This must be set before QVTKRenderWindowInteractor is first imported.
+    if QT_VERSION_STR.startswith("6"):
+        vtkmodules.qt.QVTKRWIBase = "QOpenGLWidget"
+    from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
+    from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
+    from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
+
+    class ViewerDialog(QDialog):
+        def closeEvent(self, event):
+            # Release the OpenGL context while the widget still exists
+            self.axes_widget.SetEnabled(False)
+            self.vtk_widget.Finalize()
+            self.plotter.close()
+            if self in _open_viewers:
+                _open_viewers.remove(self)
+            super().closeEvent(event)
+
+    dialog = ViewerDialog(QApplication.activeWindow())
+    dialog.setWindowTitle(title)
+    dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowType.WindowMinMaxButtonsHint)
+    dialog.resize(1024, 768)
+
+    vtk_widget = QVTKRenderWindowInteractor(dialog)
+    layout = QVBoxLayout(dialog)
+    layout.setContentsMargins(0, 0, 0, 0)
+    layout.addWidget(vtk_widget)
+
+    # Move the plotter's renderer into the widget's render window
+    renderer = plotter.renderer
+    plotter.ren_win.RemoveRenderer(renderer)
+    render_window = vtk_widget.GetRenderWindow()
+    render_window.AddRenderer(renderer)
+    interactor = render_window.GetInteractor()
+    interactor.SetInteractorStyle(vtkInteractorStyleTrackballCamera())
+
+    # Orientation axes in the lower-left corner
+    axes_widget = vtkOrientationMarkerWidget()
+    axes_widget.SetOrientationMarker(vtkAxesActor())
+    axes_widget.SetInteractor(interactor)
+    axes_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
+    axes_widget.SetEnabled(True)
+    axes_widget.InteractiveOff()
+
+    dialog.plotter = plotter
+    dialog.vtk_widget = vtk_widget
+    dialog.axes_widget = axes_widget
+    _open_viewers.append(dialog)
+
+    # Same starting view that plotter.show() would give
+    plotter.view_isometric()
+    dialog.show()
+    vtk_widget.Initialize()
+    render_window.Render()
+    return dialog
