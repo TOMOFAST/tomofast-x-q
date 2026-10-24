@@ -1376,6 +1376,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         # First tab: match the second tab's fonts (the generated per-widget
         # overrides mixed Arial 13px, 9/10/12pt Helvetica and bold titles)
         _normalise_tab_fonts(self.Import_data, keep_small_bold=("label_continue_to_grav_mag",))
+        self._layout_compression_row()
         # Sensor Height group title was 9pt, unlike the other groups
         _sensor_font = QtGui.QFont(self.Fieldwork_preparation.font())
         _sensor_font.setBold(False)
@@ -1425,6 +1426,26 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
             self.lineEdit_ROI_path_select,
             [self.comboBox_layer_ROI_path, self.pushButton_ROI_browse],
         )
+
+    def _layout_compression_row(self, gap=8):
+        """Lay the compression row out left to right from each widget's own
+        size, so it doesn't overlap when the platform font is wider (macOS)."""
+        y = 237
+        x = 10
+        cb = self.checkBox_use_compression
+        cb.setGeometry(x, y, cb.sizeHint().width() + 4, 17)
+        x = cb.geometry().right() + gap
+        lbl = self.label_compression_rate
+        lbl.setGeometry(x, y, lbl.sizeHint().width() + 2, 16)
+        x = lbl.geometry().right() + 4
+        spin = self.mQgsDoubleSpinBox_compression_ratio
+        spin.setGeometry(x, y, 111, 20)
+        x = spin.geometry().right() + 2 * gap
+        est = self.label_memory_estimate
+        est.setGeometry(x, y + 3, est.sizeHint().width() + 2, 16)
+        x = est.geometry().right() + 4
+        val = self.memory_label
+        val.setGeometry(x, y + 3, max(val.sizeHint().width() + 2, 60), 16)
 
     def _spread_data_boxes(self, extra=45):
         """Give the grav / mag data-file groups more vertical room.
@@ -1504,7 +1525,8 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.checkBox_use_compression.setText(_translate("mQgsSpinBox_mesh_south_2", "Use Compression"))
         self.label_compression_rate.setText(_translate("mQgsSpinBox_mesh_south_2", "Rate"))
         self.memory_label.setText(_translate("mQgsSpinBox_mesh_south_2", "0"))
-        self.label_memory_estimate.setText(_translate("mQgsSpinBox_mesh_south_2", "Estimated Memory Requirement (GB)"))
+        self.label_memory_estimate.setText(_translate("mQgsSpinBox_mesh_south_2", "Est. Mem. Requirement"))
+        self.label_memory_estimate.setToolTip("Estimated memory requirement (GB)")
         self.label_z_cell_size_list.setText(_translate("mQgsSpinBox_mesh_south_2", "z cell size \n"
 "list"))
         self.textEdit_z_cell_size_list.setHtml(_translate("mQgsSpinBox_mesh_south_2", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
