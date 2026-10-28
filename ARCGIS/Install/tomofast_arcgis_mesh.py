@@ -871,9 +871,7 @@ class MeshMixin:
                 total += float(x)
             except ValueError:
                 pass  # ignore empty / half-typed entries
-        try:
-            if total <= 0:
-                total = self.ui.doubleSpinBox_fullDepth.value()
+        if total <= 0:
+            total = self.ui.doubleSpinBox_fullDepth.value()
+        if total == total and abs(total) != float("inf"):  # skip NaN / inf while full depth is mid-edit
             self.ui.mQgsSpinBox_mesh_padding.setValue(int(round(total)))
-        except Exception:
-            pass  # full depth is mid-edit (empty / not a number yet)
