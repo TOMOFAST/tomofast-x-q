@@ -1,10 +1,10 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.21
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.22
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.21   
+changelog=0.2.22   
     * Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk   
     * Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)   
     * Horizontal padding set automatically to the model depth (still editable)   
@@ -39,38 +39,8 @@ changelog=0.2.21
     * Copy parfile to output folder from the plugin on native Windows   
     * Clip data to rectangle ROI, GUI reorganisation   
     0.2.15 First Beta of ArcGIS Pro Toolbox   
-    0.2.14   
-    * Allow tiff and tif suffix inputs for DTM   
-    * Remove Upload_plugin.py script   
-    * Fix untested path usage   
-    * Add link to new help page and update video to latest GUI  
-    * Split run_inversion into os-specific codes    
-    * Full load of data layers when loading old parfile  
-    * Add built-in display of tomofast output to plugin GUI   
-    * Extract profile and create 2D inversion files   
-    * Add translations for French, Spanish, Portuguese, Brazilian Portuguese and Mandarin   
-    0.2.13   
-    * Update calls for newer pandas compatibility   
-    * Increase max depths for mesh generation   
-    * Update requirements   
-    * Fix IGRF calc   
-    * Fix joint inversion workflow   
-    * Add multiple z cell thicknesses   
-    0.2.12   
-    * Allow simpler Windows runtime install   
-    0.2.11   
-    * Add support for Native Windows tomofast-x    
-    * remove data field from mesh file   
-    * minor GUI reorganisation   
-    0.2.10   
-    * Remove pre command widget for WSL (no longer needed)    
-    * Allow Linux definition of mpirun path   
-    * Allow outputs to be stored on linux drive   
-    * Compatibility with both QGIS4/QT6 and QGIS3/QT5  
-    0.2.9   
-    * Add export to csv option
- 
-    
+    Older changes: see the full changelog in [metadata.txt](https://github.com/TOMOFAST/tomofast-x-q/blob/main/metadata.txt)
+
 ## QGIS Plugin Install
 Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from the Plugin Repository (experimental). To get the newest version, download the zip file of the **main** branch of this repository and use Install from Zip file in the QGIS Plugin Manager of QGIS 3.xx or QGIS 4.xx.   
 
