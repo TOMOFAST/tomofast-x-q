@@ -82,7 +82,7 @@ class Toolbox:
     def __init__(self):
         self.label = "Tomofast-x"
         self.alias = "tomofastx"
-        self.tools = [OpenTomofastPanel]
+        self.tools = [OpenTomofastPanel, SetUpPythonEnvironment]
 
 
 class OpenTomofastPanel:
@@ -129,3 +129,55 @@ class OpenTomofastPanel:
             )
         else:
             arcpy.AddMessage("Tomofast-x GUI closed.")
+
+
+class SetUpPythonEnvironment:
+    """Run setup_arcgispro_env.py (in this folder): clone arcgispro-py3 and add the packages
+    SGTool, Tomofast-x and GeoSubSampler need. The same tool is in all three toolboxes."""
+
+    def __init__(self):
+        self.label = "Set Up Python Environment"
+        self.description = ("Clone the default ArcGIS Pro Python environment (arcgispro-py3), install "
+                            "the packages SGTool, Tomofast-x and GeoSubSampler need, and make the clone "
+                            "the active environment. Takes about 10 minutes and needs an internet "
+                            "connection. Restart ArcGIS Pro when it has finished.")
+        self.canRunInBackground = True
+        self.category = "Setup"
+
+    def getParameterInfo(self):
+        name = arcpy.Parameter(displayName="Environment name", name="env_name",
+                               datatype="GPString", parameterType="Required", direction="Input")
+        name.value = "arcgispro-py3-geotools"
+        activate = arcpy.Parameter(displayName="Make it the active ArcGIS Pro environment",
+                                   name="activate", datatype="GPBoolean",
+                                   parameterType="Optional", direction="Input")
+        activate.value = True
+        recreate = arcpy.Parameter(displayName="Delete the environment first if it already exists",
+                                   name="recreate", datatype="GPBoolean",
+                                   parameterType="Optional", direction="Input")
+        recreate.value = False
+        return [name, activate, recreate]
+
+    def isLicensed(self):
+        return True
+
+    def updateParameters(self, parameters):
+        pass
+
+    def updateMessages(self, parameters):
+        pass
+
+    def execute(self, parameters, messages):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "setup_arcgispro_env", os.path.join(_HERE, "setup_arcgispro_env.py"))
+        env_setup = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(env_setup)
+        try:
+            missing = env_setup.setup(parameters[0].valueAsText, bool(parameters[1].value),
+                                      bool(parameters[2].value), log=messages.addMessage)
+        except env_setup.SetupError as exc:
+            messages.addErrorMessage(str(exc))
+            raise arcpy.ExecuteError
+        if missing:
+            messages.addWarningMessage("Still missing: " + ", ".join(missing))

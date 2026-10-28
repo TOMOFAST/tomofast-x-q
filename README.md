@@ -47,7 +47,21 @@ Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from
 
 ## ArcGIS Pro: THIS IS VERY BETA!!!
 1) Download the zip file of the **main** branch of this repository, unzip it and store it somewhere safe.
-2) In order to run python code in ARCGIS Pro you will need to manually add some python libraries so Tomofast-x has everything it needs:
+2) In the ArcGIS Pro Catalog pane, go to **Toolboxes > Add Toolbox** and select the file **Tomofast_X.pyt** in the **ARCGIS** directory in this repository.
+3) Tomofast-x needs some Python libraries that ArcGIS Pro does not include. The default environment (arcgispro-py3) cannot be changed, so they go into a clone of it. Either use the setup tool (3A, recommended) or do it by hand (3B).
+
+### 3A) Setup tool
+- In the Tomofast_X toolbox, open **Setup > Set Up Python Environment** and click **Run**.
+- The tool clones arcgispro-py3 into a new environment called **arcgispro-py3-geotools**, installs the missing packages, checks that they all import, and makes the new environment the one ArcGIS Pro uses. It needs an internet connection and takes about 10 minutes. Click **View Details** in the Geoprocessing pane to follow its progress.
+- When it has finished, **restart ArcGIS Pro**.
+- The same tool is in the **SGTool**, **tomofast_x_q** and **GeoSubSampler** toolboxes and installs what all three need, so you only need to run it once. Running it again only adds what is missing.
+- Its options let you choose a different environment name, leave ArcGIS Pro's active environment unchanged (activate it later in Package Manager), or delete the environment and start again from a new clone.
+- The tool runs the script `ARCGIS/setup_arcgispro_env.py`, which can also be run from a Windows Command Prompt (change the paths if ArcGIS Pro or this repository are somewhere else):
+  ```
+  "C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe" "C:\path\to\tomofast_x_q\ARCGIS\setup_arcgispro_env.py"
+  ```
+
+### 3B) By hand
 - a) Open Package Manager: Click the Project tab on the ribbon and select Package Manager from the side menu. Access Environment Manager (Gear icon to right of active environemnt): 
   - i) Click the Environment Manager button (top right) to open the management dialog.
   - ii) Clone the Environment: Locate the environment you wish to copy (usually arcgispro-py3) and click the Clone button next to it.
@@ -55,9 +69,10 @@ Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from
   - iv) Finalize: Click OK. The cloning process may take several minutes.
 - b) Once the cloned environment has been created, search for and install the following packages, **if they are not already installed**:
   - pandas
-  - pyvista (needed for Visualise)
-- c) In the ArcGIS Pro Catalogue area, go to Add toolbox and select the file **Tomofast_X.pyt** in the **ARCGIS** directory in this repository. 
-- d) Double click on the new **Tomofast_X.pyt** Toolbox to get the list of functions that can be run, and select  **Open Tomofast-x Panel** then **run** to launch the Tomofast_x_q GUI.     
+  - pyvista (needed for Visualise). It is not in Package Manager, so install it from a Windows Command Prompt with the clone's Python, e.g. `"%LOCALAPPDATA%\ESRI\conda\envs\<your-clone>\python.exe" -m pip install pyvista`
+- c) Activate the clone and restart ArcGIS Pro.
+
+4) Double click on the new **Tomofast_X.pyt** Toolbox to get the list of functions that can be run, and select  **Open Tomofast-x Panel** then **run** to launch the Tomofast_x_q GUI.     
 
 ## Tomofast-x Install
 To use this plugin to its full potential you may want to install Tomofast-x itself on the same computer on which you are running QGIS.
