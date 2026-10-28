@@ -5,6 +5,7 @@
 
 ## Recent changes
 changelog=0.2.22   
+    0.2.21   
     * Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk   
     * Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)   
     * Horizontal padding set automatically to the model depth (still editable)   
