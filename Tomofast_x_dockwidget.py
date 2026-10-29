@@ -72,9 +72,15 @@ class Tomofast_xDockWidget(QtWidgets.QDockWidget, Ui_mQgsSpinBox_mesh_south_2):
         # Many widgets carry their own "font-size: 13px" style sheet, which
         # beats the inherited rule above, so shrink those by the same factor.
         for w in top.findChildren(QtWidgets.QWidget):
+            if w is self.textEdit_inversion_log:
+                continue
             style = w.styleSheet()
             if _FONT_SIZE.search(style):
                 w.setStyleSheet(_scale_font_sizes(style))
+        # The log's 9pt is already tiny on macOS (72 dpi points vs 96 on
+        # Windows); 12pt here matches its size on Windows.
+        log = self.textEdit_inversion_log
+        log.setStyleSheet(_FONT_SIZE.sub(r"\g<1>12pt", log.styleSheet()))
         # Keep a reference: QWidget.setStyle does not take ownership.
         self._compact_style = QtWidgets.QStyleFactory.create("Fusion")
         if self._compact_style is None:
