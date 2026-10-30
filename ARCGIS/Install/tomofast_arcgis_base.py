@@ -56,7 +56,22 @@ class TomofastArcGISBase:
         import tkinter as tk
         from tomofast_ui import TomofastUI
 
+        # its own Windows taskbar entry, so the taskbar shows the plugin's icon
+        # rather than python.exe's (must be set before the first window)
+        try:
+            import ctypes
+
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("WAXI.Tomofast-x")
+        except Exception:
+            pass
         root = tk.Tk()
+        # the plugin's QGIS icon, on this window and every window opened after it
+        try:
+            icon = tk.PhotoImage(file=os.path.join(self.plugin_dir, "..", "icon.png"))
+            root.iconphoto(True, icon)
+            root._tomofast_icon = icon  # keep a reference, or Tk drops the image
+        except Exception:
+            pass
         self.ui = TomofastUI(root)
 
         # ---- Button commands ----------------------------------------
