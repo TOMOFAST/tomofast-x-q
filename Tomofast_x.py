@@ -1217,6 +1217,12 @@ class Tomofast_x:
                         "Fix: python scripts/set_exe_stack.py <path to tomofastx.exe> "
                         "(in the plugin folder), or relink with gfortran -Wl,--stack,536870912"
                     )
+                elif self._process.returncode in (0xC0000135, -1073741515):
+                    self.dlg.textEdit_inversion_log.appendPlainText(
+                        "tomofastx.exe could not start because a DLL it needs was not found.\n"
+                        "Check that the Tomofast-x path points to the OpenMP build "
+                        "(older builds need Intel MPI's impi.dll on the PATH)."
+                    )
         if not self._debug_log_path or not os.path.exists(self._debug_log_path):
             return
         try:
