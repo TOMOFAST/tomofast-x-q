@@ -3,13 +3,14 @@
 ArcGIS Pro Python Toolbox for Tomofast-x.
 Launches the tkinter GUI subprocess and polls for pending layer additions.
 """
+import logging
 import arcpy
 import os
 import sys
 import json
 import time
 import tempfile
-import subprocess
+import subprocess  # nosec B404 - subprocess runs fixed programs (python, conda, pip), never user input
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,7 +31,7 @@ def _clear_pending():
         try:
             os.remove(_PENDING_FILE)
         except Exception:
-            pass
+            logging.getLogger(__name__).debug("Ignored exception", exc_info=True)
 
 
 def _add_pending_layers(seen):
@@ -108,7 +109,7 @@ class OpenTomofastPanel:
         arcpy.AddMessage(f"Launcher: {_LAUNCHER}")
         arcpy.AddMessage("Starting Tomofast-x GUI...")
 
-        proc = subprocess.Popen(
+        proc = subprocess.Popen(  # nosec B603 - fixed program and arguments built by this code, no shell
             [_PYTHON_EXE, _LAUNCHER],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

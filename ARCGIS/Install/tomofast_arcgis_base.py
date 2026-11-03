@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import sys
 import json
@@ -63,7 +64,7 @@ class TomofastArcGISBase:
 
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("WAXI.Tomofast-x")
         except Exception:
-            pass
+            logging.getLogger(__name__).debug("Ignored exception", exc_info=True)
         root = tk.Tk()
         # the plugin's QGIS icon, on this window and every window opened after it
         try:
@@ -71,7 +72,7 @@ class TomofastArcGISBase:
             root.iconphoto(True, icon)
             root._tomofast_icon = icon  # keep a reference, or Tk drops the image
         except Exception:
-            pass
+            logging.getLogger(__name__).debug("Ignored exception", exc_info=True)
         self.ui = TomofastUI(root)
 
         # ---- Button commands ----------------------------------------
