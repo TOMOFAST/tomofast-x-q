@@ -5,6 +5,8 @@
 
 ## Recent changes
 changelog=0.2.22   
+    * macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)   
+    * ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages   
     0.2.21   
     * Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk   
     * Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)   
