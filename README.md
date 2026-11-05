@@ -1,10 +1,12 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.22
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.23
  GIS Plugin to help Tomofast-x usage
 
  **<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat Sheet</a>&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20User%20Manual.pdf">Download Basic Help Document</a>**&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;<a href="https://tectonique.net/tomofast-x-q/tomofast_demo.mp4">Ctrl-click on link to watch demo video</a>**
 
 ## Recent changes
-changelog=0.2.22   
+changelog=0.2.23   
+    * ArcGIS Pro: the Set Up Python Environment tool now requires shapely 2.0 or newer and installs or upgrades it; before, an older shapely was accepted and only failed later   
+    0.2.22   
     * macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)   
     * ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages   
     0.2.21   
