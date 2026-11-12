@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tomofast-x-q User Manual</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1d2329; --muted: #5d6873; --line: #dfe3e8; --card: #f6f8fa;
+  --link: #1f5fa8; --code-bg: #eef1f4;
+  --grav: #c0581b; --grav-bg: #fbeee5;
+  --mag: #1f5fa8; --mag-bg: #e6eef9;
+  --both: #2f7d32; --both-bg: #e7f3e8;
+  --opt: #6b7280; --opt-bg: #eef0f2;
+  --warn: #8a5a00; --warn-bg: #fff6df;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15191d; --fg: #e3e7eb; --muted: #9aa5b1; --line: #2c333a; --card: #1c2228;
+    --link: #7fb2ec; --code-bg: #232a31;
+    --grav: #f0965c; --grav-bg: #3a2516; --mag: #7fb2ec; --mag-bg: #18283b;
+    --both: #7cc48d; --both-bg: #1a2e1e; --opt: #a3abb5; --opt-bg: #262c33;
+    --warn: #f2c766; --warn-bg: #33290f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15191d; --fg: #e3e7eb; --muted: #9aa5b1; --line: #2c333a; --card: #1c2228;
+  --link: #7fb2ec; --code-bg: #232a31;
+  --grav: #f0965c; --grav-bg: #3a2516; --mag: #7fb2ec; --mag-bg: #18283b;
+  --both: #7cc48d; --both-bg: #1a2e1e; --opt: #a3abb5; --opt-bg: #262c33;
+  --warn: #f2c766; --warn-bg: #33290f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 920px; margin: 0 auto; padding: 32px 16px 80px; }
+a { color: var(--link); }
+h1 { font-size: 2rem; margin: 0 0 4px; line-height: 1.25; }
+h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.15rem; margin: 32px 0 8px; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+nav.links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 24px; font-size: .95rem; }
+code, kbd { font-family: ui-monospace, Consolas, monospace; font-size: .9em; background: var(--code-bg);
+  padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: .85rem; line-height: 1.45; }
+pre code { background: none; padding: 0; }
+.tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .02em; border-radius: 999px;
+  padding: 1px 9px; vertical-align: 2px; white-space: nowrap; border: 1px solid currentColor; }
+.tag.grav { color: var(--grav); background: var(--grav-bg); }
+.tag.mag { color: var(--mag); background: var(--mag-bg); }
+.tag.both { color: var(--both); background: var(--both-bg); }
+.tag.opt { color: var(--opt); background: var(--opt-bg); }
+.key { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 14px 16px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; font-size: .95rem; align-items: center; }
+.note, .warn { border-left: 4px solid var(--link); background: var(--card); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+.note p, .warn p { margin: 6px 0; }
+figure { margin: 18px 0 26px; }
+figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+figure.dock img { max-width: min(100%, 680px); }
+figcaption { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+ol.steps > li { margin: 10px 0; }
+ul.fields { list-style: none; padding: 0; margin: 10px 0; }
+ul.fields > li { padding: 8px 0 8px 0; border-bottom: 1px dashed var(--line); }
+ul.fields > li:last-child { border-bottom: 0; }
+ul.fields b { font-weight: 650; }
+.toc { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; }
+.toc ol { margin: 6px 0; padding-left: 20px; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; margin: 12px 0; }
+th, td { text-align: left; vertical-align: top; padding: 7px 9px; border-bottom: 1px solid var(--line); }
+th { background: var(--card); }
+.tablewrap { overflow-x: auto; }
+footer { margin-top: 56px; color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Tomofast-x-q user manual</h1>
+<p class="sub">QGIS plugin for setting up, running and viewing Tomofast-x gravity and magnetic inversions. Plugin version 0.2.23.</p>
+<nav class="links">
+  <a href="reference_manual.html">Reference manual</a>
+  <a href="changelog.html">Changelog</a>
+  <a href="https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf">Cheat sheet (PDF)</a>
+  <a href="https://github.com/TOMOFAST/tomofast-x-q">GitHub repository</a>
+</nav>
+
+<div class="note">
+<p><strong>This manual only covers the fields you must fill in</strong> to get from your data to an inversion result. Every other field has a sensible default and is left alone here. The <a href="reference_manual.html">reference manual</a> describes every field on every tab, the files the plugin writes and the parameter-file names.</p>
+</div>
+
+<div class="key" aria-label="Colour key">
+  <strong>Colour key</strong> (the same as the cheat sheet):
+  <span><span class="tag grav">Grav</span> gravity inversions</span>
+  <span><span class="tag mag">Mag</span> magnetic inversions</span>
+  <span><span class="tag both">Both</span> every inversion (gravity, magnetic or joint)</span>
+  <span><span class="tag opt">Optional</span> not needed, but used in this example</span>
+</div>
+<p>For a <strong>joint</strong> inversion, fill in everything marked <span class="tag grav">Grav</span>, <span class="tag mag">Mag</span> and <span class="tag both">Both</span>.</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ol>
+  <li><a href="#before">Before you start</a></li>
+  <li><a href="#overview">How the plugin is organised</a></li>
+  <li><a href="#tab1">Data/Mesh tab</a></li>
+  <li><a href="#tab2">Grav/Mag Parameters tab</a></li>
+  <li><a href="#tab3">Global Parameters tab: save the input files</a></li>
+  <li><a href="#tab4">Run Inversion tab: run, view and export</a></li>
+  <li><a href="#grav">Differences for gravity and joint inversions</a></li>
+  <li><a href="#next">Where next</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="before">1. Before you start</h2>
+
+<h3>Install the plugin</h3>
+<p>In QGIS open <b>Plugins &gt; Manage and Install Plugins</b>, search for <b>tomofast_x_q</b> and install it. To get the newest version instead, download the zip file of the <b>main</b> branch from <a href="https://github.com/TOMOFAST/tomofast-x-q">github.com/TOMOFAST/tomofast-x-q</a> and use <b>Install from ZIP</b>. The plugin works in QGIS 3.24 to QGIS 4.x. Click the <b>TF-x</b> toolbar button to open the plugin panel. It docks on the right of the QGIS window.</p>
+
+<h3>Install Tomofast-x</h3>
+<p>The plugin prepares the input files. The inversion itself is done by the separate Tomofast-x program, which you can run from the plugin if it is on the same computer.</p>
+<ul>
+  <li><b>Windows</b>: download <a href="https://tectonique.net/tomofast-x-q/OpenMP_version/tomofastx_win.zip">tomofastx_win.zip</a>, unzip it and keep <code>tomofastx.exe</code> somewhere permanent. No MPI installation is needed.</li>
+  <li><b>macOS and Linux</b> (and Windows through WSL): build Tomofast-x as described in the <a href="https://github.com/TOMOFAST/Tomofast-manual/blob/main/install.md">installation instructions</a>.</li>
+</ul>
+<p><b>Visualise</b> (a 3D view of the result) also needs the <code>pyvista</code> Python package in the Python that QGIS uses.</p>
+
+<h3>Prepare your data</h3>
+<ul>
+  <li><b>Gravity or magnetic data</b>: a GeoTIFF or ERS grid, or a CSV file of points with x, y and data columns. A layer you pick from the QGIS project must be saved to disk.</li>
+  <li><b>Use anomalies, not total field.</b> Tomofast-x fits the data as they are. Remove the main (IGRF) field and any regional trend from magnetic data, and use a Bouguer anomaly for gravity.</li>
+  <li>Use a projected coordinate system in metres. Grids are used in their own CRS. CSV points can be reprojected by the plugin.</li>
+</ul>
+
+<h3>The example in this manual</h3>
+<p>The screenshots show a magnetic inversion from the Cajati example project (<code>Cajati_Package_clip.qgz</code>):</p>
+<div class="tablewrap"><table>
+  <tr><th>Input</th><th>File</th></tr>
+  <tr><td>Magnetic grid</td><td><code>7_GEOPHYSICS/Parana_Santa_Catarina_1095_MAGMIC_clipped.tif</code> (125 m cells, SIRGAS 2000 / UTM 22S)</td></tr>
+  <tr><td>DTM</td><td><code>10_TOPOGRAPHY/ALPSMLC30_S025W049_DSM_clipped_reproj.tif</code></td></tr>
+  <tr><td>Region of interest</td><td><code>7_GEOPHYSICS/RegionOfInterest.shp</code></td></tr>
+  <tr><td>Mesh</td><td>500 m cells in x, y and z, a 5,000 m deep core and a full depth of 10,000 m</td></tr>
+</table></div>
+
+<figure>
+  <img src="images/overview_start.png" alt="QGIS with the Cajati project open: the magnetic grid fills the map and the Tomofast_x panel is docked on the right on its Data/Mesh tab.">
+  <figcaption>Figure 1. The Cajati project in QGIS with the magnetic grid displayed. The plugin panel is docked on the right, showing its starting state (Gravity selected and default mesh values).</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="overview">2. How the plugin is organised</h2>
+<p>The panel has four tabs. Work through them from left to right:</p>
+<ol class="steps">
+  <li><b>Data/Mesh</b>: choose the inversion type, load the data and define the 3D model mesh.</li>
+  <li><b>Grav/Mag Parameters</b>: give the sensor height and, for magnetics, the Earth's field.</li>
+  <li><b>Global Parameters</b>: choose an output folder. <b>Save Files</b> writes the data, mesh and parameter file.</li>
+  <li><b>Run Inversion</b>: run Tomofast-x, check the result, view it and export it.</li>
+</ol>
+<p>Hold the mouse over any field to see a tooltip. The name in square brackets, for example <code>[forward.magneticField.inclination]</code>, is the matching parameter-file entry.</p>
+
+<!-- ============================================================ -->
+<h2 id="tab1">3. Data/Mesh tab</h2>
+
+<h3>Step 1: Inversion type <span class="tag both">Both</span></h3>
+<p>Choose <b>Gravity</b>, <b>Mag</b> or <b>Joint</b>. Only the boxes for that type are enabled: in the example, choosing <b>Mag</b> greys out the gravity boxes.</p>
+<figure class="dock">
+  <img src="images/tab1_mag_selected.png" alt="Data/Mesh tab with the Mag inversion type selected. The Step 2a gravity boxes are greyed out and the Step 3a magnetics boxes are enabled.">
+  <figcaption>Figure 2. Mag selected. The gravity boxes (Step 2a/2b) are disabled and the magnetics boxes (Step 3a/3b) are enabled.</figcaption>
+</figure>
+
+<h3>Step 3a: Select the magnetics data file <span class="tag mag">Mag</span></h3>
+<p>(For gravity, use Step 2a in the same way.)</p>
+<ul class="fields">
+  <li><b>Data layer</b>: pick the grid or CSV layer from the drop-down list, which shows the layers in your project that are saved to disk. Alternatively, press <b>...</b> to choose a file on disk.</li>
+  <li><b>Load Mag</b>: reads the data. For a grid, the layer extent is copied into the South/North/West/East mesh limits in Step 5. Press <b>Load Mag</b> again whenever you change the file.</li>
+</ul>
+<figure class="dock">
+  <img src="images/tab1_mag_loaded.png" alt="Step 3a with the Parana_Santa_Catarina_1095_MAGMIC_clipped layer chosen. After Load Mag, Step 5 shows South 7231675, North 7344425, West 701943, East 805193.">
+  <figcaption>Figure 3. The magnetic grid chosen and loaded. Step 5 now holds the extent of the grid.</figcaption>
+</figure>
+
+<h3>Steps 2b/3b: CSV point data only <span class="tag grav">Grav</span> <span class="tag mag">Mag</span></h3>
+<p>Skip this for grids. For a CSV file:</p>
+<ul class="fields">
+  <li><b>Input CRS</b> and <b>Output CRS</b> (Step 2a/3a): the CRS of the coordinates in the file, and the projected CRS (in metres) to work in. Set both <em>before</em> pressing <b>Load</b>.</li>
+  <li><b>long/x</b>, <b>lat/y</b>, <b>Data</b>: choose the coordinate and data columns, then press <b>Assign fields</b>. The points are added to the map.</li>
+</ul>
+
+<h3>Step 4: Select DTM <span class="tag opt">Optional</span></h3>
+<p>Without a DTM the ground is taken as flat at elevation 0. The example uses one: pick the DTM layer and press <b>Load dtm</b>. A reprojected copy called <i>Reprojected DTM</i> is added to the map.</p>
+<figure>
+  <img src="images/map_dtm.png" alt="Map of the ALOS DSM over the magnetic grid area, with hill shading.">
+  <figcaption>Figure 4. The DTM used for the example (project symbology).</figcaption>
+</figure>
+
+<h3>Step 5: Specify mesh parameters <span class="tag both">Both</span></h3>
+<p><b>Mesh limits.</b> <b>South</b>, <b>North</b>, <b>West</b> and <b>East</b> define the core of the model: the area you want to image. They start as the extent of the data, which is often too large. You can type new limits, or <span class="tag opt">Optional</span> pick a polygon layer and press <b>Load mesh ROI</b> to use the rectangle around it (the example does this).</p>
+<figure>
+  <img src="images/map_roi.png" alt="Map of the magnetic grid with the RegionOfInterest polygon outlined in the south-east corner.">
+  <figcaption>Figure 5. The region of interest (outlined) over the magnetic grid. Its bounding rectangle becomes the core of the mesh.</figcaption>
+</figure>
+
+<p><b>Cell sizes and padding.</b></p>
+<ul class="fields">
+  <li><b>Cell Size x</b>, <b>Cell Size y</b>: horizontal cell size in metres. Example: <b>500</b>.</li>
+  <li><b>Horizontal Padding</b>: extra distance added around the core, in cells that get larger outwards, so that edge effects stay outside the core. It is set automatically to the model depth (10,000 m here). You can change it afterwards.</li>
+</ul>
+
+<p><b>Depth.</b> Use <em>one</em> of these two methods:</p>
+<ul class="fields">
+  <li><b>Core Cell Size z</b>, <b>Core Depth</b>, <b>Full Depth</b>: cells of the core cell size down to the core depth, then cells that grow by 15% each down to the full depth. Example: <b>500</b>, <b>5000</b> and <b>10000</b>.</li>
+  <li><b>OR</b> the <b>z cell size list</b> and <b>z cell layer thickness list</b>: comma-separated lists giving a cell size for each depth layer, for example <code>50,100,500</code> and <code>200,500,800</code>. Each thickness should be a multiple of its cell size. When the lists are filled in they replace the core/full depth settings.</li>
+</ul>
+
+<p><b>Check the size.</b> <b># Cells</b> and <b>Est. Mem. Requirement</b> (GB) update as you type. Make sure the memory estimate fits in your computer's memory. If it is too large, use larger cells or a smaller area. <b>Use Compression</b> is ticked and the <b>Rate</b> is set for you. Leave both as they are.</p>
+<figure class="dock">
+  <img src="images/tab1_mesh.png" alt="Data/Mesh tab after loading the DTM and region of interest and entering the mesh: cell sizes 500, padding 10000, core cell size z 500, core depth 5000, full depth 10000, # Cells X 91 Y 97 Z 26, rate 0.07096, memory 0.353 GB.">
+  <figcaption>Figure 6. The finished Data/Mesh tab for the example: 500 m cells, 5,000 m core and 10,000 m full depth. The estimated memory is 0.35 GB.</figcaption>
+</figure>
+<div class="note"><p>The <b># Cells</b> figures are a deliberate over-estimate. The mesh that is written uses fewer, larger padding cells (71 × 77 × 16 cells for the example), so the real memory use is lower than the estimate.</p></div>
+
+<!-- ============================================================ -->
+<h2 id="tab2">4. Grav/Mag Parameters tab</h2>
+<ul class="fields">
+  <li><span class="tag both">Both</span> <b>Sensor Height</b>, <b>Grav</b> / <b>Mag</b>: height of the sensor above the ground in metres, assuming a draped survey. Use 0 for ground surveys. The example uses <b>100</b> m for an airborne magnetic survey.</li>
+  <li><span class="tag mag">Mag</span> <b>Mag Survey Day/Month/Year</b> then <b>Calculate from Survey Parameters</b>: computes the Earth's field (declination, inclination and intensity) from the IGRF model at the centre of the mesh, on the survey date and at the sensor height. For a Noddy GeoTIFF the values stored in the file are used instead. You can also type the three values directly.</li>
+</ul>
+<div class="warn"><p><b>Magnetic inversions need this step.</b> If the field is left at the defaults (declination 0, inclination −45, intensity 65,000), <b>Save Files</b> stops with the message <i>Please define Magnetic Field Parameters</i>.</p></div>
+<figure class="dock">
+  <img src="images/tab2_igrf.png" alt="Grav/Mag Parameters tab: Mag sensor height 100, survey date 01/06/2010, declination -18.84, inclination -35.01, intensity 21968.51. The gravity parameter boxes are greyed out.">
+  <figcaption>Figure 7. Sensor height and Earth's field for the example (survey date 1 June 2010). Use the real date of your survey.</figcaption>
+</figure>
+<p>Everything else on this tab (unit multipliers, model damping, ADMM constraints) is optional. See the <a href="reference_manual.html#tab2">reference manual</a>.</p>
+
+<!-- ============================================================ -->
+<h2 id="tab3">5. Global Parameters tab: save the input files</h2>
+<ul class="fields">
+  <li><span class="tag mag">Mag</span> <b>Target Misfit</b>: check that it is <b>5</b> for a magnetic inversion. In version 0.2.23 it can stay at the gravity value (<code>1e-07</code>) after you switch to Mag, so type <b>5</b> if needed. For gravity leave it at <code>1e-07</code>.</li>
+  <li><span class="tag both">Both</span> <b>Save Files</b>: choose (or create) an empty output folder. The plugin then writes the files Tomofast-x needs and loads the data points and mesh into QGIS.</li>
+</ul>
+<figure class="dock">
+  <img src="images/tab3_saved.png" alt="Global Parameters tab with a description, target misfit 5 and the output directory filled in after Save Files.">
+  <figcaption>Figure 8. Global Parameters after <b>Save Files</b>. The output folder is shown next to the button.</figcaption>
+</figure>
+<p>The output folder now holds:</p>
+<div class="tablewrap"><table>
+  <tr><th>File</th><th>Contents</th></tr>
+  <tr><td><code>paramfile.txt</code></td><td>The Tomofast-x parameter file. All paths in it are relative to this folder.</td></tr>
+  <tr><td><code>data_magn.csv</code> / <code>data_grav.csv</code></td><td>The data as x, y, z, value. Grids are sampled at the centre of each core cell.</td></tr>
+  <tr><td><code>model_grid.txt</code></td><td>The model mesh, including the padding cells.</td></tr>
+  <tr><td><code>elevation_grid.csv</code></td><td>Ground elevation for each mesh column (only when a DTM is used).</td></tr>
+</table></div>
+<figure>
+  <img src="images/map_saved.png" alt="Map over the magnetic grid: blue dots mark mesh cell centres, spaced more widely outwards through the padding; red dots mark the data points, filling the region of interest.">
+  <figcaption>Figure 9. After Save Files: mesh cell centres (blue) and data points (red, one per core cell). The padding cells grow outwards from the core.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="tab4">6. Run Inversion tab: run, view and export</h2>
+<ul class="fields">
+  <li><span class="tag both">Both</span> <b>Path to tomofast</b>: press <b>...</b> and choose the Tomofast-x program (<code>tomofastx.exe</code> on Windows). It is remembered for next time.</li>
+  <li><span class="tag both">Both</span> <b>Path to parfile</b>: filled in automatically with the <code>paramfile.txt</code> just saved.</li>
+  <li><span class="tag both">Both</span> <b>Windows Native</b> or <b>Windows WSL</b> (Windows only): choose Windows Native for <code>tomofastx.exe</code>. With WSL, also type the name of your Linux distribution in <b>WSL Distro</b>. On macOS and Linux, give the path to <b>mpirun</b> if it is not on the PATH.</li>
+  <li><span class="tag both">Both</span> <b>Number of processors</b>: use one fewer than the number of cores in your computer.</li>
+  <li><b>Run Inversion</b>: starts Tomofast-x in the background. Its output appears in the <b>Inversion Log</b>. <b>Cancel Inversion</b> stops it.</li>
+</ul>
+<figure class="dock">
+  <img src="images/tab4_finished.png" alt="Run Inversion tab after the run. The inversion log ends with THE END and a list of PASS checks, and one WARNING about magnetic susceptibility scaling.">
+  <figcaption>Figure 10. The finished example run (about 1.5 minutes). The log ends with <code>THE END</code>, followed by the plugin's automatic checks.</figcaption>
+</figure>
+
+<h3>Check the result</h3>
+<p>When the run ends, the plugin checks the result and adds green <b>PASS</b> or red <b>WARNING</b> lines to the log. They cover the data fit, the compression error, possible over-fitting, the number of iterations and whether the model values are in a sensible range. Each warning suggests what to change. The <a href="reference_manual.html#checks">reference manual</a> lists all the checks.</p>
+<div class="warn"><p>The example run gives <i>WARNING Check magnetic susceptibility unit scaling (min −9.9, max 15.6)</i>. This is because the example grid contains <b>total-field</b> values (about 22,850 nT on average) rather than an anomaly. Tomofast-x then needs unrealistic susceptibilities to fit them. Remove the main field (IGRF) or a regional trend from your grid before the inversion, as described in <a href="#before">Before you start</a>.</p></div>
+
+<h3>View and export</h3>
+<ul class="fields">
+  <li><b>Visualise</b>: opens a 3D view of the final model as x, y and z slices through the core of the mesh. The colours are clipped at the 95th percentile. Needs <code>pyvista</code>.</li>
+  <li><b>Export</b>: writes the final model as <code>mag_final_model3D_full.csv</code> (or <code>grav_…</code>) in the <code>OUTPUT</code> folder, with x, y, z and value columns. You can load it into QGIS or other software.</li>
+</ul>
+<figure>
+  <img src="images/visualise.png" alt="3D view of the final magnetic susceptibility model as three orthogonal slices with a jet colour scale.">
+  <figcaption>Figure 11. The example model shown as Visualise draws it: half-model slices in x, y and z, padding removed, colours clipped at 95%.</figcaption>
+</figure>
+<p>The full results are in the <code>OUTPUT</code> folder: <code>Paraview/</code> holds VTK files you can open in ParaView, and <code>model/</code> and <code>data/</code> hold the final model and the observed, predicted and misfit data.</p>
+
+<!-- ============================================================ -->
+<h2 id="grav">7. Differences for gravity and joint inversions</h2>
+<div class="tablewrap"><table>
+  <tr><th></th><th><span class="tag grav">Gravity</span></th><th><span class="tag mag">Magnetic</span></th><th><span class="tag both">Joint</span></th></tr>
+  <tr><td>Step 1</td><td>Gravity</td><td>Mag</td><td>Joint</td></tr>
+  <tr><td>Data</td><td>Step 2a (and 2b for CSV), <b>Load Grav</b></td><td>Step 3a (and 3b for CSV), <b>Load Mag</b></td><td>Both, each with its own Load button</td></tr>
+  <tr><td>Grav/Mag Parameters</td><td>Grav sensor height</td><td>Mag sensor height, survey date, <b>Calculate from Survey Parameters</b></td><td>Both sensor heights, plus the magnetic field</td></tr>
+  <tr><td>Target Misfit</td><td><code>1e-07</code></td><td><code>5</code></td><td>Leave as set</td></tr>
+</table></div>
+<p>Gravity data are expected in mGal: the default <b>Data</b> unit multiplier of <code>1e-05</code> converts them to SI units. Change it on the Grav/Mag Parameters tab if your data use other units.</p>
+<figure class="dock">
+  <img src="images/tab1_joint.png" alt="Data/Mesh tab with Joint selected: both the gravity (Step 2a) and magnetics (Step 3a) boxes are enabled.">
+  <figcaption>Figure 12. With Joint selected, both the gravity and magnetic data boxes are enabled.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="next">8. Where next</h2>
+<ul>
+  <li>The <a href="reference_manual.html">reference manual</a> describes every field, including the optional ones skipped here: loading an existing parameter file, unit multipliers, model damping, ADMM bound constraints, joint weights, magnetisation vector inversion (MVI), gravity gradiometry, 2D profile inversion and re-using a sensitivity kernel.</li>
+  <li>The <a href="changelog.html">changelog</a> lists what changed in each version.</li>
+  <li>Report problems on the <a href="https://github.com/TOMOFAST/tomofast-x-q/issues">issue tracker</a>.</li>
+</ul>
+
+<footer>Tomofast-x-q plugin by Mark Jessell and Vitaliy Ogarko. Tomofast-x by Vitaliy Ogarko. IGRF calculation uses <a href="https://github.com/klaundal/ppigrf">ppigrf</a>.</footer>
+</main>
+</body>
+</html>

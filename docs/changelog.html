@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tomofast-x-q Changelog</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1d2329; --muted: #5d6873; --line: #dfe3e8;
+  --card: #f6f8fa; --accent: #2f6f3e; --link: #1f5fa8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15191d; --fg: #e3e7eb; --muted: #9aa5b1; --line: #2c333a;
+    --card: #1c2228; --accent: #7cc48d; --link: #7fb2ec;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15191d; --fg: #e3e7eb; --muted: #9aa5b1; --line: #2c333a;
+  --card: #1c2228; --accent: #7cc48d; --link: #7fb2ec;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+a { color: var(--link); }
+h1 { font-size: 1.9rem; margin: 0 0 4px; }
+.sub { color: var(--muted); margin: 0 0 24px; }
+nav.links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 28px; font-size: .95rem; }
+.jump { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 28px; }
+.jump a { text-decoration: none; border: 1px solid var(--line); border-radius: 999px;
+  padding: 2px 10px; font-size: .85rem; color: var(--fg); background: var(--card); }
+section { border-top: 1px solid var(--line); padding: 18px 0 6px; }
+section h2 { font-size: 1.2rem; margin: 0 0 8px; display: flex; align-items: baseline; gap: 10px; }
+.latest { font-size: .75rem; font-weight: 600; color: var(--bg); background: var(--accent);
+  border-radius: 999px; padding: 1px 8px; }
+ul { margin: 0 0 10px; padding-left: 22px; }
+li { margin: 4px 0; }
+footer { margin-top: 40px; color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<main>
+<h1>Tomofast-x-q changelog</h1>
+<p class="sub">Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: <strong>0.2.23</strong>.</p>
+<nav class="links">
+  <a href="user_manual.html">User manual</a>
+  <a href="reference_manual.html">Reference manual</a>
+  <a href="https://github.com/TOMOFAST/tomofast-x-q">GitHub repository</a>
+</nav>
+<div class="jump"><a href="#v0.2.23">0.2.23</a><a href="#v0.2.22">0.2.22</a><a href="#v0.2.21">0.2.21</a><a href="#v0.2.20">0.2.20</a><a href="#v0.2.19">0.2.19</a><a href="#v0.2.18">0.2.18</a><a href="#v0.2.17">0.2.17</a><a href="#v0.2.16">0.2.16</a><a href="#v0.2.15">0.2.15</a><a href="#v0.2.14">0.2.14</a><a href="#v0.2.13">0.2.13</a><a href="#v0.2.12">0.2.12</a><a href="#v0.2.11">0.2.11</a><a href="#v0.2.10">0.2.10</a><a href="#v0.2.9">0.2.9</a><a href="#v0.2.8">0.2.8</a><a href="#v0.2.7">0.2.7</a><a href="#v0.2.6">0.2.6</a><a href="#v0.2.5">0.2.5</a><a href="#v0.2.4">0.2.4</a><a href="#v0.2.3">0.2.3</a><a href="#v0.2.2">0.2.2</a><a href="#v0.2">0.2</a></div>
+<section id="v0.2.23">
+<h2>Version 0.2.23 <span class="latest">latest</span></h2>
+<ul>
+  <li>ArcGIS Pro: the Set Up Python Environment tool now requires shapely 2.0 or newer and installs or upgrades it; before, an older shapely was accepted and only failed later</li>
+</ul>
+</section>
+<section id="v0.2.22">
+<h2>Version 0.2.22</h2>
+<ul>
+  <li>macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)</li>
+  <li>ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages</li>
+</ul>
+</section>
+<section id="v0.2.21">
+<h2>Version 0.2.21</h2>
+<ul>
+  <li>Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk</li>
+  <li>Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)</li>
+  <li>Horizontal padding set automatically to the model depth (still editable)</li>
+  <li>Fix mpirun file selector hiding extension-less files on macOS/Linux</li>
+  <li>QGIS 4 / Qt6 compatibility; more compact dock on macOS</li>
+</ul>
+</section>
+<section id="v0.2.20">
+<h2>Version 0.2.20</h2>
+<ul>
+  <li>ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns</li>
+  <li>ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links</li>
+  <li>Memory estimate and suggested compression rate now refresh reliably (component dropdowns, inversion type, 2D profile, loaded stations, reset) and use the same padded mesh and rule in QGIS and ArcGIS</li>
+  <li>Suggested compression rate varies continuously with mesh size (no 400,000-cell cutoff), so refining the mesh no longer lowers the estimated memory</li>
+  <li>First tab fonts made consistent with the second tab; URLs on the Run Inversion tab are clickable</li>
+</ul>
+</section>
+<section id="v0.2.19">
+<h2>Version 0.2.19</h2>
+<ul>
+  <li>Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data</li>
+  <li>Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components</li>
+  <li>Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name</li>
+  <li>Parameter file writes the new MVI and gradiometry settings (only when non-default); memory estimate accounts for the extra components</li>
+  <li>Joint inversion: gravity and magnetic nData are now set separately; loading a joint-mode data file only fills that dataset&#x27;s column selectors</li>
+  <li>Exported and displayed MVI models use Mx,My,Mz columns and magnitude</li>
+</ul>
+</section>
+<section id="v0.2.18">
+<h2>Version 0.2.18</h2>
+<ul>
+  <li>Native Windows runs: set GFORTRAN_UNBUFFERED_ALL / FORT_BUFFERED so Fortran output is unbuffered and the log updates live</li>
+  <li>Result preview: x/y/z slices now share one clipped colour range</li>
+  <li>Setting the number of lithologies above zero sets the ADMM weight to 1000 and major iterations to 50; back to zero sets the weight to 0 and major iterations to 3</li>
+  <li>Parameter file now uses the ADMM weights and major iterations from the GUI instead of hard-coded overrides</li>
+  <li>Reset now restores all defaults (ADMM lithologies, norm powers, DTM state, field selectors, kernel path, z-layer lists, survey date)</li>
+  <li>Fix magnetic model damping weight and norm power being mapped to the gravity widgets</li>
+</ul>
+</section>
+<section id="v0.2.17">
+<h2>Version 0.2.17</h2>
+<ul>
+  <li>Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)</li>
+  <li>Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF</li>
+</ul>
+</section>
+<section id="v0.2.16">
+<h2>Version 0.2.16</h2>
+<ul>
+  <li>Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)</li>
+  <li>Number of processors box sets the OpenMP thread count (OMP_NUM_THREADS) for native Windows</li>
+  <li>Copy parfile to output folder from the plugin on native Windows</li>
+  <li>Clip data to rectangle ROI, GUI reorganisation</li>
+</ul>
+</section>
+<section id="v0.2.15">
+<h2>Version 0.2.15</h2>
+<ul>
+  <li>First Beta of ArcGIS Pro Toolbox</li>
+</ul>
+</section>
+<section id="v0.2.14">
+<h2>Version 0.2.14</h2>
+<ul>
+  <li>Allow tiff and tif suffix inputs for DTM</li>
+  <li>Remove Upload_plugin.py script</li>
+  <li>Fix untested path usage</li>
+  <li>Add link to new help page and update video to latest GUI</li>
+  <li>Split run_inversion into os-specific codes</li>
+  <li>Full load of data layers when loading old parfile</li>
+  <li>Add built-in display of tomofast output to plugin GUI</li>
+  <li>Extract profile and create 2D inversion files</li>
+  <li>Add translations for French, Spanish, Portuguese, Brazilian Portuguese and Mandarin</li>
+</ul>
+</section>
+<section id="v0.2.13">
+<h2>Version 0.2.13</h2>
+<ul>
+  <li>Update calls for newer pandas compatibility</li>
+  <li>Increase max depths for mesh generation</li>
+  <li>Update requirements</li>
+  <li>Fix IGRF calc</li>
+  <li>Fix joint inversion workflow</li>
+  <li>Add multiple z cell thicknesses</li>
+</ul>
+</section>
+<section id="v0.2.12">
+<h2>Version 0.2.12</h2>
+<ul>
+  <li>Allow simpler Windows runtime install</li>
+</ul>
+</section>
+<section id="v0.2.11">
+<h2>Version 0.2.11</h2>
+<ul>
+  <li>Add support for Native Windows tomofast-x</li>
+  <li>remove data field from mesh file</li>
+  <li>minor GUI reorganisation</li>
+</ul>
+</section>
+<section id="v0.2.10">
+<h2>Version 0.2.10</h2>
+<ul>
+  <li>Remove pre command widget for WSL (no longer needed)</li>
+  <li>Allow Linux definition of mpirun path</li>
+  <li>Allow outputs to be stored on linux drive</li>
+  <li>Compatibility with both QGIS4/QT6 and QGIS3/QT5</li>
+</ul>
+</section>
+<section id="v0.2.9">
+<h2>Version 0.2.9</h2>
+<ul>
+  <li>Add export to csv option</li>
+</ul>
+</section>
+<section id="v0.2.8">
+<h2>Version 0.2.8</h2>
+<ul>
+  <li>Add paramfile parameter name to tooltips</li>
+  <li>Automatically set compression rate based on mesh parameters</li>
+  <li>Simplify GUI so CRS choices only for point data files</li>
+  <li>Fix memory usage estimate using correct data size</li>
+  <li>Automatically save output log</li>
+</ul>
+</section>
+<section id="v0.2.7">
+<h2>Version 0.2.7</h2>
+<ul>
+  <li>Allow users to modify parameters after files written</li>
+</ul>
+</section>
+<section id="v0.2.6">
+<h2>Version 0.2.6</h2>
+<ul>
+  <li>Simplify GUI choices</li>
+  <li>make safe for non-C drives for windows</li>
+  <li>make safe for spaces in paths</li>
+  <li>fix ERS import</li>
+  <li>Multiple GUI tweaks</li>
+</ul>
+</section>
+<section id="v0.2.5">
+<h2>Version 0.2.5</h2>
+<ul>
+  <li>Fixes for DTM for grav and mag when smaller than mesh extent</li>
+  <li>Fixes for name of data file when DTM used</li>
+  <li>Fixes for depth weight values saved in paramfile</li>
+  <li>Add visualisation of end model (requires pyvista library to be installed)</li>
+</ul>
+</section>
+<section id="v0.2.4">
+<h2>Version 0.2.4</h2>
+<ul>
+  <li>Fixes for MacOS when running inversions</li>
+  <li>GUI tweaks for MacOS</li>
+</ul>
+</section>
+<section id="v0.2.3">
+<h2>Version 0.2.3</h2>
+<ul>
+  <li>Fix memory calc for points bug</li>
+  <li>Add demo movie link to repository</li>
+</ul>
+</section>
+<section id="v0.2.2">
+<h2>Version 0.2.2</h2>
+<ul>
+  <li>Added variable hz and vt padding</li>
+</ul>
+</section>
+<section id="v0.2">
+<h2>Version 0.2</h2>
+<ul>
+  <li>Converted to dockable window</li>
+</ul>
+</section>
+<footer>Generated from <code>metadata.txt</code> by <code>docs/make_changelog.py</code>.</footer>
+</main>
+</body>
+</html>
