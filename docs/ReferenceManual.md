@@ -118,9 +118,9 @@ Step 2a 🟧 Grav and Step 3a 🟦 Mag work the same way.
 | Scalar model / Vector (MVI) | ⬜ Optional | `modelGrid.magn.nModelComponents` (1 or 3) | Solve for susceptibility, or for a magnetisation vector (Mx, My, Mz) in each cell. |
 | **Load Grav** / **Load Mag** | 🟧 Grav 🟦 Mag |  | Reads the chosen data. A raster is added to the map (or the open layer is reused) and its extent is copied to the mesh limits in Step 5. For multi-component rasters the matching component files are found and checked. For a CSV file the column lists in Step 2b/3b are filled. If a mesh ROI was loaded earlier with the same CRS it is re-applied; if the CRS has changed you are asked to reload the ROI and the DTM. |
 
-<img src="images/tab1_mag_loaded.png" width="420" alt="Step 3a with the MAGMIC grid chosen; Step 5 limits now show the raster extent South 7231675 North 7344425 West 701943 East 805193.">
+<img src="images/tab1_mag_loaded.png" width="420" alt="Step 3a with the regional-removed MAGMIC_clipped_RR grid chosen; Step 5 limits now show the raster extent South 7231675 North 7344425 West 701943 East 805193.">
 
-*After **Load Mag** with the Cajati grid: the Step 5 limits hold the raster extent.*
+*After **Load Mag** with the Cajati grid (regional removed): the Step 5 limits hold the raster extent.*
 
 ### Steps 2b and 3b: Define input fields 🟧 Grav 🟦 Mag (CSV)
 
@@ -198,7 +198,7 @@ Without compression, rate = 1. Stations are the number of CSV points once loaded
 | Units | Values are written unchanged. Tomofast-x multiplies them by the data unit multiplier ([section 7](#7-gravmag-parameters-tab)). |
 
 > [!WARNING]
-> **Use anomaly data.** The plugin does not remove a regional field or the IGRF. Magnetic total-field grids (such as the Cajati `MAGMIC` grid, mean ≈ 22,850 nT) must be reduced to anomalies first, otherwise the inversion needs unrealistic susceptibilities and the [susceptibility check](#10-post-run-checks) warns. Gravity should be a Bouguer (or residual) anomaly.
+> **Use anomaly data.** The plugin does not remove a regional field or the IGRF. Magnetic total-field grids (such as the original Cajati `MAGMIC` grid, mean ≈ 22,855 nT) must be reduced to anomalies first, otherwise the inversion needs unrealistic susceptibilities and the [susceptibility check](#10-post-run-checks) warns. The example data include a `_RR` grid made with the 1st-order **Remove Regional** filter of the [SGTool](https://github.com/swaxi/SGTool) plugin (see the [User Manual](UserManual.md#example-data)). Gravity should be a Bouguer (or residual) anomaly.
 
 ![Mesh cell centres in blue, widening outwards through the padding, and data points in red filling the core region over the magnetic grid.](images/map_saved.png)
 
@@ -248,7 +248,7 @@ Depth weighting is not shown in the panel. It is written as `forward.depthWeight
 
 ## 8. Global Parameters tab
 
-<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with description, major iterations 3, minor 100, target misfit 5, joint weights, sensitivity kernel options and the output directory path after Save Files.">
+<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with major iterations 3, minor 100, target misfit 5, joint weights, sensitivity kernel options and the output directory path after Save Files.">
 
 *Global Parameters for the Cajati example after **Save Files**.*
 
@@ -268,11 +268,11 @@ Depth weighting is not shown in the panel. It is written as `forward.depthWeight
 
 ## 9. Run Inversion tab
 
-<img src="images/tab4_run.png" width="420" alt="Run Inversion tab before the run, with the path to tomofastx.exe and paramfile.txt, Windows Native selected and 19 processors.">
+<img src="images/tab4_run.png" width="420" alt="Run Inversion tab on macOS before the run, with the paths to tomofastx, paramfile.txt and mpirun, and 9 processors. The Windows Native and WSL options are greyed out.">
 
-*Ready to run (Windows Native).*
+*Ready to run (macOS, with mpirun).*
 
-<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run: the log ends with THE END followed by green PASS lines and one red WARNING line.">
+<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run: the log ends with THE END followed by six green PASS lines.">
 
 *Finished run with the post-run checks.*
 
@@ -290,7 +290,7 @@ Depth weighting is not shown in the panel. It is written as `forward.depthWeight
 | **Export** |  | Writes `OUTPUT/grav_final_model3D_full.csv` and/or `mag_final_model3D_full.csv`: cell centres `x,y,z` (z positive upwards) and the value (`data`, or `Mx,My,Mz` for MVI). |
 | Download Plugin Manual / Cheat Sheet / Tomofast-x Manual |  | Open the documents in your browser. |
 
-![3D view of the Cajati magnetic model: three orthogonal slices coloured with the jet colour map and a shared scale bar clipped at 95%.](images/visualise.png)
+![3D view of the Cajati magnetic model: three orthogonal slices coloured with the jet colour map and a shared scale bar from -0.861 to 0.154, clipped at 95%.](images/visualise.png)
 
 *The Cajati model as drawn by Visualise: half-model slices, padding removed, shared colour scale clipped at the 95th percentile.*
 
@@ -310,7 +310,7 @@ When Tomofast-x finishes, the plugin reads `OUTPUT/costs.txt` and the run log an
 | Density range | \|min\| or \|max\| of model 1 > 1000 | Check the gravity unit multipliers. |
 | Susceptibility range | \|min\| or \|max\| of model 2 > 1 (scalar magnetic models only) | Check the magnetic units, and that the data are anomalies (see [section 6](#6-how-the-data-are-prepared)). |
 
-The Cajati example passes every check except the susceptibility range (min −9.9, max 15.6), because the input grid is total field rather than an anomaly.
+The Cajati example (regional-removed grid) passes every check, with susceptibilities from −0.89 to 0.90. Inverting the original total-field grid instead fails the susceptibility range check (min −9.9, max 15.6).
 
 ---
 

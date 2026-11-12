@@ -20,6 +20,7 @@ For a **joint** inversion, fill in everything marked 🟧 Grav, 🟦 Mag and �
 
 **Contents**
 
+0. [Example data](#example-data)
 1. [Before you start](#1-before-you-start)
 2. [How the plugin is organised](#2-how-the-plugin-is-organised)
 3. [Data/Mesh tab](#3-datamesh-tab)
@@ -28,6 +29,24 @@ For a **joint** inversion, fill in everything marked 🟧 Grav, 🟦 Mag and �
 6. [Run Inversion tab: run, view and export](#6-run-inversion-tab-run-view-and-export)
 7. [Differences for gravity and joint inversions](#7-differences-for-gravity-and-joint-inversions)
 8. [Where next](#8-where-next)
+
+---
+
+## Example data
+
+To follow the manual with the same data, download **[Cajati.zip](https://tectonique.net/tomofast-x-q/Cajati.zip)** (about 25 MB). Unzip it and open `Cajati/Cajati_Package_clip.qgz` in QGIS. The airborne magnetic grid and the area around the Cajati alkaline complex, Brazil, are courtesy of the [Brazilian Geological Survey (SGB)](https://www.sgb.gov.br/home).
+
+The zip contains:
+
+| File | Contents |
+|---|---|
+| `Parana_Santa_Catarina_1095_MAGMIC_clipped_RR.tif` | **The magnetic grid used in this manual**: the SGB total magnetic intensity grid with its regional trend removed (125 m cells, SIRGAS 2000 / UTM 22S). |
+| `Parana_Santa_Catarina_1095_MAGMIC_clipped.tif` | The original total-field grid, for comparison (hidden in the project). |
+| `ALPSMLC30_S025W049_DSM_clipped_reproj.tif` | ALOS 30 m digital surface model, used as the DTM. |
+| `RegionOfInterest.shp` | The rectangle used as the core of the mesh. |
+| `world_borders.shp` | Country outlines for context. |
+
+**Why the regional is removed.** The original grid holds total-field values that average about 22,855 nT. Tomofast-x fits data as they are, so it needs unrealistic susceptibilities to fit such large values. The `_RR` grid was made with the **Remove Regional** filter (1st order) of the [SGTool](https://github.com/swaxi/SGTool) QGIS plugin. It fits a plane to the grid by least squares and subtracts it, so the result is centred on zero: the mean is 0 nT and the values run from −3,312 to 2,163 nT. To prepare your own data in the same way, open the grid in SGTool and tick **Remove Regional** with a 1st-order fit. Use 2nd order if a plane does not remove the trend.
 
 ---
 
@@ -49,23 +68,23 @@ The plugin prepares the input files. The inversion itself is done by the separat
 ### Prepare your data
 
 - **Gravity or magnetic data**: a GeoTIFF or ERS grid, or a CSV file of points with x, y and data columns. A layer you pick from the QGIS project must be saved to disk.
-- **Use anomalies, not total field.** Tomofast-x fits the data as they are. Remove the main (IGRF) field and any regional trend from magnetic data, and use a Bouguer anomaly for gravity.
+- **Use anomalies, not total field.** Tomofast-x fits the data as they are. Remove the main (IGRF) field and any regional trend from magnetic data, for example with SGTool's **Remove Regional** (see [Example data](#example-data)), and use a Bouguer anomaly for gravity.
 - Use a projected coordinate system in metres. Grids are used in their own CRS. CSV points can be reprojected by the plugin.
 
 ### The example in this manual
 
-The screenshots show a magnetic inversion from the Cajati example project (`Cajati_Package_clip.qgz`):
+The screenshots show a magnetic inversion of the [example data](#example-data) (`Cajati_Package_clip.qgz`), taken on macOS. On Windows and Linux the panel looks slightly different.
 
 | Input | File |
 |---|---|
-| Magnetic grid | `7_GEOPHYSICS/Parana_Santa_Catarina_1095_MAGMIC_clipped.tif` (125 m cells, SIRGAS 2000 / UTM 22S) |
-| DTM | `10_TOPOGRAPHY/ALPSMLC30_S025W049_DSM_clipped_reproj.tif` |
-| Region of interest | `7_GEOPHYSICS/RegionOfInterest.shp` |
+| Magnetic grid | `Parana_Santa_Catarina_1095_MAGMIC_clipped_RR.tif` (regional removed, 125 m cells, SIRGAS 2000 / UTM 22S) |
+| DTM | `ALPSMLC30_S025W049_DSM_clipped_reproj.tif` |
+| Region of interest | `RegionOfInterest.shp` |
 | Mesh | 500 m cells in x, y and z, a 5,000 m deep core and a full depth of 10,000 m |
 
-![QGIS with the Cajati project open: the magnetic grid fills the map and the Tomofast_x panel is docked on the right on its Data/Mesh tab.](images/overview_start.png)
+![QGIS with the Cajati project open: the regional-removed magnetic grid fills the map, the region of interest is outlined in the south-east, and the Tomofast_x panel is docked on the right on its Data/Mesh tab.](images/overview_start.png)
 
-*Figure 1. The Cajati project in QGIS with the magnetic grid displayed. The plugin panel is docked on the right, showing its starting state (Gravity selected and default mesh values).*
+*Figure 1. The Cajati project in QGIS with the regional-removed magnetic grid displayed (grey scale ±219 nT). The plugin panel is docked on the right, showing its starting state (Gravity selected and default mesh values).*
 
 ---
 
@@ -99,9 +118,9 @@ Choose **Gravity**, **Mag** or **Joint**. Only the boxes for that type are enabl
 - **Data layer**: pick the grid or CSV layer from the drop-down list, which shows the layers in your project that are saved to disk. Alternatively, press **...** to choose a file on disk.
 - **Load Mag**: reads the data. For a grid, the layer extent is copied into the South/North/West/East mesh limits in Step 5. Press **Load Mag** again whenever you change the file.
 
-<img src="images/tab1_mag_loaded.png" width="420" alt="Step 3a with the Parana_Santa_Catarina_1095_MAGMIC_clipped layer chosen. After Load Mag, Step 5 shows South 7231675, North 7344425, West 701943, East 805193.">
+<img src="images/tab1_mag_loaded.png" width="420" alt="Step 3a with the Parana_Santa_Catarina_1095_MAGMIC_clipped_RR layer chosen. After Load Mag, Step 5 shows South 7231675, North 7344425, West 701943, East 805193.">
 
-*Figure 3. The magnetic grid chosen and loaded. Step 5 now holds the extent of the grid.*
+*Figure 3. The regional-removed magnetic grid (`…_clipped_RR`) chosen and loaded. Step 5 now holds the extent of the grid.*
 
 ### Steps 2b/3b: CSV point data only 🟧 Grav 🟦 Mag
 
@@ -122,7 +141,7 @@ Without a DTM the ground is taken as flat at elevation 0. The example uses one: 
 
 **Mesh limits.** **South**, **North**, **West** and **East** define the core of the model: the area you want to image. They start as the extent of the data, which is often too large. You can type new limits, or (⬜ Optional) pick a polygon layer and press **Load mesh ROI** to use the rectangle around it (the example does this).
 
-![Map of the magnetic grid with the RegionOfInterest polygon outlined in the south-east corner.](images/map_roi.png)
+![Map of the regional-removed magnetic grid with the RegionOfInterest polygon outlined in the south-east corner.](images/map_roi.png)
 
 *Figure 5. The region of interest (outlined) over the magnetic grid. Its bounding rectangle becomes the core of the mesh.*
 
@@ -168,7 +187,7 @@ Everything else on this tab (unit multipliers, model damping, ADMM constraints) 
 - 🟦 **Mag** · **Target Misfit**: check that it is **5** for a magnetic inversion. In version 0.2.23 it can stay at the gravity value (`1e-07`) after you switch to Mag, so type **5** if needed. For gravity leave it at `1e-07`.
 - 🟩 **Both** · **Save Files**: choose (or create) an empty output folder. The plugin then writes the files Tomofast-x needs and loads the data points and mesh into QGIS.
 
-<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with a description, target misfit 5 and the output directory filled in after Save Files.">
+<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with target misfit 5 and the output directory filled in after Save Files.">
 
 *Figure 8. Global Parameters after **Save Files**. The output folder is shown next to the button.*
 
@@ -195,25 +214,27 @@ The output folder now holds:
 - 🟩 **Both** · **Number of processors**: use one fewer than the number of cores in your computer.
 - **Run Inversion**: starts Tomofast-x in the background. Its output appears in the **Inversion Log**. **Cancel Inversion** stops it.
 
-<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run. The inversion log ends with THE END and a list of PASS checks, and one WARNING about magnetic susceptibility scaling.">
+<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run on macOS. The inversion log ends with THE END followed by six green PASS checks, including magnetic susceptibility range acceptable (min -0.8879, max 0.904).">
 
-*Figure 10. The finished example run (about 1.5 minutes). The log ends with `THE END`, followed by the plugin's automatic checks.*
+*Figure 10. The finished example run (under a minute with 9 processes on a recent Mac; about 1.5 minutes on a Windows PC). The log ends with `THE END`, followed by the plugin's automatic checks.*
 
 ### Check the result
 
 When the run ends, the plugin checks the result and adds green **PASS** or red **WARNING** lines to the log. They cover the data fit, the compression error, possible over-fitting, the number of iterations and whether the model values are in a sensible range. Each warning suggests what to change. The [Reference Manual](ReferenceManual.md#10-post-run-checks) lists all the checks.
 
+The example run passes every check. The final model's susceptibilities range from −0.89 to 0.90 SI.
+
 > [!WARNING]
-> The example run gives *WARNING Check magnetic susceptibility unit scaling (min −9.9, max 15.6)*. This is because the example grid contains **total-field** values (about 22,850 nT on average) rather than an anomaly. Tomofast-x then needs unrealistic susceptibilities to fit them. Remove the main field (IGRF) or a regional trend from your grid before the inversion, as described in [Before you start](#1-before-you-start).
+> If you invert the original total-field grid (`Parana_Santa_Catarina_1095_MAGMIC_clipped.tif`, about 22,855 nT on average) instead of the `_RR` grid, the run ends with *WARNING Check magnetic susceptibility unit scaling* (min −9.9, max 15.6). Tomofast-x needs unrealistic susceptibilities to fit total-field values. Remove the main field (IGRF) or a regional trend from your grid before the inversion, as described in [Example data](#example-data).
 
 ### View and export
 
 - **Visualise**: opens a 3D view of the final model as x, y and z slices through the core of the mesh. The colours are clipped at the 95th percentile. Needs `pyvista`.
 - **Export**: writes the final model as `mag_final_model3D_full.csv` (or `grav_…`) in the `OUTPUT` folder, with x, y, z and value columns. You can load it into QGIS or other software.
 
-![3D view of the final magnetic susceptibility model as three orthogonal slices with a jet colour scale.](images/visualise.png)
+![3D view of the final magnetic susceptibility model as three orthogonal slices with a jet colour scale from -0.861 to 0.154. Most of the model is near zero; strong negative and positive values sit below the centre of the core, under the Cajati anomaly.](images/visualise.png)
 
-*Figure 11. The example model shown as Visualise draws it: half-model slices in x, y and z, padding removed, colours clipped at 95%.*
+*Figure 11. The example model shown as Visualise draws it: half-model slices in x, y and z, padding removed, colours clipped at the 95th percentile (here −0.86 to 0.15 SI). The strongest susceptibilities lie under the Cajati anomaly at the centre of the core.*
 
 The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can open in ParaView, and `model/` and `data/` hold the final model and the observed, predicted and misfit data.
 
