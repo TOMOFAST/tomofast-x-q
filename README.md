@@ -1,12 +1,12 @@
 # Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.23
  GIS Plugin to help Tomofast-x usage
 
-**[User Manual](https://tomofast.github.io/tomofast-x-q/user_manual.html)** &nbsp;|&nbsp; **[Reference Manual](https://tomofast.github.io/tomofast-x-q/reference_manual.html)** &nbsp;|&nbsp; **[Changelog](https://tomofast.github.io/tomofast-x-q/changelog.html)** &nbsp;|&nbsp; [Cheat Sheet](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) &nbsp;|&nbsp; [Demo video](https://tectonique.net/tomofast-x-q/tomofast_demo.mp4)
+**[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp; [Cheat Sheet](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) &nbsp;|&nbsp; [Demo video](https://tectonique.net/tomofast-x-q/tomofast_demo.mp4)
 
 ## Documentation
-* [User Manual](https://tomofast.github.io/tomofast-x-q/user_manual.html): a step-by-step magnetic inversion with the Cajati example data, covering only the required fields
-* [Reference Manual](https://tomofast.github.io/tomofast-x-q/reference_manual.html): every tab, field and button, including optional parameters, joint grav + mag inversions, MVI, gravity gradiometry and troubleshooting
-* [Changelog](https://tomofast.github.io/tomofast-x-q/changelog.html): full version history
+* [User Manual](docs/UserManual.md): a step-by-step magnetic inversion with the Cajati example data, covering only the required fields
+* [Reference Manual](docs/ReferenceManual.md): every tab, field and button, including optional parameters, joint grav + mag inversions, MVI, gravity gradiometry and troubleshooting
+* [Changelog](CHANGELOG.md): full version history
 
 Tooltips in the plugin show the paramfile name of each parameter in square brackets.
 

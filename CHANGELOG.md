@@ -1,0 +1,153 @@
+# Tomofast-x-q Changelog
+
+Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: **0.2.23**.
+
+[User Manual](docs/UserManual.md) · [Reference Manual](docs/ReferenceManual.md) · [README](README.md)
+
+<!-- Generated from metadata.txt by docs/make_changelog.py. Edit metadata.txt, not this file. -->
+
+## 0.2.23 (latest)
+
+- ArcGIS Pro: the Set Up Python Environment tool now requires shapely 2.0 or newer and installs or upgrades it; before, an older shapely was accepted and only failed later
+
+## 0.2.22
+
+- macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)
+- ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages
+
+## 0.2.21
+
+- Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk
+- Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)
+- Horizontal padding set automatically to the model depth (still editable)
+- Fix mpirun file selector hiding extension-less files on macOS/Linux
+- QGIS 4 / Qt6 compatibility; more compact dock on macOS
+
+## 0.2.20
+
+- ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns
+- ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links
+- Memory estimate and suggested compression rate now refresh reliably (component dropdowns, inversion type, 2D profile, loaded stations, reset) and use the same padded mesh and rule in QGIS and ArcGIS
+- Suggested compression rate varies continuously with mesh size (no 400,000-cell cutoff), so refining the mesh no longer lowers the estimated memory
+- First tab fonts made consistent with the second tab; URLs on the Run Inversion tab are clickable
+
+## 0.2.19
+
+- Add Magnetisation Vector Inversion (MVI): choose a scalar or vector (3-component) magnetic model, and TMI or Bx,By,Bz data
+- Add gravity gradiometry: choose gravity or gradiometry data with 1 or 6 (xx,yy,zz,xy,yz,xz) components
+- Multi-component data: CSV uses the selected data column plus the following columns; GeoTIFF components are found automatically from the Bx/By/Bz or xx/yy/zz/xy/yz/xz tag in the file name
+- Parameter file writes the new MVI and gradiometry settings (only when non-default); memory estimate accounts for the extra components
+- Joint inversion: gravity and magnetic nData are now set separately; loading a joint-mode data file only fills that dataset's column selectors
+- Exported and displayed MVI models use Mx,My,Mz columns and magnitude
+
+## 0.2.18
+
+- Native Windows runs: set GFORTRAN_UNBUFFERED_ALL / FORT_BUFFERED so Fortran output is unbuffered and the log updates live
+- Result preview: x/y/z slices now share one clipped colour range
+- Setting the number of lithologies above zero sets the ADMM weight to 1000 and major iterations to 50; back to zero sets the weight to 0 and major iterations to 3
+- Parameter file now uses the ADMM weights and major iterations from the GUI instead of hard-coded overrides
+- Reset now restores all defaults (ADMM lithologies, norm powers, DTM state, field selectors, kernel path, z-layer lists, survey date)
+- Fix magnetic model damping weight and norm power being mapped to the gravity widgets
+
+## 0.2.17
+
+- Add Cancel Inversion button to kill a running tomofast job (Windows native, WSL, macOS, Linux)
+- Calculate from Survey Parameters uses the inclination, declination and intensity stored in Noddy GeoTIFF metadata (as imported by SGTool) instead of IGRF
+
+## 0.2.16
+
+- Native Windows tomofastx.exe no longer requires OpenMPI: remove setvars.bat and mpiexec widgets and run the exe directly (no batch file)
+- Number of processors box sets the OpenMP thread count (OMP_NUM_THREADS) for native Windows
+- Copy parfile to output folder from the plugin on native Windows
+- Clip data to rectangle ROI, GUI reorganisation
+
+## 0.2.15
+
+- First Beta of ArcGIS Pro Toolbox
+
+## 0.2.14
+
+- Allow tiff and tif suffix inputs for DTM
+- Remove Upload_plugin.py script
+- Fix untested path usage
+- Add link to new help page and update video to latest GUI
+- Split run_inversion into os-specific codes
+- Full load of data layers when loading old parfile
+- Add built-in display of tomofast output to plugin GUI
+- Extract profile and create 2D inversion files
+- Add translations for French, Spanish, Portuguese, Brazilian Portuguese and Mandarin
+
+## 0.2.13
+
+- Update calls for newer pandas compatibility
+- Increase max depths for mesh generation
+- Update requirements
+- Fix IGRF calc
+- Fix joint inversion workflow
+- Add multiple z cell thicknesses
+
+## 0.2.12
+
+- Allow simpler Windows runtime install
+
+## 0.2.11
+
+- Add support for Native Windows tomofast-x
+- remove data field from mesh file
+- minor GUI reorganisation
+
+## 0.2.10
+
+- Remove pre command widget for WSL (no longer needed)
+- Allow Linux definition of mpirun path
+- Allow outputs to be stored on linux drive
+- Compatibility with both QGIS4/QT6 and QGIS3/QT5
+
+## 0.2.9
+
+- Add export to csv option
+
+## 0.2.8
+
+- Add paramfile parameter name to tooltips
+- Automatically set compression rate based on mesh parameters
+- Simplify GUI so CRS choices only for point data files
+- Fix memory usage estimate using correct data size
+- Automatically save output log
+
+## 0.2.7
+
+- Allow users to modify parameters after files written
+
+## 0.2.6
+
+- Simplify GUI choices
+- make safe for non-C drives for windows
+- make safe for spaces in paths
+- fix ERS import
+- Multiple GUI tweaks
+
+## 0.2.5
+
+- Fixes for DTM for grav and mag when smaller than mesh extent
+- Fixes for name of data file when DTM used
+- Fixes for depth weight values saved in paramfile
+- Add visualisation of end model (requires pyvista library to be installed)
+
+## 0.2.4
+
+- Fixes for MacOS when running inversions
+- GUI tweaks for MacOS
+
+## 0.2.3
+
+- Fix memory calc for points bug
+- Add demo movie link to repository
+
+## 0.2.2
+
+- Added variable hz and vt padding
+
+## 0.2
+
+- Converted to dockable window
