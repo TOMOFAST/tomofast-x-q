@@ -18,7 +18,7 @@ Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from
 2) In the ArcGIS Pro Catalog pane, go to **Toolboxes > Add Toolbox** and select the file **Tomofast_X.pyt** in the **ARCGIS** directory in this repository.
 3) Tomofast-x needs some Python libraries that ArcGIS Pro does not include. The default environment (arcgispro-py3) cannot be changed, so they go into a clone of it. Either use the setup tool (3A, recommended) or do it by hand (3B).
 
-### 3A) Setup tool
+### 3A) Setup tool (Recommended)
 > **Note:** the tool creates a **new** environment, `arcgispro-py3-geotools`, as a copy of `arcgispro-py3`. It does not change `arcgispro-py3` or any other environment you already have. It then makes the new environment the one ArcGIS Pro uses, so **restart ArcGIS Pro** when it has finished. To go back, choose another environment in **Project > Package Manager** and restart ArcGIS Pro. The tool cannot change or delete the environment ArcGIS Pro is using at the time, so to run it again with *Delete the environment first*, switch to another environment and restart first.
 
 - In the Tomofast_X toolbox, open **Setup > Set Up Python Environment** and click **Run**.
