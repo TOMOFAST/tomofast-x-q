@@ -236,7 +236,7 @@ The example run passes every check. The final model's susceptibilities range fro
 
 *Figure 11. The example model shown as Visualise draws it: half-model slices in x, y and z, padding removed, colours clipped at the 95th percentile (here −0.86 to 0.15 SI). The strongest susceptibilities lie under the Cajati anomaly at the centre of the core.*
 
-The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can open in ParaView, and `model/` and `data/` hold the final model and the observed, predicted and misfit data, here we show a thresholded version of the susceptibility model using Paraview:     
+The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can open in ParaView, and `model/` and `data/` hold the final model and the observed, predicted and misfit data. Here we show a thresholded version of the susceptibility model with 400m cells using Paraview:     
 <img src="images/Cajati_crop.gif"  alt="Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil">  
 *Figure 12. Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil.*
 
