@@ -2,6 +2,7 @@
  GIS Plugin to help Tomofast-x usage
 
 **[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp;  
+   
 <img src="docs/images/Cajati_crop.gif"  alt="Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil">  
 Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil    
    
