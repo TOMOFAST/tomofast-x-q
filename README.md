@@ -1,8 +1,9 @@
 # Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.23
  GIS Plugin to help Tomofast-x usage
 
-**[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp; [Cheat Sheet](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) &nbsp;|&nbsp; [Demo video](https://tectonique.net/tomofast-x-q/tomofast_demo.mp4)
-
+**[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp;    
+(docs/images/Cajati_crop.gif)   
+Inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil.   
 ## Documentation
 * [User Manual](docs/UserManual.md): a step-by-step magnetic inversion with the Cajati example data, covering only the required fields
 * [Reference Manual](docs/ReferenceManual.md): every tab, field and button, including optional parameters, joint grav + mag inversions, MVI, gravity gradiometry and troubleshooting
