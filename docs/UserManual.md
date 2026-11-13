@@ -202,7 +202,7 @@ The output folder now holds:
 
 ![Map over the magnetic grid: blue dots mark mesh cell centres, spaced more widely outwards through the padding; red dots mark the data points, filling the region of interest.](images/map_saved.png)
 
-*Figure 9. After Save Files: mesh cell centres (blue) and data points (red, one per core cell). The padding cells grow outwards from the core.*
+*Figure 9. After Save Files: mesh cell centres (blue) and data points (red, one per core cell). The padding cells grow outwards from the core. In the plugins the data will have a colour scale based on the data value, and hte mesh will be smaller black points*
 
 ---
 
