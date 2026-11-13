@@ -26,7 +26,7 @@ Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from
 - When it has finished, **restart ArcGIS Pro**.
 - The same tool is in the **SGTool**, **tomofast_x_q** and **GeoSubSampler** toolboxes and installs what all three need, so you only need to run it once. Running it again only adds what is missing.
 - Its options let you choose a different environment name, leave ArcGIS Pro's active environment unchanged (activate it later in Package Manager), or delete the environment and start again from a new clone.
-- The tool runs the script `ARCGIS/setup_arcgispro_env.py`, which can also be run from a Windows Command Prompt (change the paths if ArcGIS Pro or this repository are somewhere else):
+- The tool runs the script `ARCGIS/setup_arcgispro_env.py`, which can also be run from a Windows Command Prompt (change the paths if ArcGIS Pro is somewhere else and in any case to the script in this repository):
   ```
   "C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe" "C:\path\to\tomofast_x_q\ARCGIS\setup_arcgispro_env.py"
   ```
