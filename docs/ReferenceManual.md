@@ -12,9 +12,9 @@ A description of every control, file and parameter in the Tomofast-x QGIS plugin
 4. [Data/Mesh tab](#4-datamesh-tab)
 5. [How the mesh is built](#5-how-the-mesh-is-built)
 6. [How the data are prepared](#6-how-the-data-are-prepared)
-7. [Grav/Mag Parameters tab](#7-gravmag-parameters-tab)
-8. [Global Parameters tab](#8-global-parameters-tab)
-9. [Run Inversion tab](#9-run-inversion-tab)
+7. [Save Outputs tab](#7-save-outputs-tab)
+8. [Run Inversion tab](#8-run-inversion-tab)
+9. [Advanced tab](#9-advanced-tab)
 10. [Post-run checks](#10-post-run-checks)
 11. [Files written and read](#11-files-written-and-read)
 12. [Parameter file reference](#12-parameter-file-reference)
@@ -72,9 +72,9 @@ Build instructions: [Tomofast-x installation guide](https://github.com/TOMOFAST/
 ## 3. Workflow summary
 
 1. **Data/Mesh**: Step 0 (optional) reload a parameter file. Step 1 choose the inversion type. Steps 2 and 3 load the gravity and/or magnetic data. Step 4 (optional) load a DTM. Step 5 define the mesh.
-2. **Grav/Mag Parameters**: sensor heights, the Earth's field (magnetics), and optional unit multipliers, damping and ADMM constraints.
-3. **Global Parameters**: description, iterations, target misfit, joint weights and sensitivity kernel. **Save Files** writes the data, mesh and `paramfile.txt`.
-4. **Run Inversion**: run Tomofast-x, read the log and checks, then **Visualise** and **Export** the result.
+2. **Save Outputs**: sensor heights, the Earth's field (magnetics) and a description. **Save Files** writes the data, mesh and `paramfile.txt`.
+3. **Run Inversion**: run Tomofast-x, read the log and checks, then **Visualise** and **Export** the result.
+4. **Advanced** (optional): iterations, target misfit, joint weights, sensitivity kernel, and the gravity and magnetic unit multipliers, damping and ADMM constraints. Every field has a default.
 
 You can change parameters after **Save Files** and press it again. The files are rewritten.
 
@@ -195,7 +195,7 @@ Without compression, rate = 1. Stations are the number of CSV points once loaded
 | Raster (GeoTIFF, ERS) | The mesh is written first. The raster is reprojected and sampled at the centre of every *core* cell inside South/North/West/East, so there is one data point per core cell (2,949 for the Cajati example). Nodata cells are dropped. |
 | CSV points | All rows are converted from the input to the output CRS and used. Points are **not** clipped to the mesh, so clip the file to your area before loading it if needed. |
 | Heights | Tomofast-x uses z positive downwards. Each data point gets z = −(ground elevation + sensor height), where the ground elevation comes from the DTM, or is 0 without one. |
-| Units | Values are written unchanged. Tomofast-x multiplies them by the data unit multiplier ([section 7](#7-gravmag-parameters-tab)). |
+| Units | Values are written unchanged. Tomofast-x multiplies them by the data unit multiplier ([section 9](#9-advanced-tab)). |
 
 > [!WARNING]
 > **Use anomaly data.** The plugin does not remove a regional field or the IGRF. Magnetic total-field grids (such as the original Cajati `MAGMIC` grid, mean ≈ 22,855 nT) must be reduced to anomalies first, otherwise the inversion needs unrealistic susceptibilities and the [susceptibility check](#10-post-run-checks) warns. The example data include a `_RR` grid made with the 1st-order **Remove Regional** filter of the [SGTool](https://github.com/swaxi/SGTool) plugin (see the [User Manual](UserManual.md#example-data)). Gravity should be a Bouguer (or residual) anomaly.
@@ -206,15 +206,15 @@ Without compression, rate = 1. Stations are the number of CSV points once loaded
 
 ---
 
-## 7. Grav/Mag Parameters tab
+## 7. Save Outputs tab
 
-<img src="images/tab2_default.png" width="420" alt="Grav/Mag Parameters tab before entering values: sensor heights 0, survey date 01/01/2000, field 0, -45, 65000.">
+<img src="images/tab2_default.png" width="420" alt="Save Outputs tab before entering values (Mag inversion): sensor heights 0, survey date 01/01/2000, field 0, -45, 65000, an empty description and no output directory.">
 
-*Defaults (Mag inversion, so the gravity boxes are disabled).*
+*Defaults (Mag inversion).*
 
-<img src="images/tab2_igrf.png" width="420" alt="Grav/Mag Parameters tab after Calculate from Survey Parameters: mag sensor height 100, date 01/06/2010, declination -18.84, inclination -35.01, intensity 21968.51.">
+<img src="images/tab2_saved.png" width="420" alt="Save Outputs tab for the Cajati example after Calculate from Survey Parameters and Save Files: mag sensor height 100, date 01/06/2010, declination -18.84, inclination -35.01, intensity 21968.51 and the output directory path.">
 
-*After **Calculate from Survey Parameters** for the Cajati example.*
+*The Cajati example after **Calculate from Survey Parameters** and **Save Files**.*
 
 ### Survey parameters
 
@@ -229,6 +229,68 @@ Without compression, rate = 1. Stations are the number of CSV points once loaded
 | Intensity | 🟦 Mag | `forward.magneticField.intensity_nT` | 65000 | Total field strength in nT. |
 
 For a magnetic or joint inversion, **Save Files** refuses to continue (*Please define Magnetic Field Parameters*) while the field is still exactly 0 / −45 / 65000.
+
+### Experiment parameters and Save Files
+
+| Control | Applies | Parfile key | Default | Description |
+|---|---|---|---|---|
+| Description | ⬜ Optional | `global.description` | Inversion Experiment | Free text describing the experiment. |
+| **Save Files** / Output Directory | 🟩 Both | `global.outputFolderPath` (`OUTPUT`) |  | Choose or create the folder for the input files. The plugin then writes the mesh, data, elevation grid and `paramfile.txt`, loads the data points and mesh into QGIS, and fills in **Path to parfile** on the Run tab. |
+
+---
+
+## 8. Run Inversion tab
+
+<img src="images/tab3_run.png" width="420" alt="Run Inversion tab on Windows before the run, with the paths to tomofastx.exe and paramfile.txt, Windows Native selected and 19 processors.">
+
+*Ready to run (Windows Native).*
+
+<img src="images/tab3_finished.png" width="420" alt="Run Inversion tab after the run: the log ends with THE END followed by six green PASS lines.">
+
+*Finished run with the post-run checks.*
+
+| Control | Applies | Description |
+|---|---|---|
+| Path to tomofast | 🟩 Both | The Tomofast-x executable (`tomofastx.exe` on Windows, `tomofastx` elsewhere). Remembered in `tomoconfig.txt` in the plugin folder, together with the WSL distribution, mpirun path, run mode and number of processors. |
+| Path to parfile | 🟩 Both | Filled in by Save Files. **...** chooses another parameter file. |
+| Windows Native / Windows WSL | 🟩 Both (Windows) | Native runs `tomofastx.exe` directly. WSL runs Tomofast-x with `mpirun` in a WSL distribution, using a copy of the parfile (`paramfile.txt_run`) whose Windows paths are converted to Linux paths. Disabled on other systems. |
+| WSL Distro | 🟩 Both (WSL) | Name of the distribution, e.g. `Ubuntu-20.04`: the name after `\\wsl.localhost\` in Windows paths to the WSL disk. |
+| Path to mpirun | 🟩 Both (macOS/Linux) | Only shown on macOS and Linux. Needed if `mpirun` is not on the PATH, e.g. `/opt/homebrew/bin/mpirun`. |
+| Number of processors | 🟩 Both | OpenMP threads (Windows Native) or MPI processes. Use one fewer than the number of cores. |
+| **Run Inversion** |  | Starts Tomofast-x in the background with the parfile's folder as working directory. The output is written to `paramfile.txt_debug.txt` and shown live in the **Inversion Log**. On Windows Native the plugin also copies the parfile into the output folder. |
+| **Cancel Inversion** |  | Stops the running job (on all platforms). |
+| `remove_padding.py` (written after the run) |  | When the run ends, the plugin writes `OUTPUT/Paraview/remove_padding.py`, a ParaView script that removes the padding from the final full model(s). See [section 11](#paraview-scripts). |
+| **Visualise** |  | Opens a 3D window with x, y and z half-model slices from `OUTPUT/Paraview/*_final_model3D_half_[xyz].vtk`. Padding cells are removed, all slices share one colour range (minimum to 95th percentile, `jet` colour map) and MVI models are coloured by magnitude. Joint inversions open one window per model. Needs `pyvista`. |
+| **Export** |  | Writes `OUTPUT/grav_final_model3D_full.csv` and/or `mag_final_model3D_full.csv`: cell centres `x,y,z` (z positive upwards) and the value (`data`, or `Mx,My,Mz` for MVI). |
+| Download Plugin Manual / Cheat Sheet / Tomofast-x Manual |  | Open the documents in your browser. |
+
+![3D view of the Cajati magnetic model: three orthogonal slices coloured with the jet colour map and a shared scale bar from -0.861 to 0.154, clipped at 95%.](images/visualise.png)
+
+*The Cajati model as drawn by Visualise: half-model slices, padding removed, shared colour scale clipped at the 95th percentile.*
+
+---
+
+## 9. Advanced tab
+
+<img src="images/tab4_advanced.png" width="420" alt="Advanced tab for the Cajati magnetic example: major iterations 3, minor iterations 100, model save iter 0, min residual 1e-13, target misfit 5, joint weights 0 and 1, sensitivity kernel options, the gravity parameter groups greyed out, and the magnetics unit multipliers, model damping and ADMM constraints.">
+
+*The Advanced tab for the Cajati magnetic example (the gravity boxes are disabled).*
+
+Every field on this tab has a default. Press **Save Files** on the Save Outputs tab again after changing any of them so that `paramfile.txt` is rewritten.
+
+### Inversion parameters, joint weights and sensitivity kernel
+
+| Control | Applies | Parfile key | Default | Description |
+|---|---|---|---|---|
+| Major Iterations | ⬜ Optional | `inversion.nMajorIterations` | 3 | Outer iterations. Set to 50 automatically when ADMM is switched on, and back to 3 when it is switched off for both datasets. Joint inversions always write 15. |
+| Minor Iterations | ⬜ Optional | `inversion.nMinorIterations` | 100 | LSQR iterations within each major iteration. |
+| Model save iter | ⬜ Optional | `inversion.writeModelEveryNiter` | 0 | Write the model every N major iterations (0 = final model only). |
+| min Residual | ⬜ Optional | `#inversion.minResidual` | 1e-13 | Stored for reference only (written as a comment). |
+| Target Misfit | 🟩 Both (check) | `inversion.targetMisfit` | 1e-7 grav, 5 mag, 3 gradiometry | The inversion stops once the data misfit falls below this value. Leave the box empty to omit the key. |
+| Grav weight / Mag weight | ⬜ Optional (joint) | `inversion.joint.grav.problemWeight` / `inversion.joint.magn.problemWeight` | 1 / 2.5e-6 | Relative weights of the two datasets in a joint inversion. For single inversions Save Files sets them to 1/0 or 0/1. |
+| Sensitivity Kernel: Read from File | ⬜ Optional | `sensit.readFromFiles` | off (0) | Reuse a sensitivity matrix calculated earlier for the same mesh and data, which saves the forward calculation. Choose its folder with **...** (`sensit.folderPath`). Otherwise the kernel is written to `OUTPUT/SENSIT/`. |
+
+The target misfit is set when you choose the inversion type (1e-7 for gravity, 5 for magnetics, 3 for gradiometry), unless you have typed your own value.
 
 ### Gravity parameters and magnetics parameters ⬜ Optional
 
@@ -246,59 +308,9 @@ Depth weighting is not shown in the panel. It is written as `forward.depthWeight
 
 ---
 
-## 8. Global Parameters tab
-
-<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with major iterations 3, minor 100, target misfit 5, joint weights, sensitivity kernel options and the output directory path after Save Files.">
-
-*Global Parameters for the Cajati example after **Save Files**.*
-
-| Control | Applies | Parfile key | Default | Description |
-|---|---|---|---|---|
-| Description | ⬜ Optional | `global.description` | Inversion Experiment | Free text describing the experiment. |
-| Major Iterations | ⬜ Optional | `inversion.nMajorIterations` | 3 | Outer iterations. Set to 50 automatically when ADMM is switched on, and back to 3 when it is switched off for both datasets. Joint inversions always write 15. |
-| Minor Iterations | ⬜ Optional | `inversion.nMinorIterations` | 100 | LSQR iterations within each major iteration. |
-| Model save iter | ⬜ Optional | `inversion.writeModelEveryNiter` | 0 | Write the model every N major iterations (0 = final model only). |
-| min Residual | ⬜ Optional | `#inversion.minResidual` | 1e-13 | Stored for reference only (written as a comment). |
-| Target Misfit | 🟩 Both (check) | `inversion.targetMisfit` | 1e-7 grav, 5 mag, 3 gradiometry | The inversion stops once the data misfit falls below this value. Leave the box empty to omit the key. |
-| Grav weight / Mag weight | ⬜ Optional (joint) | `inversion.joint.grav.problemWeight` / `inversion.joint.magn.problemWeight` | 1 / 2.5e-6 | Relative weights of the two datasets in a joint inversion. For single inversions Save Files sets them to 1/0 or 0/1. |
-| Sensitivity Kernel: Read from File | ⬜ Optional | `sensit.readFromFiles` | off (0) | Reuse a sensitivity matrix calculated earlier for the same mesh and data, which saves the forward calculation. Choose its folder with **...** (`sensit.folderPath`). Otherwise the kernel is written to `OUTPUT/SENSIT/`. |
-| **Save Files** / Output Directory | 🟩 Both | `global.outputFolderPath` (`OUTPUT`) |  | Choose or create the folder for the input files. The plugin then writes the mesh, data, elevation grid and `paramfile.txt`, loads the data points and mesh into QGIS, and fills in **Path to parfile** on the Run tab. |
-
----
-
-## 9. Run Inversion tab
-
-<img src="images/tab4_run.png" width="420" alt="Run Inversion tab on macOS before the run, with the paths to tomofastx, paramfile.txt and mpirun, and 9 processors. The Windows Native and WSL options are greyed out.">
-
-*Ready to run (macOS, with mpirun).*
-
-<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run: the log ends with THE END followed by six green PASS lines.">
-
-*Finished run with the post-run checks.*
-
-| Control | Applies | Description |
-|---|---|---|
-| Path to tomofast | 🟩 Both | The Tomofast-x executable (`tomofastx.exe` on Windows, `tomofastx` elsewhere). Remembered in `tomoconfig.txt` in the plugin folder, together with the WSL distribution, mpirun path, run mode and number of processors. |
-| Path to parfile | 🟩 Both | Filled in by Save Files. **...** chooses another parameter file. |
-| Windows Native / Windows WSL | 🟩 Both (Windows) | Native runs `tomofastx.exe` directly. WSL runs Tomofast-x with `mpirun` in a WSL distribution, using a copy of the parfile (`paramfile.txt_run`) whose Windows paths are converted to Linux paths. Disabled on other systems. |
-| WSL Distro | 🟩 Both (WSL) | Name of the distribution, e.g. `Ubuntu-20.04`: the name after `\\wsl.localhost\` in Windows paths to the WSL disk. |
-| Path to mpirun | 🟩 Both (macOS/Linux) | Only shown on macOS and Linux. Needed if `mpirun` is not on the PATH, e.g. `/opt/homebrew/bin/mpirun`. |
-| Number of processors | 🟩 Both | OpenMP threads (Windows Native) or MPI processes. Use one fewer than the number of cores. |
-| **Run Inversion** |  | Starts Tomofast-x in the background with the parfile's folder as working directory. The output is written to `paramfile.txt_debug.txt` and shown live in the **Inversion Log**. On Windows Native the plugin also copies the parfile into the output folder. |
-| **Cancel Inversion** |  | Stops the running job (on all platforms). |
-| **Visualise** |  | Opens a 3D window with x, y and z half-model slices from `OUTPUT/Paraview/*_final_model3D_half_[xyz].vtk`. Padding cells are removed, all slices share one colour range (minimum to 95th percentile, `jet` colour map) and MVI models are coloured by magnitude. Joint inversions open one window per model. Needs `pyvista`. |
-| **Export** |  | Writes `OUTPUT/grav_final_model3D_full.csv` and/or `mag_final_model3D_full.csv`: cell centres `x,y,z` (z positive upwards) and the value (`data`, or `Mx,My,Mz` for MVI). |
-| Download Plugin Manual / Cheat Sheet / Tomofast-x Manual |  | Open the documents in your browser. |
-
-![3D view of the Cajati magnetic model: three orthogonal slices coloured with the jet colour map and a shared scale bar from -0.861 to 0.154, clipped at 95%.](images/visualise.png)
-
-*The Cajati model as drawn by Visualise: half-model slices, padding removed, shared colour scale clipped at the 95th percentile.*
-
----
-
 ## 10. Post-run checks
 
-When Tomofast-x finishes, the plugin reads `OUTPUT/costs.txt` and the run log and adds **PASS** (green) or **WARNING** (red) lines to the log. If the process ended with an error, the exit code is reported.
+When Tomofast-x finishes, the plugin reads `OUTPUT/costs.txt` and the run log and adds **PASS** (green) or **WARNING** (red) lines to the log. If the process ended with an error, the exit code is reported. It then writes the ParaView script `OUTPUT/Paraview/remove_padding.py` (see [section 11](#paraview-scripts)) and gives its path in the log.
 
 | Check | Warning when | Suggested action |
 |---|---|---|
@@ -325,7 +337,6 @@ The Cajati example (regional-removed grid) passes every check, with susceptibili
 | `data_grav.csv`, `data_magn.csv` | First line: number of points. Then `x y z value [value2 …]`, space-separated, with z = −(elevation + sensor height). |
 | `elevation_grid.csv` | `x,y,elevation` for each mesh column (DTM only). |
 | `reproj_data_*.tif`, `reproj_data_*.csv`, `data_temp.csv` | Intermediate files from the raster sampling. |
-| `paraview_transform.py` | 2D profile mode only: a ParaView Programmable Filter script that moves the profile model back to real-world coordinates. |
 
 ### OUTPUT folder (written by Tomofast-x)
 
@@ -334,9 +345,24 @@ The Cajati example (regional-removed grid) passes every check, with susceptibili
 | `model/grav_final_model_full.txt`, `model/mag_final_model_full.txt` | Final model value(s) for each cell, in the same order as `model_grid.txt`. |
 | `data/*_observed.txt`, `*_final.txt`, `*_misfit.txt`, `*_starting.txt`, `*_prior.txt` | Observed data, the data predicted by the final model, the misfit, and the response of the starting and prior models. |
 | `Paraview/*.vtk` | The full model, x/y/z half-models and the data, for ParaView or Visualise. |
+| `Paraview/remove_padding.py` | Written by the plugin after the run: a ParaView script that removes the padding cells from the final full model(s). See [ParaView scripts](#paraview-scripts). |
+| `Paraview/paraview_transform.py` | 2D profile mode only, written by Save Files: a ParaView script that moves the profile model back to real-world coordinates. See [ParaView scripts](#paraview-scripts). |
 | `SENSIT/` | The sensitivity kernel, which can be reused with *Read from File*. |
 | `costs.txt` | Cost terms for each major iteration (data, model, ADMM, damping gradient, cross-gradient and clustering costs, for gravity and magnetics). |
 | `*_final_model3D_full.csv` | Written by Export. |
+
+### ParaView scripts
+
+Both scripts are in `OUTPUT/Paraview/`, next to the VTK files they work on. Both act on the dataset selected in the Pipeline Browser. Open the VTK file in ParaView, select it, then run the script. To run a script, choose **Macros > Import new macro...** and select the script, then click the new macro in the Macros toolbar. Alternatively, use **View > Python Shell > Run Script**.
+
+**`remove_padding.py`** (every inversion). The full models `grav_final_model3D_full.vtk` and `mag_final_model3D_full.vtk` include the padding cells. Select one of them and run the script. It adds an **Extract Subset** filter (`…_no_padding`) below the selection that keeps only the core cells. It then hides the original and shows the result coloured by the model value. The core cells are found from `model_grid.txt` when the script is written: they are the cells with the core cell size, as for Visualise. The script therefore only accepts a full model on the same mesh. If nothing is selected, or the selection is a half-model, a data file or a model from another run, it stops with a message. Two settings at the top of the script can be changed:
+
+| Setting | Default | Effect |
+|---|---|---|
+| `TRIM_TO_CORE_DEPTH` | `False` | `True` also removes the cells below the core depth (the cells that grow downwards). |
+| `SAVE_COPY` | `False` | `True` also writes the cropped model next to the selected file, for example `mag_final_model3D_core.vtk`. |
+
+**`paraview_transform.py`** (2D profile inversions only). Select a VTK dataset in the Pipeline Browser, then run the script. It adds a **Transform** filter that rotates and moves the profile model from profile coordinates back to map coordinates (see [section 16](#16-2d-profile-inversion)).
 
 The run log is `paramfile.txt_debug.txt` next to the parameter file.
 
@@ -455,7 +481,7 @@ Step 0 also recognises `global.elevFilename`, `roi.filename`, `anomalies.*`, `me
 
 - Load both datasets (Steps 2a and 3a), each with its own Load button. With CSV files, each load only fills that dataset's column lists.
 - The mesh, DTM and ROI use the **gravity** output CRS, so use the same CRS for both datasets.
-- Both models share one mesh. The datasets are coupled by a cross-gradient constraint (weight 80) and weighted by *Grav weight* and *Mag weight* (defaults 1 and 2.5e-6) on the Global Parameters tab.
+- Both models share one mesh. The datasets are coupled by a cross-gradient constraint (weight 80) and weighted by *Grav weight* and *Mag weight* (defaults 1 and 2.5e-6) on the Advanced tab.
 - The parameter file always uses 15 major iterations for a joint inversion, whatever the panel shows.
 - Visualise and Export handle both models.
 
@@ -485,7 +511,7 @@ Choose a **line** layer with exactly two vertices as the mesh ROI. The plugin th
 - samples raster data along the line and writes the data and mesh in profile coordinates (x along the profile, y = 0), so that the mesh edges are parallel to the axes;
 - multiplies the automatic compression rate by 100 (2D problems are small);
 - for magnetics, writes `forward.magneticField.XaxisDeclination` so that the field is rotated into the profile direction;
-- writes `paraview_transform.py` to move the result back to map coordinates in ParaView. Visualise shows the y half-model.
+- writes `OUTPUT/Paraview/paraview_transform.py` to move the result back to map coordinates in ParaView (see [ParaView scripts](#paraview-scripts)). Visualise shows the y half-model.
 
 ---
 

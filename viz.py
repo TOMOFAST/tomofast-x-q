@@ -34,6 +34,37 @@ def core_bounds_from_model_grid(model_grid_file):
     return xmin, xmax, ymin, ymax
 
 
+def core_index_range(model_grid_file):
+    """
+    Return the core (unpadded) cells of a Tomofast-x model grid as 0-based,
+    inclusive cell indices: dict with i0, i1, j0, j1 (horizontal core),
+    k_core (last layer of the core depth) and nx, ny, nz (grid size).
+    Returns None if the grid cannot be read.
+
+    As in core_bounds_from_model_grid, the core cells are those with the
+    most common width; the padding cells grow outwards (and downwards).
+    """
+    try:
+        grid = np.loadtxt(model_grid_file, dtype=float, usecols=range(9), skiprows=1, ndmin=2)
+    except Exception as e:
+        print(f"Could not read model grid {model_grid_file}: {e}")
+        return None
+    index = grid[:, 6:9].astype(int) - 1
+
+    def core_range(lo, hi, idx):
+        width = np.round(hi - lo, 3)
+        values, counts = np.unique(width, return_counts=True)
+        core = width == values[np.argmax(counts)]
+        return int(idx[core].min()), int(idx[core].max())
+
+    i0, i1 = core_range(grid[:, 0], grid[:, 1], index[:, 0])
+    j0, j1 = core_range(grid[:, 2], grid[:, 3], index[:, 1])
+    _k0, k_core = core_range(grid[:, 4], grid[:, 5], index[:, 2])
+    nx, ny, nz = (int(n) for n in index.max(axis=0) + 1)
+    return {"i0": i0, "i1": i1, "j0": j0, "j1": j1, "k_core": k_core,
+            "nx": nx, "ny": ny, "nz": nz}
+
+
 def crop_to_core(grid, core_bounds):
     """
     Keep only the cells whose centre lies inside the core extent in X and Y

@@ -396,201 +396,216 @@ Day/Month/Year</source>
     </message>
     <message>
         <location filename="ui_dockwidget_generated.py" line="77"/>
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="78"/>
+        <source>Save Outputs</source>
+        <translation>保存输出</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="79"/>
+        <source>Continue on to Save Outputs Tab...</source>
+        <translation>继续前往保存输出选项卡...</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="80"/>
         <source>Experiment Parameters</source>
         <translation>实验参数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="78"/>
+        <location filename="ui_dockwidget_generated.py" line="81"/>
         <source>Inversion Experiment</source>
         <translation>反演实验</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="79"/>
+        <location filename="ui_dockwidget_generated.py" line="82"/>
         <source>Description</source>
         <translation>描述</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="80"/>
+        <location filename="ui_dockwidget_generated.py" line="83"/>
         <source>Global Parameters</source>
         <translation>全局参数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="81"/>
+        <location filename="ui_dockwidget_generated.py" line="84"/>
         <source>Sensitivity Kernel</source>
         <translation>灵敏度核</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="82"/>
+        <location filename="ui_dockwidget_generated.py" line="85"/>
         <source>Read from File</source>
         <translation>从文件读取</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="83"/>
+        <location filename="ui_dockwidget_generated.py" line="86"/>
         <source>Choose your Main Project </source>
         <translation>选择主项目 </translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="84"/>
+        <location filename="ui_dockwidget_generated.py" line="87"/>
         <source>Inversion Parameters</source>
         <translation>反演参数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="85"/>
+        <location filename="ui_dockwidget_generated.py" line="88"/>
         <source>Major Iterations</source>
         <translation>主迭代次数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="86"/>
+        <location filename="ui_dockwidget_generated.py" line="89"/>
         <source>Minor Iterations</source>
         <translation>次迭代次数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="87"/>
+        <location filename="ui_dockwidget_generated.py" line="90"/>
         <source>Model save iter</source>
         <translation>模型保存间隔</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="88"/>
+        <location filename="ui_dockwidget_generated.py" line="91"/>
         <source>min Residual</source>
         <translation>最小残差</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="89"/>
+        <location filename="ui_dockwidget_generated.py" line="92"/>
         <source>Target Misfit</source>
         <translation>目标失配</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="90"/>
+        <location filename="ui_dockwidget_generated.py" line="93"/>
         <source>1e-7 (grav) or 5 (mag)</source>
         <translation>1e-7（重力）或5（磁力）</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="91"/>
+        <location filename="ui_dockwidget_generated.py" line="94"/>
         <source>Joint Inversion Parameters</source>
         <translation>联合反演参数</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="92"/>
+        <location filename="ui_dockwidget_generated.py" line="95"/>
         <source>Grav weight</source>
         <translation>重力权重</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="93"/>
+        <location filename="ui_dockwidget_generated.py" line="96"/>
         <source>Mag weight</source>
         <translation>磁力权重</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="94"/>
+        <location filename="ui_dockwidget_generated.py" line="97"/>
         <source>Select directory to save tomofast files</source>
         <translation>选择保存tomofast文件的目录</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="95"/>
+        <location filename="ui_dockwidget_generated.py" line="98"/>
         <source>Save Files</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="96"/>
+        <location filename="ui_dockwidget_generated.py" line="99"/>
         <source>Output Directory</source>
         <translation>输出目录</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="97"/>
+        <location filename="ui_dockwidget_generated.py" line="100"/>
         <source>Run Inversion</source>
         <translation>运行反演</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="98"/>
+        <location filename="ui_dockwidget_generated.py" line="101"/>
         <source>Path to tomofast</source>
         <translation>tomofast路径</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="99"/>
+        <location filename="ui_dockwidget_generated.py" line="102"/>
         <source>Path to parfile</source>
         <translation>参数文件路径</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="100"/>
+        <location filename="ui_dockwidget_generated.py" line="103"/>
         <source>Number of processors</source>
         <translation>处理器数量</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="101"/>
+        <location filename="ui_dockwidget_generated.py" line="104"/>
         <source>WSL Distro</source>
         <translation>WSL发行版</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="102"/>
+        <location filename="ui_dockwidget_generated.py" line="105"/>
         <source>Path to mpirun/mpiexec</source>
         <translation>mpirun/mpiexec路径</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="103"/>
+        <location filename="ui_dockwidget_generated.py" line="106"/>
         <source>Visualise</source>
         <translation>可视化</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="104"/>
+        <location filename="ui_dockwidget_generated.py" line="107"/>
         <source>Download Plugin Manual</source>
         <translation>下载插件手册</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="105"/>
+        <location filename="ui_dockwidget_generated.py" line="108"/>
         <source>Download Tomofast-x  Manual</source>
         <translation>下载Tomofast-x手册</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="106"/>
+        <location filename="ui_dockwidget_generated.py" line="109"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="107"/>
+        <location filename="ui_dockwidget_generated.py" line="110"/>
         <source>Windows Native</source>
         <translation>Windows原生</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="108"/>
+        <location filename="ui_dockwidget_generated.py" line="111"/>
         <source>Windows WSL</source>
         <translation>Windows WSL</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="109"/>
+        <location filename="ui_dockwidget_generated.py" line="112"/>
         <source>Path to setvars.bat</source>
         <translation>setvars.bat路径</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="110"/>
+        <location filename="ui_dockwidget_generated.py" line="113"/>
         <source>Download Plugin Cheat Sheet</source>
         <translation>下载插件速查表</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="111"/>
+        <location filename="ui_dockwidget_generated.py" line="114"/>
         <source>Grav Depth Weighting</source>
         <translation>重力深度加权</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="112"/>
+        <location filename="ui_dockwidget_generated.py" line="115"/>
         <source>Enable Depth Weighting</source>
         <translation>启用深度加权</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="113"/>
+        <location filename="ui_dockwidget_generated.py" line="116"/>
         <source>Power</source>
         <translation>幂次</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="114"/>
+        <location filename="ui_dockwidget_generated.py" line="117"/>
         <source>Distance-based</source>
         <translation>基于距离</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="115"/>
+        <location filename="ui_dockwidget_generated.py" line="118"/>
         <source>Depth-based</source>
         <translation>基于深度</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="116"/>
+        <location filename="ui_dockwidget_generated.py" line="119"/>
         <source>Mag  Depth Weighting</source>
         <translation>磁力深度加权</translation>
     </message>

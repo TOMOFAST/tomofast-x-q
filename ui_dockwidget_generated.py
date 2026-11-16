@@ -999,14 +999,6 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.label_grav_admm_bounds.setGeometry(QtCore.QRect(170, 30, 141, 41))
         self.label_grav_admm_bounds.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_grav_admm_bounds.setObjectName("label_grav_admm_bounds")
-        self.label_continue_to_global = QtWidgets.QLabel(self.Fieldwork_preparation)
-        self.label_continue_to_global.setGeometry(QtCore.QRect(130, 710, 371, 21))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_continue_to_global.setFont(font)
-        self.label_continue_to_global.setObjectName("label_continue_to_global")
         self.groupBox_magnetic_field = QtWidgets.QGroupBox(self.Fieldwork_preparation)
         self.groupBox_magnetic_field.setEnabled(True)
         self.groupBox_magnetic_field.setGeometry(QtCore.QRect(10, 100, 591, 111))
@@ -1077,16 +1069,6 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.doubleSpinBox_grav_sensor_height.setMaximum(10000.0)
         self.doubleSpinBox_grav_sensor_height.setSingleStep(50.0)
         self.doubleSpinBox_grav_sensor_height.setObjectName("doubleSpinBox_grav_sensor_height")
-        self.label_survey_params_header = QtWidgets.QLabel(self.Fieldwork_preparation)
-        self.label_survey_params_header.setEnabled(True)
-        self.label_survey_params_header.setGeometry(QtCore.QRect(250, 10, 231, 21))
-        font = QtGui.QFont()
-        font.setPointSize(13)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_survey_params_header.setFont(font)
-        self.label_survey_params_header.setObjectName("label_survey_params_header")
-        self.tabWidget.addTab(self.Fieldwork_preparation, "")
         self.Data_management = QtWidgets.QWidget()
         self.Data_management.setStyleSheet("#Data_management  {\n"
 "    background-position: center;\n"
@@ -1368,11 +1350,14 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.pushButton_plugin_cheat_sheat.setObjectName("pushButton_plugin_cheat_sheat")
         self.gridLayout_2.addWidget(self.groupBox_run_inversion, 0, 0, 1, 1)
         self.tabWidget.addTab(self.Help, "")
+        # Advanced (Fieldwork_preparation) is the last tab
+        self.tabWidget.addTab(self.Fieldwork_preparation, "")
         mQgsSpinBox_mesh_south_2.setWidget(self.dockWidgetContents)
 
         self.retranslateUi(mQgsSpinBox_mesh_south_2)
         self._add_layer_selectors()
         self._spread_data_boxes()
+        self._rearrange_param_tabs()
         # First tab: match the second tab's fonts (the generated per-widget
         # overrides mixed Arial 13px, 9/10/12pt Helvetica and bold titles)
         _normalise_tab_fonts(self.Import_data, keep_small_bold=("label_continue_to_grav_mag",))
@@ -1446,6 +1431,44 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         x = est.geometry().right() + 4
         val = self.memory_label
         val.setGeometry(x, y + 3, max(val.sizeHint().width() + 2, 60), 16)
+
+    def _rearrange_param_tabs(self, shift_advanced=22):
+        """Survey settings (sensor height, magnetic field) live on the Global
+        Parameters tab above the experiment description; the inversion,
+        joint-weight and sensitivity-kernel groups head the Advanced tab.
+        """
+        geo = QtCore.QRect
+        glob = self.Data_management
+        adv = self.Fieldwork_preparation
+        # Advanced tab: make room at the top, then put the inversion groups there
+        for w in adv.children():
+            if isinstance(w, QtWidgets.QWidget):
+                w.move(w.x(), w.y() + shift_advanced)
+        for group, rect in (
+            (self.groupBox_inversion_params, geo(10, 10, 591, 111)),
+            (self.groupBox_joint_inversion, geo(10, 130, 271, 101)),
+            (self.groupBox_sensitivity_kernel, geo(300, 130, 301, 101)),
+        ):
+            group.setParent(adv)
+            group.setGeometry(rect)
+            group.show()
+        # Global Parameters tab: survey groups above the experiment description
+        for group, rect in (
+            (self.groupBox_sensor_height, geo(20, 50, 261, 61)),
+            (self.groupBox_magnetic_field, geo(20, 120, 560, 111)),
+        ):
+            group.setParent(glob)
+            group.setGeometry(rect)
+            group.show()
+        # space the Grav and Mag heights so the "Mag" label clears the Grav box
+        self.label_magn_sensor_height_lbl.setGeometry(geo(128, 30, 41, 20))
+        self.doubleSpinBox_magn_sensor_height.setGeometry(geo(175, 30, 71, 22))
+        # room for the full year in the survey date
+        self.dateEdit.setGeometry(geo(165, 30, 105, 22))
+        self.groupBox_experiment_params.move(20, 245)
+        self.label_output_directory.move(10, 477)
+        self.lineEdit_output_directory_path.move(110, 475)
+        self.lineEdit_output_directory_path_select.move(390, 475)
 
     def _spread_data_boxes(self, extra=45):
         """Give the grav / mag data-file groups more vertical room.
@@ -1563,7 +1586,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_load_parfile.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Step 0 : Load existing Parameter File (optional)"))
         self.pushButton_param_load_path.setText(_translate("mQgsSpinBox_mesh_south_2", "..."))
         self.lineEdit_param_load_path.setPlaceholderText(_translate("mQgsSpinBox_mesh_south_2", "Path to exisiting parameter file"))
-        self.label_continue_to_grav_mag.setText(_translate("mQgsSpinBox_mesh_south_2", "Continue on to Grav/Mag Parameters Tab..."))
+        self.label_continue_to_grav_mag.setText(_translate("mQgsSpinBox_mesh_south_2", "Continue on to Save Outputs Tab..."))
         self.pushButton_reset.setText(_translate("mQgsSpinBox_mesh_south_2", "Reset Dialog"))
         self.version_label.setText(_translate("mQgsSpinBox_mesh_south_2", "TextLabel"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Import_data), _translate("mQgsSpinBox_mesh_south_2", "Data/Mesh"))
@@ -1611,7 +1634,6 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "separated pairs)"))
         self.label_grav_admm_bounds.setText(_translate("mQgsSpinBox_mesh_south_2", "Grav Bounds (space\n"
 " separated pairs)"))
-        self.label_continue_to_global.setText(_translate("mQgsSpinBox_mesh_south_2", "Continue on to Global Parameters Tab..."))
         self.groupBox_magnetic_field.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Magnetic Field Parameters"))
         self.label_mag_declination.setText(_translate("mQgsSpinBox_mesh_south_2", "Declination"))
         self.label_mag_inclination.setText(_translate("mQgsSpinBox_mesh_south_2", "Inclination"))
@@ -1622,12 +1644,11 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.groupBox_sensor_height.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Sensor Height"))
         self.label_magn_sensor_height_lbl.setText(_translate("mQgsSpinBox_mesh_south_2", "Mag"))
         self.label_grav_sensor_height_lbl.setText(_translate("mQgsSpinBox_mesh_south_2", "Grav"))
-        self.label_survey_params_header.setText(_translate("mQgsSpinBox_mesh_south_2", "Survey Parameters"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Fieldwork_preparation), _translate("mQgsSpinBox_mesh_south_2", "Grav/Mag Parameters"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Fieldwork_preparation), _translate("mQgsSpinBox_mesh_south_2", "Advanced"))
         self.groupBox_experiment_params.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Experiment Parameters"))
         self.textEdit_experiment_description.setPlaceholderText(_translate("mQgsSpinBox_mesh_south_2", "Inversion Experiment"))
         self.label_experiment_description.setText(_translate("mQgsSpinBox_mesh_south_2", "Description"))
-        self.label_global_params_header.setText(_translate("mQgsSpinBox_mesh_south_2", "Global Parameters"))
+        self.label_global_params_header.setText(_translate("mQgsSpinBox_mesh_south_2", "Survey Parameters"))
         self.groupBox_sensitivity_kernel.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Sensitivity Kernel"))
         self.checkBox_read_sens_matrix.setText(_translate("mQgsSpinBox_mesh_south_2", "Read from File"))
         self.pushButton_kernel_path_select.setToolTip(_translate("mQgsSpinBox_mesh_south_2", "Choose your Main Project "))
@@ -1647,7 +1668,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
         self.lineEdit_output_directory_path_select.setToolTip(_translate("mQgsSpinBox_mesh_south_2", "Choose your Main Project "))
         self.lineEdit_output_directory_path_select.setText(_translate("mQgsSpinBox_mesh_south_2", "Save Files"))
         self.label_output_directory.setText(_translate("mQgsSpinBox_mesh_south_2", "Output Directory"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Data_management), _translate("mQgsSpinBox_mesh_south_2", "Global Parameters"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Data_management), _translate("mQgsSpinBox_mesh_south_2", "Save Outputs"))
         self.groupBox_run_inversion.setTitle(_translate("mQgsSpinBox_mesh_south_2", "Run Inversion"))
         self.textEdit_4.setHtml(_translate("mQgsSpinBox_mesh_south_2", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
@@ -1663,7 +1684,7 @@ class Ui_mQgsSpinBox_mesh_south_2(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">Otherwise:</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">1) Before you attempt to run the inversion, check the estimated memory requirements in the Global Parameters tab (in the Matrix Compression area). </span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">1) Before you attempt to run the inversion, check the estimated memory requirements in the Data/Mesh tab (Est. Mem. Requirement, at the bottom of Step 5).</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">2) Tomofast source code and installation instructions available here:</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"

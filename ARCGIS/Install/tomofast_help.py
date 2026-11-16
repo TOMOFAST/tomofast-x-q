@@ -453,7 +453,7 @@ HELP_TEXT = (
     '\n'
     'Otherwise:\n'
     '\n'
-    '1) Before you attempt to run the inversion, check the estimated memory requirements in the Global Parameters tab (in the Matrix Compression area). \n'
+    '1) Before you attempt to run the inversion, check the estimated memory requirements in the Mesh tab (Memory (GB)).\n'
     '\n'
     '2) Tomofast source code and installation instructions available here:\n'
     '\n'
