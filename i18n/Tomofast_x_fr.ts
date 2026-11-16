@@ -396,201 +396,216 @@ Jour/Mois/Année</translation>
     </message>
     <message>
         <location filename="ui_dockwidget_generated.py" line="77"/>
+        <source>Advanced</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="78"/>
+        <source>Save Outputs</source>
+        <translation>Enregistrer les sorties</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="79"/>
+        <source>Continue on to Save Outputs Tab...</source>
+        <translation>Continuer vers l'onglet Enregistrer les sorties...</translation>
+    </message>
+    <message>
+        <location filename="ui_dockwidget_generated.py" line="80"/>
         <source>Experiment Parameters</source>
         <translation>Paramètres de l'expérience</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="78"/>
+        <location filename="ui_dockwidget_generated.py" line="81"/>
         <source>Inversion Experiment</source>
         <translation>Expérience d'inversion</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="79"/>
+        <location filename="ui_dockwidget_generated.py" line="82"/>
         <source>Description</source>
         <translation>Description</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="80"/>
+        <location filename="ui_dockwidget_generated.py" line="83"/>
         <source>Global Parameters</source>
         <translation>Paramètres globaux</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="81"/>
+        <location filename="ui_dockwidget_generated.py" line="84"/>
         <source>Sensitivity Kernel</source>
         <translation>Noyau de sensibilité</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="82"/>
+        <location filename="ui_dockwidget_generated.py" line="85"/>
         <source>Read from File</source>
         <translation>Lire depuis un fichier</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="83"/>
+        <location filename="ui_dockwidget_generated.py" line="86"/>
         <source>Choose your Main Project </source>
         <translation>Choisissez votre projet principal </translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="84"/>
+        <location filename="ui_dockwidget_generated.py" line="87"/>
         <source>Inversion Parameters</source>
         <translation>Paramètres d'inversion</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="85"/>
+        <location filename="ui_dockwidget_generated.py" line="88"/>
         <source>Major Iterations</source>
         <translation>Itérations majeures</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="86"/>
+        <location filename="ui_dockwidget_generated.py" line="89"/>
         <source>Minor Iterations</source>
         <translation>Itérations mineures</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="87"/>
+        <location filename="ui_dockwidget_generated.py" line="90"/>
         <source>Model save iter</source>
         <translation>Sauvegarder modèle iter.</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="88"/>
+        <location filename="ui_dockwidget_generated.py" line="91"/>
         <source>min Residual</source>
         <translation>Résidu minimum</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="89"/>
+        <location filename="ui_dockwidget_generated.py" line="92"/>
         <source>Target Misfit</source>
         <translation>Erreur cible</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="90"/>
+        <location filename="ui_dockwidget_generated.py" line="93"/>
         <source>1e-7 (grav) or 5 (mag)</source>
         <translation>1e-7 (grav) ou 5 (mag)</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="91"/>
+        <location filename="ui_dockwidget_generated.py" line="94"/>
         <source>Joint Inversion Parameters</source>
         <translation>Paramètres d'inversion conjointe</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="92"/>
+        <location filename="ui_dockwidget_generated.py" line="95"/>
         <source>Grav weight</source>
         <translation>Poids Grav</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="93"/>
+        <location filename="ui_dockwidget_generated.py" line="96"/>
         <source>Mag weight</source>
         <translation>Poids Mag</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="94"/>
+        <location filename="ui_dockwidget_generated.py" line="97"/>
         <source>Select directory to save tomofast files</source>
         <translation>Sélectionner le répertoire pour sauvegarder les fichiers tomofast</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="95"/>
+        <location filename="ui_dockwidget_generated.py" line="98"/>
         <source>Save Files</source>
         <translation>Enregistrer fichiers</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="96"/>
+        <location filename="ui_dockwidget_generated.py" line="99"/>
         <source>Output Directory</source>
         <translation>Répertoire de sortie</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="97"/>
+        <location filename="ui_dockwidget_generated.py" line="100"/>
         <source>Run Inversion</source>
         <translation>Lancer l'inversion</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="98"/>
+        <location filename="ui_dockwidget_generated.py" line="101"/>
         <source>Path to tomofast</source>
         <translation>Chemin vers tomofast</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="99"/>
+        <location filename="ui_dockwidget_generated.py" line="102"/>
         <source>Path to parfile</source>
         <translation>Chemin vers le fichier de paramètres</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="100"/>
+        <location filename="ui_dockwidget_generated.py" line="103"/>
         <source>Number of processors</source>
         <translation>Nombre de processeurs</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="101"/>
+        <location filename="ui_dockwidget_generated.py" line="104"/>
         <source>WSL Distro</source>
         <translation>Distribution WSL</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="102"/>
+        <location filename="ui_dockwidget_generated.py" line="105"/>
         <source>Path to mpirun/mpiexec</source>
         <translation>Chemin vers mpirun/mpiexec</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="103"/>
+        <location filename="ui_dockwidget_generated.py" line="106"/>
         <source>Visualise</source>
         <translation>Visualiser</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="104"/>
+        <location filename="ui_dockwidget_generated.py" line="107"/>
         <source>Download Plugin Manual</source>
         <translation>Télécharger le manuel du plugin</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="105"/>
+        <location filename="ui_dockwidget_generated.py" line="108"/>
         <source>Download Tomofast-x  Manual</source>
         <translation>Télécharger le manuel Tomofast-x</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="106"/>
+        <location filename="ui_dockwidget_generated.py" line="109"/>
         <source>Export</source>
         <translation>Exporter</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="107"/>
+        <location filename="ui_dockwidget_generated.py" line="110"/>
         <source>Windows Native</source>
         <translation>Windows natif</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="108"/>
+        <location filename="ui_dockwidget_generated.py" line="111"/>
         <source>Windows WSL</source>
         <translation>Windows WSL</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="109"/>
+        <location filename="ui_dockwidget_generated.py" line="112"/>
         <source>Path to setvars.bat</source>
         <translation>Chemin vers setvars.bat</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="110"/>
+        <location filename="ui_dockwidget_generated.py" line="113"/>
         <source>Download Plugin Cheat Sheet</source>
         <translation>Télécharger la fiche de référence du plugin</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="111"/>
+        <location filename="ui_dockwidget_generated.py" line="114"/>
         <source>Grav Depth Weighting</source>
         <translation>Pondération en profondeur Grav</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="112"/>
+        <location filename="ui_dockwidget_generated.py" line="115"/>
         <source>Enable Depth Weighting</source>
         <translation>Activer la pondération en profondeur</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="113"/>
+        <location filename="ui_dockwidget_generated.py" line="116"/>
         <source>Power</source>
         <translation>Puissance</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="114"/>
+        <location filename="ui_dockwidget_generated.py" line="117"/>
         <source>Distance-based</source>
         <translation>Basé sur la distance</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="115"/>
+        <location filename="ui_dockwidget_generated.py" line="118"/>
         <source>Depth-based</source>
         <translation>Basé sur la profondeur</translation>
     </message>
     <message>
-        <location filename="ui_dockwidget_generated.py" line="116"/>
+        <location filename="ui_dockwidget_generated.py" line="119"/>
         <source>Mag  Depth Weighting</source>
         <translation>Pondération en profondeur Mag</translation>
     </message>

@@ -398,6 +398,21 @@ TRANSLATIONS = {
         "fr": "Paramètres Grav/Mag", "es": "Parámetros Grav/Mag",
         "pt": "Parâmetros Grav/Mag", "pt_BR": "Parâmetros Grav/Mag", "zh": "重力/磁力参数",
     },
+    "Advanced": {
+        "fr": "Avancé", "es": "Avanzado",
+        "pt": "Avançado", "pt_BR": "Avançado", "zh": "高级",
+    },
+    "Save Outputs": {
+        "fr": "Enregistrer les sorties", "es": "Guardar resultados",
+        "pt": "Guardar resultados", "pt_BR": "Salvar resultados", "zh": "保存输出",
+    },
+    "Continue on to Save Outputs Tab...": {
+        "fr": "Continuer vers l'onglet Enregistrer les sorties...",
+        "es": "Continuar a la pestaña Guardar resultados...",
+        "pt": "Continuar para a aba Guardar resultados...",
+        "pt_BR": "Continuar para a aba Salvar resultados...",
+        "zh": "继续前往保存输出选项卡...",
+    },
     "Experiment Parameters": {
         "fr": "Paramètres de l'expérience", "es": "Parámetros del experimento",
         "pt": "Parâmetros do experimento", "pt_BR": "Parâmetros do experimento", "zh": "实验参数",

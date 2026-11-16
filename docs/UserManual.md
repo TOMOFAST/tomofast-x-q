@@ -24,9 +24,9 @@ For a **joint** inversion, fill in everything marked 🟧 Grav, 🟦 Mag and �
 1. [Before you start](#1-before-you-start)
 2. [How the plugin is organised](#2-how-the-plugin-is-organised)
 3. [Data/Mesh tab](#3-datamesh-tab)
-4. [Grav/Mag Parameters tab](#4-gravmag-parameters-tab)
-5. [Global Parameters tab: save the input files](#5-global-parameters-tab-save-the-input-files)
-6. [Run Inversion tab: run, view and export](#6-run-inversion-tab-run-view-and-export)
+4. [Save Outputs tab: survey details and saving the input files](#4-save-outputs-tab-survey-details-and-saving-the-input-files)
+5. [Run Inversion tab: run, view and export](#5-run-inversion-tab-run-view-and-export)
+6. [Advanced tab](#6-advanced-tab)
 7. [Differences for gravity and joint inversions](#7-differences-for-gravity-and-joint-inversions)
 8. [Where next](#8-where-next)
 
@@ -73,7 +73,7 @@ The plugin prepares the input files. The inversion itself is done by the separat
 
 ### The example in this manual
 
-The screenshots show a magnetic inversion of the [example data](#example-data) (`Cajati_Package_clip.qgz`), taken on macOS. On Windows and Linux the panel looks slightly different.
+The screenshots show a magnetic inversion of the [example data](#example-data) (`Cajati_Package_clip.qgz`), taken on Windows. On macOS and Linux the panel looks slightly different.
 
 | Input | File |
 |---|---|
@@ -90,12 +90,12 @@ The screenshots show a magnetic inversion of the [example data](#example-data) (
 
 ## 2. How the plugin is organised
 
-The panel has four tabs. Work through them from left to right:
+The panel has four tabs. Work through the first three from left to right:
 
 1. **Data/Mesh**: choose the inversion type, load the data and define the 3D model mesh.
-2. **Grav/Mag Parameters**: give the sensor height and, for magnetics, the Earth's field.
-3. **Global Parameters**: choose an output folder. **Save Files** writes the data, mesh and parameter file.
-4. **Run Inversion**: run Tomofast-x, check the result, view it and export it.
+2. **Save Outputs**: give the sensor height and, for magnetics, the Earth's field, then choose an output folder. **Save Files** writes the data, mesh and parameter file.
+3. **Run Inversion**: run Tomofast-x, check the result, view it and export it.
+4. **Advanced**: iterations, target misfit, joint weights, sensitivity kernel, unit multipliers, damping and ADMM constraints. Every field has a default, so you only need this tab to fine-tune an inversion.
 
 Hold the mouse over any field to see a tooltip. The name in square brackets, for example `[forward.magneticField.inclination]`, is the matching parameter-file entry.
 
@@ -166,7 +166,9 @@ Without a DTM the ground is taken as flat at elevation 0. The example uses one: 
 
 ---
 
-## 4. Grav/Mag Parameters tab
+## 4. Save Outputs tab: survey details and saving the input files
+
+### Survey details
 
 - 🟩 **Both** · **Sensor Height**, **Grav** / **Mag**: height of the sensor above the ground in metres, assuming a draped survey. Use 0 for ground surveys. The example uses **100** m for an airborne magnetic survey.
 - 🟦 **Mag** · **Mag Survey Day/Month/Year** then **Calculate from Survey Parameters**: computes the Earth's field (declination, inclination and intensity) from the IGRF model at the centre of the mesh, on the survey date and at the sensor height. For a Noddy GeoTIFF the values stored in the file are used instead. You can also type the three values directly.
@@ -174,22 +176,18 @@ Without a DTM the ground is taken as flat at elevation 0. The example uses one: 
 > [!WARNING]
 > **Magnetic inversions need this step.** If the field is left at the defaults (declination 0, inclination −45, intensity 65,000), **Save Files** stops with the message *Please define Magnetic Field Parameters*.
 
-<img src="images/tab2_igrf.png" width="420" alt="Grav/Mag Parameters tab: Mag sensor height 100, survey date 01/06/2010, declination -18.84, inclination -35.01, intensity 21968.51. The gravity parameter boxes are greyed out.">
+<img src="images/tab2_igrf.png" width="420" alt="Save Outputs tab: Grav sensor height 0, Mag sensor height 100, survey date 01/06/2010, declination -18.84, inclination -35.01, intensity 21968.51, then the Experiment Parameters description box and the Output Directory row.">
 
 *Figure 7. Sensor height and Earth's field for the example (survey date 1 June 2010). Use the real date of your survey.*
 
-Everything else on this tab (unit multipliers, model damping, ADMM constraints) is optional. See the [Reference Manual](ReferenceManual.md#7-gravmag-parameters-tab).
+### Save the input files
 
----
-
-## 5. Global Parameters tab: save the input files
-
-- 🟦 **Mag** · **Target Misfit**: check that it is **5** for a magnetic inversion. In version 0.2.23 it can stay at the gravity value (`1e-07`) after you switch to Mag, so type **5** if needed. For gravity leave it at `1e-07`.
+- ⬜ **Optional** · **Experiment Parameters**, **Description**: a note about this inversion, written into the parameter file.
 - 🟩 **Both** · **Save Files**: choose (or create) an empty output folder. The plugin then writes the files Tomofast-x needs and loads the data points and mesh into QGIS.
 
-<img src="images/tab3_saved.png" width="420" alt="Global Parameters tab with target misfit 5 and the output directory filled in after Save Files.">
+<img src="images/tab2_saved.png" width="420" alt="Save Outputs tab after Save Files, with the output folder path shown in the Output Directory box next to the Save Files button.">
 
-*Figure 8. Global Parameters after **Save Files**. The output folder is shown next to the button.*
+*Figure 8. The Save Outputs tab after **Save Files**. The output folder is shown next to the button.*
 
 The output folder now holds:
 
@@ -206,7 +204,7 @@ The output folder now holds:
 
 ---
 
-## 6. Run Inversion tab: run, view and export
+## 5. Run Inversion tab: run, view and export
 
 - 🟩 **Both** · **Path to tomofast**: press **...** and choose the Tomofast-x program (`tomofastx.exe` on Windows). It is remembered for next time.
 - 🟩 **Both** · **Path to parfile**: filled in automatically with the `paramfile.txt` just saved.
@@ -214,15 +212,15 @@ The output folder now holds:
 - 🟩 **Both** · **Number of processors**: use one fewer than the number of cores in your computer.
 - **Run Inversion**: starts Tomofast-x in the background. Its output appears in the **Inversion Log**. **Cancel Inversion** stops it.
 
-<img src="images/tab4_finished.png" width="420" alt="Run Inversion tab after the run on macOS. The inversion log ends with THE END followed by six green PASS checks, including magnetic susceptibility range acceptable (min -0.8879, max 0.904).">
+<img src="images/tab3_finished.png" width="420" alt="Run Inversion tab after the run on Windows with Windows Native selected and 19 processors. The inversion log ends with THE END followed by six green PASS checks, including magnetic susceptibility range acceptable (min -0.9004, max 0.9066), and a grey line giving the path of the ParaView script that removes the padding.">
 
-*Figure 10. The finished example run (under a minute with 9 processes on a recent Mac; about 1.5 minutes on a Windows PC). The log ends with `THE END`, followed by the plugin's automatic checks.*
+*Figure 10. The finished example run (about 45 seconds with 19 processes on a Windows PC, and under a minute on a recent Mac). The log ends with `THE END`, followed by the plugin's automatic checks and the path of the `remove_padding.py` ParaView script.*
 
 ### Check the result
 
 When the run ends, the plugin checks the result and adds green **PASS** or red **WARNING** lines to the log. They cover the data fit, the compression error, possible over-fitting, the number of iterations and whether the model values are in a sensible range. Each warning suggests what to change. The [Reference Manual](ReferenceManual.md#10-post-run-checks) lists all the checks.
 
-The example run passes every check. The final model's susceptibilities range from −0.89 to 0.90 SI.
+The example run passes every check. The final model's susceptibilities range from −0.90 to 0.91 SI.
 
 > [!WARNING]
 > If you invert the original total-field grid (`Parana_Santa_Catarina_1095_MAGMIC_clipped.tif`, about 22,855 nT on average) instead of the `_RR` grid, the run ends with *WARNING Check magnetic susceptibility unit scaling* (min −9.9, max 15.6). Tomofast-x needs unrealistic susceptibilities to fit total-field values. Remove the main field (IGRF) or a regional trend from your grid before the inversion, as described in [Example data](#example-data).
@@ -236,9 +234,36 @@ The example run passes every check. The final model's susceptibilities range fro
 
 *Figure 11. The example model shown as Visualise draws it: half-model slices in x, y and z, padding removed, colours clipped at the 95th percentile (here −0.86 to 0.15 SI). The strongest susceptibilities lie under the Cajati anomaly at the centre of the core.*
 
-The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can open in ParaView, and `model/` and `data/` hold the final model and the observed, predicted and misfit data. Here we show a thresholded version of the susceptibility model with 400m cells using Paraview:     
+The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can open in ParaView, and `model/` and `data/` hold the final model and the observed, predicted and misfit data.
+
+**Removing the padding in ParaView.** The full model `Paraview/mag_final_model3D_full.vtk` (or `grav_…`) includes the padding cells around the region of interest. When the run ends, the plugin also writes `Paraview/remove_padding.py`, a ParaView script that keeps only the core cells of the model you select:
+
+1. In ParaView, open `mag_final_model3D_full.vtk` (**File > Open**, then **Apply**) and select it in the Pipeline Browser.
+2. Choose **Macros > Import new macro...** and select `remove_padding.py`. You only need to import it once.
+3. Click the new macro in the Macros toolbar. Alternatively, use **View > Python Shell > Run Script**. A `mag_final_model3D_no_padding` filter appears below the model, which is hidden.
+
+You can also edit two settings at the top of the script before running it: `TRIM_TO_CORE_DEPTH = True` also removes the cells below the core depth, and `SAVE_COPY = True` writes the cropped model as `mag_final_model3D_core.vtk`. For a 2D profile inversion, the same folder also holds `paraview_transform.py` (see the [Reference Manual](ReferenceManual.md#16-2d-profile-inversion)).
+
+Here we show a thresholded version of the susceptibility model with 400m cells using Paraview:     
 <img src="images/Cajati_crop.gif"  alt="Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil">  
 *Figure 12. Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil.*
+
+---
+
+## 6. Advanced tab
+
+You do not need this tab for the example. Every field has a default that suits a first inversion:
+
+- **Inversion Parameters**: the number of major and minor iterations and the **Target Misfit**. The target misfit is set for you when you choose the inversion type: `1e-07` for gravity, `5` for magnetics and `3` for gravity gradiometry. A value you type yourself is kept.
+- **Joint Inversion Parameters**: the relative weights of the gravity and magnetic data in a joint inversion.
+- **Sensitivity Kernel**: re-use a sensitivity matrix from an earlier run on the same mesh and data, which skips the slowest part of the calculation.
+- **Gravity Parameters** and **Magnetics Parameters**: unit multipliers, model damping and ADMM bound constraints.
+
+<img src="images/tab4_advanced.png" width="420" alt="Advanced tab for the magnetic example: Inversion Parameters with major iterations 3, minor iterations 100 and target misfit 5; Joint Inversion Parameters; Sensitivity Kernel; the gravity parameter boxes greyed out; and the magnetics unit multipliers, model damping and ADMM constraints.">
+
+*Figure 13. The Advanced tab for the example, with the target misfit set to 5 for the magnetic inversion. The gravity boxes are disabled.*
+
+If you change anything here, press **Save Files** on the Save Outputs tab again so that the parameter file is rewritten. The [Reference Manual](ReferenceManual.md#9-advanced-tab) describes every field.
 
 ---
 
@@ -248,14 +273,14 @@ The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can
 |---|---|---|---|
 | Step 1 | Gravity | Mag | Joint |
 | Data | Step 2a (and 2b for CSV), **Load Grav** | Step 3a (and 3b for CSV), **Load Mag** | Both, each with its own Load button |
-| Grav/Mag Parameters | Grav sensor height | Mag sensor height, survey date, **Calculate from Survey Parameters** | Both sensor heights, plus the magnetic field |
-| Target Misfit | `1e-07` | `5` | Leave as set |
+| Save Outputs | Grav sensor height | Mag sensor height, survey date, **Calculate from Survey Parameters** | Both sensor heights, plus the magnetic field |
+| Target Misfit (Advanced tab) | `1e-07`, set automatically | `5`, set automatically | Leave as set |
 
-Gravity data are expected in mGal: the default **Data** unit multiplier of `1e-05` converts them to SI units. Change it on the Grav/Mag Parameters tab if your data use other units.
+Gravity data are expected in mGal: the default **Data** unit multiplier of `1e-05` converts them to SI units. Change it on the Advanced tab if your data use other units.
 
 <img src="images/tab1_joint.png" width="420" alt="Data/Mesh tab with Joint selected: both the gravity (Step 2a) and magnetics (Step 3a) boxes are enabled.">
 
-*Figure 13. With Joint selected, both the gravity and magnetic data boxes are enabled.*
+*Figure 14. With Joint selected, both the gravity and magnetic data boxes are enabled.*
 
 ---
 
