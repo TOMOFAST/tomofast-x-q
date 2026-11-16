@@ -242,7 +242,7 @@ The full results are in the `OUTPUT` folder: `Paraview/` holds VTK files you can
 2. Choose **Macros > Import new macro...** and select `remove_padding.py`. You only need to import it once.
 3. Click the new macro in the Macros toolbar. Alternatively, use **View > Python Shell > Run Script**. A `mag_final_model3D_no_padding` filter appears below the model, which is hidden.
 
-You can also edit two settings at the top of the script before running it: `TRIM_TO_CORE_DEPTH = True` also removes the cells below the core depth, and `SAVE_COPY = True` writes the cropped model as `mag_final_model3D_core.vtk`. For a 2D profile inversion, the same folder also holds `paraview_transform.py` (see the [Reference Manual](ReferenceManual.md#16-2d-profile-inversion)).
+You can also edit two settings at the top of the script before running it: `TRIM_TO_CORE_DEPTH = True` also removes the cells below the core depth, and `SAVE_COPY = True` writes the cropped model as `mag_final_model3D_core.vtk`. For a 2D profile inversion, the same folder also holds `paraview_transform.py` (see [ParaView scripts](ReferenceManual.md#paraview-scripts) in the Reference Manual).
 
 Here we show a thresholded version of the susceptibility model with 400m cells using Paraview:     
 <img src="images/Cajati_crop.gif"  alt="Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite complex, SE Brazil">  
