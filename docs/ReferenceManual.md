@@ -534,7 +534,7 @@ Choose a **line** layer with exactly two vertices as the mesh ROI. The plugin th
 
 ## 18. ArcGIS Pro toolbox
 
-The repository also contains a beta ArcGIS Pro toolbox (`ARCGIS/Tomofast_X.pyt`) whose panel mirrors the QGIS plugin. Add it with **Toolboxes > Add Toolbox**. Run **Setup > Set Up Python Environment** once: it clones `arcgispro-py3` into `arcgispro-py3-geotools`, installs the required packages (including shapely 2 and pyvista) and activates the clone. Restart ArcGIS Pro, then run **Open Tomofast-x Panel**. See the [README](https://github.com/TOMOFAST/tomofast-x-q#arcgis-pro-this-is-very-beta) for details.
+The repository also contains a beta ArcGIS Pro toolbox (`ARCGIS/Tomofast_X.pyt`) whose panel mirrors the QGIS plugin. Add it with **Toolboxes > Add Toolbox**. Run **Setup > Set Up Python Environment** once: it clones `arcgispro-py3` into `arcgispro-py3-geotools`, installs the required packages (including shapely 2 and pyvista) and activates the clone. Restart ArcGIS Pro, then run **Open Tomofast-x Panel**. See the [README](https://github.com/TOMOFAST/tomofast-x-q#arcgis-pro-install) for details.
 
 ---
 
