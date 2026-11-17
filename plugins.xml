@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugins>
+  <pyqgis_plugin name="tomofast_x_q" version="0.2.24" plugin_id="tomofast_x_q">
+    <description>Supports Tomofast-x geophysical inversion code</description>
+    <about>Helps make input files for Tomofast-x</about>
+    <version>0.2.24</version>
+    <qgis_minimum_version>3.24</qgis_minimum_version>
+    <qgis_maximum_version>4.99</qgis_maximum_version>
+    <homepage>https://github.com/TOMOFAST/</homepage>
+    <file_name>tomofast_x_q.zip</file_name>
+    <icon>icon.png</icon>
+    <author_name>mark jessell, vitaliy ogarko</author_name>
+    <download_url>https://github.com/TOMOFAST/tomofast-x-q/releases/download/v0.2.24/tomofast_x_q.zip</download_url>
+    <uploaded_by>mark jessell, vitaliy ogarko</uploaded_by>
+    <create_date>2026-11-17</create_date>
+    <update_date>2026-11-17</update_date>
+    <experimental>False</experimental>
+    <deprecated>False</deprecated>
+    <tracker>https://github.com/TOMOFAST/tomofast-x-q</tracker>
+    <repository>https://github.com/TOMOFAST/tomofast-x-q</repository>
+    <tags>python, geophysics, gravity, magnetics</tags>
+    <server>False</server>
+  </pyqgis_plugin>
+</plugins>
