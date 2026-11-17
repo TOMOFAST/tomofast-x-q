@@ -1,12 +1,20 @@
 # Tomofast-x-q Changelog
 
-Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: **0.2.23**.
+Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: **0.2.24**.
 
 [User Manual](docs/UserManual.md) · [Reference Manual](docs/ReferenceManual.md) · [README](README.md)
 
 <!-- Generated from metadata.txt by docs/make_changelog.py. Edit metadata.txt, not this file. -->
 
-## 0.2.23 (latest)
+## 0.2.24 (latest)
+
+- Tabs rearranged to Data/Mesh, Save Outputs (was Global Parameters), Run Inversion and Advanced (was Grav/Mag Parameters, now last)
+- After a run, a ParaView script (OUTPUT/Paraview/remove_padding.py) is written to crop the padding from the full model; paraview_transform.py for 2D profiles now goes in the same folder
+- Fix the target misfit not switching to 5 for magnetics (the default 1e-07 was not recognised as the gravity default 1e-7)
+- Fix loading a DTM after running an inversion (missing OUTPUT.tif error); the DTM is now reprojected from its own CRS and reloading replaces the previous Reprojected DTM layer
+- New User Manual, Reference Manual and changelog page, with the Cajati example data
+
+## 0.2.23
 
 - ArcGIS Pro: the Set Up Python Environment tool now requires shapely 2.0 or newer and installs or upgrades it; before, an older shapely was accepted and only failed later
 
@@ -14,6 +22,9 @@ Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Curr
 
 - macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)
 - ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages
+- ArcGIS Pro: the setup tool runs conda, pip and its final check with a clean environment, so packages are no longer installed into the environment Pro is using
+- ArcGIS Pro: the plugin icon is shown on its windows and taskbar entry
+- The inversion log explains the missing-DLL exit code (0xC0000135)
 
 ## 0.2.21
 
@@ -22,6 +33,10 @@ Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Curr
 - Horizontal padding set automatically to the model depth (still editable)
 - Fix mpirun file selector hiding extension-less files on macOS/Linux
 - QGIS 4 / Qt6 compatibility; more compact dock on macOS
+- The PyVista model preview opens in a Qt window, so closing it no longer crashes QGIS on macOS
+- Fix overlapping labels in the compression row on macOS
+- The dock can be made narrower (tab bar scrolls)
+- Native Windows runs set OMP_WAIT_POLICY=PASSIVE so idle threads stop using CPU
 
 ## 0.2.20
 
