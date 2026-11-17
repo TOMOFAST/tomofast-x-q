@@ -1,6 +1,6 @@
 # Tomofast-x-q Reference Manual
 
-A description of every control, file and parameter in the Tomofast-x QGIS plugin, version 0.2.23. For a shorter walk-through of the required steps only, see the [user manual](UserManual.md).
+A description of every control, file and parameter in the Tomofast-x QGIS plugin, version 0.2.24. For a shorter walk-through of the required steps only, see the [user manual](UserManual.md).
 
 [User Manual](UserManual.md) · [Changelog](../CHANGELOG.md) · [Cheat sheet (PDF)](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) · [Tomofast-x](https://github.com/TOMOFAST/Tomofast-x) · [README](../README.md)
 
@@ -519,7 +519,7 @@ Choose a **line** layer with exactly two vertices as the mesh ROI. The plugin th
 
 | Problem | Cause and fix |
 |---|---|
-| Target Misfit still shows `1e-07` after choosing Mag | In version 0.2.23 the starting value is shown as `1e-07`, which the plugin does not recognise as the gravity default, so it is not swapped. Type `5` for magnetic inversions. |
+| Target Misfit still shows `1e-07` after choosing Mag | Fixed in 0.2.24. In 0.2.23 the starting value is shown as `1e-07`, which the plugin did not recognise as the gravity default, so it was not swapped: type `5` for magnetic inversions or update the plugin. |
 | Layer not in a drop-down | Only layers saved to disk in a suitable format are listed. Save memory or temporary layers first, or use **...**. |
 | *Please define Magnetic Field Parameters* | Press **Calculate from Survey Parameters** or enter the field by hand. |
 | *Data CRS changed … reload the mesh ROI / DTM* | New data with a different CRS were loaded after the ROI or DTM. Load them again. |

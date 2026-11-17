@@ -56,6 +56,7 @@ from qgis.core import (
     QgsGraduatedSymbolRenderer,
     QgsClassificationEqualInterval,
     QgsWkbTypes,
+    QgsProcessingUtils,
 )
 
 # Qt5/Qt6 Compatibility Layer
@@ -2894,39 +2895,51 @@ pv.Render()
         layer = QgsRasterLayer(self.dtm_filename, baseName)
 
         if layer.isValid():
+            # Reproject in-process with GDAL rather than via the Processing
+            # gdal:warpreproject algorithm, whose TEMPORARY_OUTPUT file could
+            # silently fail to be written (e.g. after an inversion), leaving
+            # gdal.Open() pointing at a missing OUTPUT.tif.
+            src_crs = layer.crs()
+            if not src_crs.isValid():
+                src_crs = QgsCoordinateReferenceSystem(proj_in)
+            dst_crs = QgsCoordinateReferenceSystem(proj_out)
+            if not dst_crs.isValid():
+                dst_crs = src_crs
 
-            parameter = {
-                "INPUT": self.dtm_filename,
-                "SOURCE_CRS": QgsCoordinateReferenceSystem(proj_in),
-                "TARGET_CRS": QgsCoordinateReferenceSystem(proj_out),
-                "RESAMPLING": 0,
-                "NODATA": None,
-                "TARGET_RESOLUTION": None,
-                "OPTIONS": "",
-                "DATA_TYPE": 0,
-                "TARGET_EXTENT": None,
-                "TARGET_EXTENT_CRS": None,
-                "MULTITHREADING": False,
-                "EXTRA": "",
-                "OUTPUT": "TEMPORARY_OUTPUT",
-            }
+            out_path = QgsProcessingUtils.generateTempFilename("Reprojected_DTM.tif")
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            try:
+                gd = gdal.Warp(
+                    out_path,
+                    self.dtm_filename,
+                    srcSRS=src_crs.toWkt(),
+                    dstSRS=dst_crs.toWkt(),
+                    resampleAlg="near",
+                    format="GTiff",
+                )
+            except RuntimeError as e:
+                gd = None
+                err = str(e)
+            else:
+                err = gdal.GetLastErrorMsg()
+            if gd is None or not os.path.exists(out_path):
+                self.iface.messageBar().pushMessage(
+                    "Could not reproject DTM",
+                    err or self.dtm_filename,
+                    level=Qgis.MessageLevel.Critical,
+                    duration=45,
+                )
+                return
 
-            result = processing.runAndLoadResults("gdal:warpreproject", parameter)
-
-            self._dtm_crs = (proj_in, proj_out)
-            temppath = result["OUTPUT"]
-            gd = gdal.Open(temppath)
             self.dtm_array = gd.ReadAsArray()
-            # Rename the reprojected layer — try the canonical name first, then fall
-            # back to matching by output path so a QGIS version rename doesn't break this.
-            layers = QgsProject.instance().mapLayersByName("Reprojected")
-            if not layers:
-                layers = [
-                    lyr for lyr in QgsProject.instance().mapLayers().values()
-                    if hasattr(lyr, "source") and lyr.source() == temppath
-                ]
-            if layers:
-                layers[0].setName("Reprojected DTM")
+            gd = None  # flush and close before QGIS opens the file
+            self._dtm_crs = (proj_in, proj_out)
+
+            # Replace any previously loaded DTM so lookups by name get this one
+            project = QgsProject.instance()
+            for old in project.mapLayersByName("Reprojected DTM"):
+                project.removeMapLayer(old.id())
+            project.addMapLayer(QgsRasterLayer(out_path, "Reprojected DTM"))
             self.rearrange()
         else:
             self.iface.messageBar().pushMessage(

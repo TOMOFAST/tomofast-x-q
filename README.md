@@ -1,4 +1,4 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.23
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.24
  GIS Plugin to help Tomofast-x usage
 
 **[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp;  

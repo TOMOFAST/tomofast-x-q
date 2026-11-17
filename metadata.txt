@@ -7,7 +7,7 @@ name=tomofast_x_q
 qgisMinimumVersion=3.24
 qgisMaximumVersion=4.99
 description=Supports Tomofast-x geophysical inversion code
-version=0.2.23
+version=0.2.24
 
 author=mark jessell, vitaliy ogarko 
 email=mark.jessell@uwa.edu.au
@@ -22,17 +22,30 @@ repository=https://github.com/TOMOFAST/tomofast-x-q
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=0.2.23
+changelog=0.2.24
+    * Tabs rearranged to Data/Mesh, Save Outputs (was Global Parameters), Run Inversion and Advanced (was Grav/Mag Parameters, now last)
+    * After a run, a ParaView script (OUTPUT/Paraview/remove_padding.py) is written to crop the padding from the full model; paraview_transform.py for 2D profiles now goes in the same folder
+    * Fix the target misfit not switching to 5 for magnetics (the default 1e-07 was not recognised as the gravity default 1e-7)
+    * Fix loading a DTM after running an inversion (missing OUTPUT.tif error); the DTM is now reprojected from its own CRS and reloading replaces the previous Reprojected DTM layer
+    * New User Manual, Reference Manual and changelog page, with the Cajati example data
+    0.2.23
     * ArcGIS Pro: the Set Up Python Environment tool now requires shapely 2.0 or newer and installs or upgrades it; before, an older shapely was accepted and only failed later
     0.2.22
     * macOS: smaller font and Fusion style so the dock fits the screen (QSettings Tomofast_x/compactMacUI=false keeps the native look)
     * ArcGIS Pro: new Set Up Python Environment tool that clones arcgispro-py3 and installs the required packages
+    * ArcGIS Pro: the setup tool runs conda, pip and its final check with a clean environment, so packages are no longer installed into the environment Pro is using
+    * ArcGIS Pro: the plugin icon is shown on its windows and taskbar entry
+    * The inversion log explains the missing-DLL exit code (0xC0000135)
     0.2.21
     * Grav/mag data, DTM and mesh ROI can be picked from open QGIS layers saved to disk, as well as loaded from disk
     * Mesh ROI is re-applied after loading new data if the CRS is unchanged (warns if it changed)
     * Horizontal padding set automatically to the model depth (still editable)
     * Fix mpirun file selector hiding extension-less files on macOS/Linux
     * QGIS 4 / Qt6 compatibility; more compact dock on macOS
+    * The PyVista model preview opens in a Qt window, so closing it no longer crashes QGIS on macOS
+    * Fix overlapping labels in the compression row on macOS
+    * The dock can be made narrower (tab bar scrolls)
+    * Native Windows runs set OMP_WAIT_POLICY=PASSIVE so idle threads stop using CPU
     0.2.20
     * ArcGIS Pro panel brought up to date with the QGIS plugin: native Windows runs launch the MPI-free tomofastx.exe directly (setvars.bat and mpiexec no longer needed), Cancel Inversion button, run log reports the exit code and explains stack overflows, relative paths in parameter files, Visualise implemented, MVI export columns
     * ArcGIS Pro panel: tooltips for all parameters (with their parfile names) and the Run tab help text with clickable links
