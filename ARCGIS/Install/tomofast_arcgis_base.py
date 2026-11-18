@@ -255,7 +255,7 @@ class TomofastArcGISBase:
         self.forward_depthWeighting_type = 1
         self.forward_depthWeighting_grav_type = 1
         self.forward_depthWeighting_magn_type = 1
-        self.forward_depthWeighting_grav_power = 2
+        self.forward_depthWeighting_grav_power = 3
         self.forward_depthWeighting_magn_power = 3
         self.sensit_readFromFiles = 0
         self.forward_matrixCompression_type = 1

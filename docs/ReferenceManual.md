@@ -304,7 +304,7 @@ The target misfit is set when you choose the inversion type (1e-7 for gravity, 5
 | ADMM Constraints: Weight | `inversion.admm.grav.weight` / `inversion.admm.magn.weight` | 0 | Weight of the bound constraint. Set to 1000 when you set No Lithologies above 0. |
 | ADMM Constraints: Bounds | `inversion.admm.grav.bounds` / `inversion.admm.magn.bounds` | empty | Space-separated lower/upper pairs, one pair per lithology. |
 
-Depth weighting is not shown in the panel. It is written as `forward.depthWeighting.type` (1 without a DTM, 2 with one), `forward.depthWeighting.grav.power = 2` (3 for gradiometry) and `forward.depthWeighting.magn.power = 3`.
+Depth weighting is not shown in the panel. It is written as `forward.depthWeighting.type` (1 without a DTM, 2 with one), `forward.depthWeighting.grav.power = 3` and `forward.depthWeighting.magn.power = 3`.
 
 ---
 

@@ -227,11 +227,9 @@ class ParamsMixin:
             )
         )
         if self.global_experimentType in (1, 3):
-            # Gradiometry falls off faster with depth, so it uses power 3
-            grav_power = 3 if self.forward_data_grav_type == 2 else self.forward_depthWeighting_grav_power
             self.f_params.write(
                 "forward.depthWeighting.grav.power   = {}\n".format(
-                    grav_power
+                    self.forward_depthWeighting_grav_power
                 )
             )
         if self.global_experimentType in (2, 3):

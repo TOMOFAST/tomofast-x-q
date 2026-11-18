@@ -4526,10 +4526,10 @@ pv.Render()
         )
 
         if self.global_experimentType == 1 or self.global_experimentType == 3:
-            # Gradiometry falls off faster with depth, so it uses power 3
-            grav_power = 3 if self.forward_data_grav_type == 2 else self.forward_depthWeighting_grav_power
             self.f_params.write(
-                "forward.depthWeighting.grav.power   = {}\n".format(grav_power)
+                "forward.depthWeighting.grav.power   = {}\n".format(
+                    self.forward_depthWeighting_grav_power
+                )
             )
 
         if self.global_experimentType == 2 or self.global_experimentType == 3:
@@ -5552,9 +5552,6 @@ pv.Render()
         self.dlg.lineEdit_magn_ADMM_weight.setToolTip(
             "Define weighting of ADMM constraint\n\n[inversion.admm.magn.weight]"
         )
-        self.dlg.mQgsDoubleSpinBox_grav_mmodel_damping_weight.setToolTip(
-            "Index of power term for depth weighting [3 for magnetics]\n\n[inversion.modelDamping.grav.weight]"
-        )
         self.dlg.mQgsDoubleSpinBox_compression_ratio.setToolTip(
             "Amount of wavelet compression [smaller value means more compression]\nAutomatically set to provide 1% error but value can be manually overidden\n\n[forward.matrixCompression.rate]"
         )
@@ -5813,7 +5810,7 @@ pv.Render()
         self.forward_depthWeighting_type = 1
         self.forward_depthWeighting_grav_type = 1
         self.forward_depthWeighting_magn_type = 1
-        self.forward_depthWeighting_grav_power = 2
+        self.forward_depthWeighting_grav_power = 3
         self.forward_depthWeighting_magn_power = 3
         self.sensit_readFromFiles = 0
         self.forward_matrixCompression_type = 1
