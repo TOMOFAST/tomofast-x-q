@@ -1,6 +1,6 @@
 # Tomofast-x-q User Manual
 
-QGIS plugin for setting up, running and viewing Tomofast-x gravity and magnetic inversions. Plugin version 0.2.24.
+QGIS plugin for setting up, running and viewing Tomofast-x gravity and magnetic inversions. Plugin version 0.2.25.
 
 [Reference Manual](ReferenceManual.md) · [Changelog](../CHANGELOG.md) · [Cheat sheet (PDF)](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) · [README](../README.md)
 
@@ -111,6 +111,9 @@ Choose **Gravity**, **Mag** or **Joint**. Only the boxes for that type are enabl
 
 *Figure 2. Mag selected. The gravity boxes (Step 2a/2b) are disabled and the magnetics boxes (Step 3a/3b) are enabled.*
 
+> [!TIP]
+> **Frost** (tick box next to Joint, off by default) runs a fast FFT inversion of a gridded data set inside QGIS instead of Tomofast-x: seconds rather than minutes, with no Tomofast-x installation, but no bounds or other constraints. When it is ticked, the cell sizes are set to the grid cell size, the padding to 0 and the DTM step is disabled. This manual uses Tomofast-x; see [Frost](ReferenceManual.md#19-frost-fast-fft-inversion) in the Reference Manual.
+
 ### Step 3a: Select the magnetics data file 🟦 Mag
 
 (For gravity, use Step 2a in the same way.)
@@ -210,7 +213,7 @@ The output folder now holds:
 - 🟩 **Both** · **Path to parfile**: filled in automatically with the `paramfile.txt` just saved.
 - 🟩 **Both** · **Windows Native** or **Windows WSL** (Windows only): choose Windows Native for `tomofastx.exe`. With WSL, also type the name of your Linux distribution in **WSL Distro**. On macOS and Linux, give the path to **mpirun** if it is not on the PATH.
 - 🟩 **Both** · **Number of processors**: use one fewer than the number of cores in your computer.
-- **Run Inversion**: starts Tomofast-x in the background. Its output appears in the **Inversion Log**. **Cancel Inversion** stops it.
+- **Run Inversion**: starts Tomofast-x in the background. Its output appears in the **Inversion Log**. **Cancel Inversion** stops it. If **Frost** was ticked when the files were saved, Frost runs inside QGIS instead, and Path to tomofast is not needed.
 
 <img src="images/tab3_finished.png" width="420" alt="Run Inversion tab after the run on Windows with Windows Native selected and 19 processors. The inversion log ends with THE END followed by six green PASS checks, including magnetic susceptibility range acceptable (min -0.9004, max 0.9066), and a grey line giving the path of the ParaView script that removes the padding.">
 
@@ -286,7 +289,7 @@ Gravity data are expected in mGal: the default **Data** unit multiplier of `1e-0
 
 ## 8. Where next
 
-- The [Reference Manual](ReferenceManual.md) describes every field, including the optional ones skipped here: loading an existing parameter file, unit multipliers, model damping, ADMM bound constraints, joint weights, magnetisation vector inversion (MVI), gravity gradiometry, 2D profile inversion and re-using a sensitivity kernel.
+- The [Reference Manual](ReferenceManual.md) describes every field, including the optional ones skipped here: loading an existing parameter file, unit multipliers, model damping, ADMM bound constraints, joint weights, magnetisation vector inversion (MVI), gravity gradiometry, 2D profile inversion, re-using a sensitivity kernel and the fast [Frost](ReferenceManual.md#19-frost-fast-fft-inversion) inversion.
 - The [Changelog](../CHANGELOG.md) lists what changed in each version.
 - Report problems on the [issue tracker](https://github.com/TOMOFAST/tomofast-x-q/issues).
 

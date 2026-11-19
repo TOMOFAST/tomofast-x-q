@@ -1,6 +1,6 @@
 # Tomofast-x-q Reference Manual
 
-A description of every control, file and parameter in the Tomofast-x QGIS plugin, version 0.2.24. For a shorter walk-through of the required steps only, see the [user manual](UserManual.md).
+A description of every control, file and parameter in the Tomofast-x QGIS plugin, version 0.2.25. For a shorter walk-through of the required steps only, see the [user manual](UserManual.md).
 
 [User Manual](UserManual.md) · [Changelog](../CHANGELOG.md) · [Cheat sheet (PDF)](https://tectonique.net/tomofast-x-q/Tomofast-x-q%20cheat%20sheet.pdf) · [Tomofast-x](https://github.com/TOMOFAST/Tomofast-x) · [README](../README.md)
 
@@ -24,6 +24,7 @@ A description of every control, file and parameter in the Tomofast-x QGIS plugin
 16. [2D profile inversion](#16-2d-profile-inversion)
 17. [Troubleshooting](#17-troubleshooting)
 18. [ArcGIS Pro toolbox](#18-arcgis-pro-toolbox)
+19. [Frost: fast FFT inversion](#19-frost-fast-fft-inversion)
 
 ---
 
@@ -51,7 +52,7 @@ A description of every control, file and parameter in the Tomofast-x QGIS plugin
 ### Plugin
 
 - QGIS 3.24 to 4.x (Qt5 or Qt6). Install from the QGIS plugin repository (**Plugins > Manage and Install Plugins**), or install the zip file of the **main** branch with **Install from ZIP**.
-- Python packages: `pandas` and `pyproj` (both normally included with QGIS). `pyvista` is needed only for **Visualise**.
+- Python packages: `pandas` and `pyproj` (both normally included with QGIS). `pyvista` is needed only for **Visualise**, and `scipy` only for [Frost](#19-frost-fast-fft-inversion).
 - The plugin adds a **TF-x** toolbar button and menu entry that open a dock panel on the right of the main window, tabbed with any other docks there.
 - macOS: the panel uses a smaller font and the Fusion style so that it fits on the screen. Set the QGIS setting `Tomofast_x/compactMacUI` to `false` to keep the native look.
 - The interface is translated into French, Spanish, Portuguese (European and Brazilian) and Mandarin, following the QGIS locale.
@@ -65,15 +66,17 @@ A description of every control, file and parameter in the Tomofast-x QGIS plugin
 | macOS | `mpirun -np N tomofastx -p paramfile` | Tomofast-x and OpenMPI (for example from Homebrew). The path to `mpirun` if it is not on the PATH. |
 | Linux | As for macOS. | As for macOS. |
 
+Tomofast-x is not needed for [Frost](#19-frost-fast-fft-inversion) inversions, which run inside QGIS.
+
 Build instructions: [Tomofast-x installation guide](https://github.com/TOMOFAST/Tomofast-manual/blob/main/install.md). You can also write the input files on one computer and run Tomofast-x on another. The paths in `paramfile.txt` are relative to its folder, so copy the whole folder.
 
 ---
 
 ## 3. Workflow summary
 
-1. **Data/Mesh**: Step 0 (optional) reload a parameter file. Step 1 choose the inversion type. Steps 2 and 3 load the gravity and/or magnetic data. Step 4 (optional) load a DTM. Step 5 define the mesh.
+1. **Data/Mesh**: Step 0 (optional) reload a parameter file. Step 1 choose the inversion type, and tick **Frost** for a fast FFT inversion of a grid. Steps 2 and 3 load the gravity and/or magnetic data. Step 4 (optional) load a DTM. Step 5 define the mesh.
 2. **Save Outputs**: sensor heights, the Earth's field (magnetics) and a description. **Save Files** writes the data, mesh and `paramfile.txt`.
-3. **Run Inversion**: run Tomofast-x, read the log and checks, then **Visualise** and **Export** the result.
+3. **Run Inversion**: run Tomofast-x (or Frost), read the log and checks, then **Visualise** and **Export** the result.
 4. **Advanced** (optional): iterations, target misfit, joint weights, sensitivity kernel, and the gravity and magnetic unit multipliers, damping and ADMM constraints. Every field has a default.
 
 You can change parameters after **Save Files** and press it again. The files are rewritten.
@@ -101,6 +104,7 @@ You can change parameters after **Save Files** and press it again. The files are
 | Gravity | `#global.experimentType = 1` | Enables the gravity controls. Target misfit default `1e-7` (`3` for gradiometry). |
 | Mag | `#global.experimentType = 2` | Enables the magnetic controls, including the magnetic field. Target misfit default `5` (but see the [target misfit note](#17-troubleshooting)). |
 | Joint | `#global.experimentType = 3` | Enables both. The mesh, DTM and ROI use the gravity CRS. See [Joint inversion](#14-joint-inversion). |
+| Frost (tick box) | `global.useFFT = 1` | Fast FFT inversion of one gridded data set, run inside QGIS instead of Tomofast-x. Off by default. Ticking it disables Joint and the DTM (Step 4), sets the cell sizes to the grid cell size and the padding to 0. See [Frost](#19-frost-fast-fft-inversion). |
 
 ### Steps 2a and 3a: Select the gravity / magnetics data file
 
@@ -139,6 +143,8 @@ Step 2a 🟧 Grav and Step 3a 🟦 Mag work the same way.
 | **...** |  | Chooses a GeoTIFF from disk and loads it immediately. |
 | **Load dtm** | `#global.elevType = 2`, `forward.depthWeighting.type = 2` | Reprojects the DTM from the data input CRS to the output CRS (nearest neighbour). The result is added as *Reprojected DTM*. |
 
+Step 4 is disabled while **Frost** is ticked: Frost assumes a level surface, and ticking it clears a DTM that was already loaded.
+
 With a DTM, the data heights are the ground elevation under each point plus the sensor height, the mesh top follows the topography (`elevation_grid.csv`), and depth weighting is applied relative to the topography. Without one, the ground is flat at 0 m and `#global.elevType = 1`. If the DTM is smaller than the mesh, cells outside it get no elevation value, so use a DTM that covers the whole padded mesh.
 
 ### Step 5: Specify mesh parameters
@@ -148,9 +154,9 @@ With a DTM, the data heights are the ground elevation under each point plus the 
 | ROI layer (drop-down) and **Load mesh ROI** | ⬜ Optional | `#roi.filename` |  | A polygon or line layer saved to disk (OGR formats such as shapefile or GeoPackage). It is reprojected to the output CRS. A polygon sets South/North/West/East to its bounding rectangle. A line with exactly two vertices switches to [2D profile mode](#16-2d-profile-inversion). |
 | **...** | ⬜ Optional |  |  | Chooses a shapefile from disk and loads it immediately. |
 | South, North, West, East | 🟩 Both | `#mesh.south` … `#mesh.east` | Raster extent, or 6730000 / 6790000 / 430000 / 482000 | Limits of the model core in the output CRS, without padding. Raster data are sampled only inside these limits. |
-| Cell Size x, Cell Size y | 🟩 Both | `#mesh.cellx`, `#mesh.celly` | 2000 | Horizontal size of the core cells. For raster data this is also the data spacing. |
-| Horizontal Padding | 🟩 Both | `#mesh.padding` | Model depth | Distance added on every side of the core. It is set automatically to the sum of the z layer thicknesses, or to Full Depth if the lists are empty, whenever those change. Editing it afterwards is allowed. |
-| Core Cell Size z | 🟩 Both (method 1) | `#mesh.cellz` | 100 | Vertical cell size in the core. |
+| Cell Size x, Cell Size y | 🟩 Both | `#mesh.cellx`, `#mesh.celly` | 2000 | Horizontal size of the core cells, in metres (decimals allowed, e.g. 12.5). For raster data this is also the data spacing. With Frost, both are set to the grid cell size when the raster is loaded. |
+| Horizontal Padding | 🟩 Both | `#mesh.padding` | Model depth | Distance added on every side of the core. It is set automatically to the sum of the z layer thicknesses, or to Full Depth if the lists are empty, whenever those change. Editing it afterwards is allowed. With Frost it is 0 and cannot be edited. |
+| Core Cell Size z | 🟩 Both (method 1) | `#mesh.cellz` | 100 | Vertical cell size in the core (minimum 0.1 m). With Frost it is set to the grid cell size in x. |
 | Core Depth | 🟩 Both (method 1) | `#mesh.z.coreDepth` | 10000 | Depth reached by cells of the core size. |
 | Full Depth | 🟩 Both (method 1) | `#mesh.z.fullDepth` | 20000 | Total depth. The interval between core and full depth is filled with cells that grow by 15% each. |
 | z cell size list | 🟩 Both (method 2) | (not stored) | empty | Comma-separated cell sizes, one per depth layer, top first, e.g. `50,100,500`. |
@@ -235,7 +241,7 @@ For a magnetic or joint inversion, **Save Files** refuses to continue (*Please d
 | Control | Applies | Parfile key | Default | Description |
 |---|---|---|---|---|
 | Description | ⬜ Optional | `global.description` | Inversion Experiment | Free text describing the experiment. |
-| **Save Files** / Output Directory | 🟩 Both | `global.outputFolderPath` (`OUTPUT`) |  | Choose or create the folder for the input files. The plugin then writes the mesh, data, elevation grid and `paramfile.txt`, loads the data points and mesh into QGIS, and fills in **Path to parfile** on the Run tab. |
+| **Save Files** / Output Directory | 🟩 Both | `global.outputFolderPath` (`OUTPUT`) |  | Choose or create the folder for the input files. The plugin then writes the mesh, data, elevation grid and `paramfile.txt`, loads the data points and mesh into QGIS, and fills in **Path to parfile** on the Run tab. With **Frost** ticked it also writes `global.useFFT = 1`, and it first checks that Frost can run the problem (see [Frost](#19-frost-fast-fft-inversion)). |
 
 ---
 
@@ -257,11 +263,11 @@ For a magnetic or joint inversion, **Save Files** refuses to continue (*Please d
 | WSL Distro | 🟩 Both (WSL) | Name of the distribution, e.g. `Ubuntu-20.04`: the name after `\\wsl.localhost\` in Windows paths to the WSL disk. |
 | Path to mpirun | 🟩 Both (macOS/Linux) | Only shown on macOS and Linux. Needed if `mpirun` is not on the PATH, e.g. `/opt/homebrew/bin/mpirun`. |
 | Number of processors | 🟩 Both | OpenMP threads (Windows Native) or MPI processes. Use one fewer than the number of cores. |
-| **Run Inversion** |  | Starts Tomofast-x in the background with the parfile's folder as working directory. The output is written to `paramfile.txt_debug.txt` and shown live in the **Inversion Log**. On Windows Native the plugin also copies the parfile into the output folder. |
-| **Cancel Inversion** |  | Stops the running job (on all platforms). |
+| **Run Inversion** |  | Starts Tomofast-x in the background with the parfile's folder as working directory. The output is written to `paramfile.txt_debug.txt` and shown live in the **Inversion Log**. On Windows Native the plugin also copies the parfile into the output folder. If the parfile contains `global.useFFT = 1`, Frost is run inside QGIS instead and Path to tomofast is not needed (see [Frost](#19-frost-fast-fft-inversion)). |
+| **Cancel Inversion** |  | Stops the running job (on all platforms). A Frost run stops at the end of its current step. |
 | `remove_padding.py` (written after the run) |  | When the run ends, the plugin writes `OUTPUT/Paraview/remove_padding.py`, a ParaView script that removes the padding from the final full model(s). See [section 11](#paraview-scripts). |
 | **Visualise** |  | Opens a 3D window with x, y and z half-model slices from `OUTPUT/Paraview/*_final_model3D_half_[xyz].vtk`. Padding cells are removed, all slices share one colour range (minimum to 95th percentile, `jet` colour map) and MVI models are coloured by magnitude. Joint inversions open one window per model. Needs `pyvista`. |
-| **Export** |  | Writes `OUTPUT/grav_final_model3D_full.csv` and/or `mag_final_model3D_full.csv`: cell centres `x,y,z` (z positive upwards) and the value (`data`, or `Mx,My,Mz` for MVI). |
+| **Export** |  | Writes `OUTPUT/grav_final_model3D_full.csv` and/or `mag_final_model3D_full.csv` (from `OUTPUT/model/`, or `OUTPUT/Frost/` after a Frost run): cell centres `x,y,z` (z positive upwards) and the value (`data`, or `Mx,My,Mz` for MVI). |
 | Download Plugin Manual / Cheat Sheet / Tomofast-x Manual |  | Open the documents in your browser. |
 
 ![3D view of the Cajati magnetic model: three orthogonal slices coloured with the jet colour map and a shared scale bar from -0.861 to 0.154, clipped at 95%.](images/visualise.png)
@@ -322,6 +328,8 @@ When Tomofast-x finishes, the plugin reads `OUTPUT/costs.txt` and the run log an
 | Density range | \|min\| or \|max\| of model 1 > 1000 | Check the gravity unit multipliers. |
 | Susceptibility range | \|min\| or \|max\| of model 2 > 1 (scalar magnetic models only) | Check the magnetic units, and that the data are anomalies (see [section 6](#6-how-the-data-are-prepared)). |
 
+After a Frost run these checks are replaced by Frost's own summary: run time, mesh size, data RMS residual, model range and the output folders (see [Frost](#19-frost-fast-fft-inversion)).
+
 The Cajati example (regional-removed grid) passes every check, with susceptibilities from −0.89 to 0.90. Inverting the original total-field grid instead fails the susceptibility range check (min −9.9, max 15.6).
 
 ---
@@ -365,6 +373,16 @@ Both scripts are in `OUTPUT/Paraview/`, next to the VTK files they work on. Both
 **`paraview_transform.py`** (2D profile inversions only). Select a VTK dataset in the Pipeline Browser, then run the script. It adds a **Transform** filter that rotates and moves the profile model from profile coordinates back to map coordinates (see [section 16](#16-2d-profile-inversion)).
 
 The run log is `paramfile.txt_debug.txt` next to the parameter file.
+
+### OUTPUT folder (written by Frost)
+
+| Path | Contents |
+|---|---|
+| `Paraview/grav_final_model3D_full.vtk`, `…_half_x.vtk`, `…_half_y.vtk`, `…_half_z.vtk` (or `mag_…`) | The model in the same VTK format and with the same names as Tomofast-x, so Visualise and the ParaView scripts work unchanged. |
+| `Frost/grav_final_model_full.txt` (or `mag_…`) | Model value for each cell, in the order of `model_grid.txt` (the Tomofast-x format). Used by Export. |
+| `Frost/*_observed_data.txt`, `*_calc_final_data.txt`, `*_residual_data.txt` | Observed data, data of the model returned and their difference, in the units of the data file: first line the number of points, then `x y z value`. |
+| `Frost/frost_summary.txt` | Mesh size, cell sizes, beta, station height, penalty, RMS residuals, model range and run times. |
+| `Frost/frost_log.txt` | The run log shown in the Inversion Log. |
 
 ---
 
@@ -455,6 +473,7 @@ inversion.admm.magn.weight          = 0
 | `inversion.admm.dataCostThreshold = 0.1e-3`, `inversion.admm.weightMultiplier = 2.0`, `inversion.admm.maxWeight = 1e10` | ADMM on (No Lithologies > 0). |
 | `inversion.admm.*.bounds = -1d-10 1d10` | ADMM bounds left empty (no effective bound). |
 | `sensit.folderPath = <chosen folder>` | Read from File ticked. |
+| `global.useFFT = 1` | Frost ticked. Tomofast-x ignores the key (with a warning); the plugin runs Frost instead of Tomofast-x when it is not 0. |
 
 Step 0 also recognises `global.elevFilename`, `roi.filename`, `anomalies.*`, `mesh.*` and the sensor heights with or without the leading `#`, and Fortran-style numbers such as `1d-5`.
 
@@ -528,13 +547,51 @@ Choose a **line** layer with exactly two vertices as the mesh ROI. The plugin th
 | Memory estimate too large | Use larger cells, a smaller core area, less depth or less padding, or a smaller compression rate. |
 | Susceptibility or density range warning | Check the unit multipliers, and that the data are anomalies rather than total field or absolute gravity. |
 | Visualise does nothing | Install `pyvista` in the QGIS Python environment. Messages appear in the QGIS Python console. |
+| *Frost needs the Python package scipy* | Install `scipy` in the QGIS Python environment and restart QGIS. The ArcGIS Pro setup tool installs it. |
+| *Frost does not support: …* | Frost inverts one gridded data set: untick Joint, use a raster rather than CSV points, and use gravity or total-field magnetic data with a scalar model (no gradiometry, multi-component data, MVI or 2D profile). |
+| Frost model looks weak or smooth | This is expected: Frost returns the smallest depth-weighted model that fits the data to the noise level, without bounds. See [Frost](#19-frost-fast-fft-inversion). |
 | Running on another computer | Copy the whole output folder. The paths in `paramfile.txt` are relative, then run `tomofastx -p paramfile.txt` (or `mpirun -np N tomofastx -p paramfile.txt`) in that folder. |
 
 ---
 
 ## 18. ArcGIS Pro toolbox
 
-The repository also contains a beta ArcGIS Pro toolbox (`ARCGIS/Tomofast_X.pyt`) whose panel mirrors the QGIS plugin. Add it with **Toolboxes > Add Toolbox**. Run **Setup > Set Up Python Environment** once: it clones `arcgispro-py3` into `arcgispro-py3-geotools`, installs the required packages (including shapely 2 and pyvista) and activates the clone. Restart ArcGIS Pro, then run **Open Tomofast-x Panel**. See the [README](https://github.com/TOMOFAST/tomofast-x-q#arcgis-pro-install) for details.
+The repository also contains a beta ArcGIS Pro toolbox (`ARCGIS/Tomofast_X.pyt`) whose panel mirrors the QGIS plugin. Add it with **Toolboxes > Add Toolbox**. Run **Setup > Set Up Python Environment** once: it clones `arcgispro-py3` into `arcgispro-py3-geotools`, installs the required packages (including shapely 2 and pyvista) and activates the clone. Restart ArcGIS Pro, then run **Open Tomofast-x Panel**. See the [README](https://github.com/TOMOFAST/tomofast-x-q#arcgis-pro-install) for details. The panel also has the **Frost** option, next to the experiment type; Frost runs inside the panel.
+
+---
+
+## 19. Frost: fast FFT inversion
+
+Frost inverts a gridded gravity or magnetic data set with fast Fourier transforms (`fast_inversion.py`, by Vitaliy Ogarko). It returns the depth-weighted, smallest-model solution with a penalty (no bounds, no smoothness terms, no ADMM), which for anomalies inside the grid is, to within a few per cent, the model of the usual matrix inversion. It never builds a sensitivity matrix, so it takes seconds even for grids of a million points, needs no compression and runs inside QGIS (or the ArcGIS Pro panel) without Tomofast-x.
+
+**Setting up.**
+
+1. Step 1: choose **Gravity** or **Mag** and tick **Frost**. Joint is disabled.
+2. Step 2a/3a: load a raster (GeoTIFF or ERS). Cell Size x, y and Core Cell Size z are set to the grid cell size and the padding to 0, so there is one model column under each grid node. The z cells can be changed (Core Depth, Full Depth or the z lists); layers of different thickness are allowed.
+3. Step 4 (DTM) is disabled: Frost assumes the stations are on a level surface.
+4. Save Outputs: set the sensor height and, for magnetics, the field (**Calculate from Survey Parameters**). **Save Files** writes the data and mesh as usual and adds `global.useFFT = 1` to `paramfile.txt`.
+5. Run Inversion: **Run Inversion** runs Frost in the background. The log appears in the Inversion Log and Cancel stops the run at the end of its current step.
+
+Save Files refuses Frost for joint inversions, CSV point data, gravity gradiometry, multi-component data, MVI and 2D profiles.
+
+**Parameters used.** Frost reads everything from the parameter file, so any `paramfile.txt` with `global.useFFT = 1` can be run, including one loaded in Step 0.
+
+| Frost input | Taken from |
+|---|---|
+| Data grid | `forward.data.*.dataGridFile`, matched to the columns of `model_grid.txt`. Grid nodes without data are filled with the trend and left out of the misfit. |
+| Mesh | `modelGrid.*.file` and `modelGrid.size`. The horizontal cells must all be the same size (no padding). |
+| Depth-weighting exponent beta | `forward.depthWeighting.grav.power` / `.magn.power` (2 and 3 by default), weight (z + Z0)^(−beta/2). |
+| Station height | The data heights (median, relative to the top of the mesh). A sensor height of 0 is treated as 1 m (ground data). |
+| Units | `global.*.dataUnitsMultiplier` converts the data to mGal (gravity) or nT (magnetics); the model is divided by `global.*.modelUnitsMultiplier`, as Tomofast-x does. Gravity models are density contrasts in kg/m³, magnetic models susceptibilities in SI. |
+| Magnetic field | `forward.magneticField.inclination`, `.declination` and `.intensity_nT`. Magnetisation is induced. |
+| Noise level | 2 % of the largest datum (after the trend is removed). The penalty is chosen so that the data are fitted to this level. |
+| Trend and padding | A plane is removed from the data first; the grid is padded to twice its size with its edge values tapered to zero. |
+
+**Results.** See [OUTPUT folder (written by Frost)](#output-folder-written-by-frost). The log reports the noise level, the penalty, the RMS residual of the model and of the filter, and a note when the model fits less well than the filter, which usually means that anomalies reach the edge of the grid.
+
+**What to expect.** The model is the smallest depth-weighted model that fits the data: it is smooth, its values are lower than the true contrasts, and it has negative side lobes around each body, since there is no positivity. A body is imaged at roughly beta / N times its depth, where N is its structural index. Anomalies cut by the edge of the grid are imaged less reliably near that edge.
+
+**Running Frost on its own.** `python frost_runner.py paramfile.txt` runs the same inversion from a command line (it needs numpy, scipy and pandas).
 
 ---
 
