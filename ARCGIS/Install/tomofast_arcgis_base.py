@@ -48,6 +48,7 @@ class TomofastArcGISBase:
         self._exit_reported = False
         self._wsl_distro = ""
         self._wsl_param_path = ""
+        self._frost_thread = None
         self._debug_log_path = ""
         self._debug_log_pos = 0
         self.initialise_variables()
@@ -138,6 +139,7 @@ class TomofastArcGISBase:
         self.ui._os_var.trace_add(
             "write", lambda *_: self._update_run_controls()
         )
+        self.ui._frost_var.trace_add("write", lambda *_: self._on_frost_toggled())
 
         # ---- Spinbox var traces (valueChanged equivalent) ------------
         for _attr in (
@@ -298,6 +300,7 @@ class TomofastArcGISBase:
         self.global_elevType = 1
         self.global_elevFilename = ""
         self.dtm_filename = ""
+        self.global_useFFT = 0  # 1: Frost (FFT) inversion instead of Tomofast-x
         self.dtm_array = None
         self.data_df = None
         self.ROIFileName = ""
@@ -344,6 +347,11 @@ class TomofastArcGISBase:
                 self.global_description,
                 self.ui.textEdit_experiment_description,
                 str, "plainText",
+            ],
+            "global.useFFT": [
+                self.global_useFFT,
+                self.ui.checkBox_frost,
+                int, "check",
             ],
             "global.experimentType": [
                 self.global_experimentType,
@@ -568,8 +576,8 @@ class TomofastArcGISBase:
                 self.ui.doubleSpinBox_magn_sensor_height,
                 float, "value",
             ],
-            "mesh.cellx": [self.cell_x, self.ui.mQgsSpinBox_mesh_size_x, int, "value"],
-            "mesh.celly": [self.cell_y, self.ui.mQgsSpinBox_mesh_size_y, int, "value"],
+            "mesh.cellx": [self.cell_x, self.ui.mQgsSpinBox_mesh_size_x, float, "value"],
+            "mesh.celly": [self.cell_y, self.ui.mQgsSpinBox_mesh_size_y, float, "value"],
             "mesh.cellz": [self.dz, self.ui.mQgsSpinBox_mesh_size_z, float, "value"],
             "mesh.z.coreDepth": [
                 self.z_coreDepth, self.ui.doubleSpinBox_coreDepth, float, "value",
@@ -644,27 +652,32 @@ class TomofastArcGISBase:
         except (OSError, ValueError):
             pass
 
-    def _sample_raster_at_points(self, raster_path, xs, ys):
+    def _sample_raster_at_points(self, raster_path, xs, ys, missing=0.0):
+        """Band 1 of the raster at the points (xs, ys): the value of the pixel
+        that contains each point, `missing` on nodata or outside the raster.
+        DTM sampling relies on 0.0 there; data sampling passes NaN so those
+        rows are dropped later in tidy_data, as in the QGIS plugin."""
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
         ds = gdal.Open(raster_path)
         if ds is None:
-            return [0.0] * len(xs)
+            return np.full(xs.shape, missing)
         gt = ds.GetGeoTransform()
         band = ds.GetRasterBand(1)
         nodata = band.GetNoDataValue()
-        data = band.ReadAsArray()
-        values = []
-        for x, y in zip(xs, ys):
-            col = int((x - gt[0]) / gt[1])
-            row = int((y - gt[3]) / gt[5])
-            if 0 <= row < data.shape[0] and 0 <= col < data.shape[1]:
-                val = float(data[row, col])
-                if nodata is not None and val == nodata:
-                    values.append(0.0)
-                else:
-                    values.append(val)
-            else:
-                values.append(0.0)
+        data = band.ReadAsArray().astype(float)
         ds = None
+        if nodata is not None:
+            nodata_mask = (data == nodata) | (np.isnan(nodata) & np.isnan(data))
+        else:
+            nodata_mask = np.zeros(data.shape, dtype=bool)
+        col = np.floor((xs - gt[0]) / gt[1]).astype(np.int64)
+        row = np.floor((ys - gt[3]) / gt[5]).astype(np.int64)
+        inside = (row >= 0) & (row < data.shape[0]) & (col >= 0) & (col < data.shape[1])
+        values = np.full(xs.shape, missing, dtype=float)
+        hit = np.zeros(xs.shape, dtype=bool)
+        hit[inside] = ~nodata_mask[row[inside], col[inside]]
+        values[hit] = data[row[hit], col[hit]]
         return values
 
     def show_version(self):

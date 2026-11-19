@@ -14,6 +14,31 @@ import os
 pyproj.set_use_global_context(True)
 
 
+
+def write_model_grid_file(filename, X1, X2, Y1, Y2, Z1, Z2):
+    """
+    Writes a Tomofast-x model grid of nx * ny * nz cells from the cell edges
+    along each axis: a header line with the number of cells, then one line
+    "x1 x2 y1 y2 z1 z2 i j k" per cell with i fastest, then j, then k.
+
+    The output is identical to np.savetxt(fmt="%f %f %f %f %f %f %d %d %d"),
+    but much faster for large grids: the text of one layer is built once and
+    each layer is written by substituting its z values and index.
+    """
+    nx, ny, nz = len(X1), len(Y1), len(Z1)
+    xs = ["%f %f" % (a, b) for a, b in zip(X1, X2)]
+    ys = ["%f %f" % (a, b) for a, b in zip(Y1, Y2)]
+    # \x00 and \x01 mark where each layer's "z1 z2" and k go
+    layer = "".join(
+        "".join(f"{xs[i]} {ys[j]} \x00 {i + 1} {j + 1} \x01\n" for i in range(nx))
+        for j in range(ny)
+    )
+    with open(filename, "w") as f:
+        f.write(f"{nx * ny * nz}\n")
+        for k in range(nz):
+            f.write(layer.replace("\x00", "%f %f" % (Z1[k], Z2[k])).replace("\x01", str(k + 1)))
+
+
 class Data2Tomofast:
     """
     A class for converting the geophysical data to Tomofast-x inputs.
@@ -227,11 +252,6 @@ class Data2Tomofast:
         self.ny = ny
         self.nz = nz
 
-        nelements = nx * ny * nz
-
-        grid = np.zeros((nelements, 9))  # Changed from 10 to 9 columns
-        ind = 0
-
         # Pre-compute cumulative sums
         x_cumsum = np.cumsum(np.concatenate(([0], dx[:-1])))
         y_cumsum = np.cumsum(np.concatenate(([0], dy[:-1])))
@@ -245,39 +265,7 @@ class Data2Tomofast:
         Z1 = Zmin + z_cumsum
         Z2 = Z1 + dz
 
-        # Create indices arrays (0-based for correct coordinate indexing)
-        i_indices = np.arange(nx)
-        j_indices = np.arange(ny)
-        k_indices = np.arange(nz)
-
-        # Create meshgrids with correct ordering
-        I, J, K = np.meshgrid(i_indices, j_indices, k_indices, indexing="ij")
-        X1_mesh, Y1_mesh, Z1_mesh = np.meshgrid(X1, Y1, Z1, indexing="ij")
-        X2_mesh, Y2_mesh, Z2_mesh = np.meshgrid(X2, Y2, Z2, indexing="ij")
-
-        # Reshape everything to match the grid array
-        grid[:, 0] = X1_mesh.ravel("F")  # Use Fortran-style ordering
-        grid[:, 1] = X2_mesh.ravel("F")
-        grid[:, 2] = Y1_mesh.ravel("F")
-        grid[:, 3] = Y2_mesh.ravel("F")
-        grid[:, 4] = Z1_mesh.ravel("F")
-        grid[:, 5] = Z2_mesh.ravel("F")
-        # Removed column 6 (model values column)
-        grid[:, 6] = (I + 1).ravel("F")  # i indices (1-based)
-        grid[:, 7] = (J + 1).ravel("F")  # j indices (1-based)
-        grid[:, 8] = (K + 1).ravel("F")  # k indices (1-based)
-
-        model_grid_file_name = directory + "/model_grid.txt"
-
-        # Save model grid to file.
-        np.savetxt(
-            model_grid_file_name,
-            grid,
-            delimiter=" ",
-            fmt="%f %f %f %f %f %f %d %d %d",  # Changed format (removed one %f)
-            header=str(nelements),
-            comments="",
-        )
+        write_model_grid_file(directory + "/model_grid.txt", X1, X2, Y1, Y2, Z1, Z2)
 
     # =================================================================================
     def write_model_grid_2d(

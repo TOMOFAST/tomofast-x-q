@@ -1,12 +1,20 @@
 # Tomofast-x-q Changelog
 
-Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: **0.2.24**.
+Changes to the Tomofast-x QGIS plugin and ArcGIS Pro toolbox, newest first. Current version: **0.2.25**.
 
 [User Manual](docs/UserManual.md) · [Reference Manual](docs/ReferenceManual.md) · [README](README.md)
 
 <!-- Generated from metadata.txt by docs/make_changelog.py. Edit metadata.txt, not this file. -->
 
-## 0.2.24 (latest)
+## 0.2.25 (latest)
+
+- New Frost option (Step 1): fast FFT inversion of gridded (GeoTIFF/ERS) gravity or magnetic data, run inside QGIS or the ArcGIS Pro panel instead of Tomofast-x. The mesh cell size is set to the grid cell size with no padding, and the DTM is disabled. Save Files writes global.useFFT = 1 to the parameter file, and Run Inversion then runs Frost; results go to OUTPUT/Paraview (same VTK files as Tomofast-x, so Visualise works) and OUTPUT/Frost (model, observed/calculated/residual data, summary, log). Needs scipy
+- Mesh cell sizes in x and y accept decimals (e.g. 12.5 m), and the z cell size accepts values below 10 m
+- Save Files is much faster for large rasters: the model grid file is written about 13 times faster and the data are sampled from the raster directly (no temporary point layer)
+- Windows: the fixed 5 s pause when re-reading the data files is replaced by a short retry only while Windows still holds a file open; no pause on macOS and Linux
+- ArcGIS Pro: raster data cells with no data (or outside the raster) are left out, as in QGIS, instead of being set to 0
+
+## 0.2.24
 
 - Tabs rearranged to Data/Mesh, Save Outputs (was Global Parameters), Run Inversion and Advanced (was Grav/Mag Parameters, now last)
 - After a run, a ParaView script (OUTPUT/Paraview/remove_padding.py) is written to crop the padding from the full model; paraview_transform.py for 2D profiles now goes in the same folder

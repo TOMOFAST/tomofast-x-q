@@ -62,6 +62,9 @@ class RunMixin:
     # ------------------------------------------------------------------
     def cancel_inversion(self):
         """Kill the running tomofast job (and any child processes)."""
+        if self._frost_running():
+            self._cancel_frost()
+            return
         process = self._process
         if process is None or process.poll() is not None:
             self.ui.pushButton_cancel_inversion.setEnabled(False)
@@ -310,6 +313,14 @@ class RunMixin:
 
     # ------------------------------------------------------------------
     def run_inversion(self):
+        if self._frost_running():
+            self.show_message("A Frost inversion is already running", level="warning")
+            return
+        if self.paramfile_Path and os.path.exists(self.paramfile_Path):
+            from frost_runner import uses_fft
+            if uses_fft(self.paramfile_Path):
+                self._run_frost()
+                return
         if (
             os.path.exists(self.paramfile_Path)
             and self.paramfile_Path != ""

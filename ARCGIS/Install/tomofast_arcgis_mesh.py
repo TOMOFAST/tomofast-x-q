@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import platform
 import re
 import time
 import tempfile
@@ -319,7 +320,7 @@ class MeshMixin:
             out_ds = None
             src_ds = None
             data_df[f"data{k + 1}"] = self._sample_raster_at_points(
-                reproj_raster_path, xs, ys
+                reproj_raster_path, xs, ys, missing=np.nan
             )
 
         if self.is_2d and self.profile_line_pts:
@@ -568,8 +569,8 @@ class MeshMixin:
             temp_file.flush()
 
         # single space keeps empty (missing) fields aligned
-        temp_data = pd.read_csv(
-            temp_file_path1, na_values=["", " "], sep=" "
+        temp_data = self._retry_file_op(
+            lambda: pd.read_csv(temp_file_path1, na_values=["", " "], sep=" ")
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
@@ -578,24 +579,46 @@ class MeshMixin:
         else:
             self.forward_data_magn_nData = data_len
 
-        time.sleep(5)
-
+        # The files below were written moments ago; on Windows they may still be
+        # held open briefly, so each step is retried (see _retry_file_op).
         if self.is_2d and self.profile_line_pts:
             (x1w, y1w) = self.profile_line_pts[0]
             (ux, uy), _, _ = self._profile_unit_vectors()
             along = temp_data["x"].values
-            temp_world = temp_data.copy()
-            temp_world["x"] = x1w + along * ux
-            temp_world["y"] = y1w + along * uy
-            temp_world.to_csv(temp_file_path1, sep=" ", index=False)
+            temp_display = temp_data.copy()
+            temp_display["x"] = x1w + along * ux
+            temp_display["y"] = y1w + along * uy
         else:
-            temp_data.to_csv(temp_file_path1, sep=" ", index=False)
+            temp_display = temp_data
+        self._retry_file_op(
+            lambda: temp_display.to_csv(temp_file_path1, sep=" ", index=False)
+        )
 
-        with open(fileName1, "w") as temp_file:
-            temp_file.writelines(f"{data_len}\n")
-            temp_file.flush()
+        def write_data_file():
+            with open(fileName1, "w") as temp_file:
+                temp_file.writelines(f"{data_len}\n")
+            temp_data.to_csv(f"{fileName1}", sep=" ", header=False, index=False, mode="a")
 
-        temp_data.to_csv(f"{fileName1}", sep=" ", header=False, index=False, mode="a")
+        self._retry_file_op(write_data_file)
+
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _retry_file_op(func, timeout=5.0, interval=0.2):
+        """Run func(); on Windows, retry while a file is still in use.
+
+        Antivirus or the search indexer can hold a just-written file open for a
+        moment, so reopening it fails with PermissionError (sharing violation).
+        Retry every `interval` seconds for up to `timeout` seconds; other
+        platforms release files at once, so errors are raised straight away.
+        """
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                return func()
+            except PermissionError:
+                if platform.system() != "Windows" or time.monotonic() >= deadline:
+                    raise
+                time.sleep(interval)
 
     # ------------------------------------------------------------------
     def tidy_layers(self):
@@ -651,6 +674,8 @@ class MeshMixin:
 
     # ------------------------------------------------------------------
     def save_outputs(self):
+        if self._frost_on() and not self._frost_check_setup():
+            return False
         self.forward_magneticField_declination = (
             self.ui.doubleSpinBox_mag_dec.value()
         )
@@ -864,6 +889,9 @@ class MeshMixin:
     # when that list is filled in, otherwise the full depth
     def _sync_padding_to_depth(self, *_):
         if getattr(self, "_suppress_padding_sync", False):
+            return
+        if self._frost_on():
+            self.ui.mQgsSpinBox_mesh_padding.setValue(0)
             return
         total = 0.0
         for x in self.ui.textEdit_z_layer_thickness_list.toPlainText().split(","):

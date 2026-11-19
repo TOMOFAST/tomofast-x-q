@@ -472,6 +472,11 @@ class TomofastUI:
         rb_g.pack(side=tk.LEFT, padx=4)
         rb_m.pack(side=tk.LEFT, padx=4)
         rb_j.pack(side=tk.LEFT, padx=4)
+        frost_var = tk.IntVar(value=0)
+        self._frost_var = frost_var
+        cb_frost = ttk.Checkbutton(f_inv, text="Frost", variable=frost_var)
+        cb_frost.pack(side=tk.LEFT, padx=12)
+        self.checkBox_frost = _WidgetProxy(frost_var, cb_frost)
         self.radioButton_grav_inv  = _RadioProxy(inv_var, 1, rb_g)
         self.radioButton_magn_inv  = _RadioProxy(inv_var, 2, rb_m)
         self.radioButton_joint_inv = _RadioProxy(inv_var, 3, rb_j)
@@ -672,8 +677,8 @@ class TomofastUI:
 
         r = self._section(p, r, "Cell Sizes")
         for label, attr, val, is_dbl in [
-            ("Cell X (m):", "mQgsSpinBox_mesh_size_x", 2000, False),
-            ("Cell Y (m):", "mQgsSpinBox_mesh_size_y", 2000, False),
+            ("Cell X (m):", "mQgsSpinBox_mesh_size_x", 2000, True),
+            ("Cell Y (m):", "mQgsSpinBox_mesh_size_y", 2000, True),
             ("Cell Z (m):", "mQgsSpinBox_mesh_size_z", 100,  True),
             ("Padding (m):", "mQgsSpinBox_mesh_padding", 10000, False),
         ]:

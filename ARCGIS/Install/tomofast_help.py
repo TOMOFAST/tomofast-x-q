@@ -8,6 +8,15 @@ Keys are the widget attribute names on TomofastUI.
 """
 
 TOOLTIPS = {
+    'checkBox_frost': (
+        'Frost: fast FFT inversion of gridded (raster) gravity or magnetic data\n'
+        '(smallest depth-weighted model, no bounds or constraints).\n'
+        '\n'
+        'Mesh cell size = grid cell size, no padding, no DTM.\n'
+        'Run Inversion runs it inside this panel; results in OUTPUT/Paraview and OUTPUT/Frost.\n'
+        '\n'
+        '[global.useFFT]'
+    ),
     'checkBox_read_sens_matrix': (
         'Load previously calculated sensistivity matrix\n'
         '\n'

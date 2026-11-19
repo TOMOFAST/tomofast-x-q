@@ -62,6 +62,9 @@ class ParamsMixin:
         self.f_params.write(
             "global.description                  = {}\n".format(self.global_description)
         )
+        if self._frost_on():
+            # Frost (FFT) inversion: run by the panel instead of Tomofast-x
+            self.f_params.write("global.useFFT                       = 1\n")
         self.f_params.write(
             "#global.experimentType               = {}\n".format(self.global_experimentType)
         )
@@ -1054,6 +1057,9 @@ pv.Render()
             filename_model_final = os.path.join(
                 output_dir, "model", code + "_final_model_full.txt"
             )
+            frost_model = os.path.join(output_dir, "Frost", code + "_final_model_full.txt")
+            if not os.path.exists(filename_model_final) and os.path.exists(frost_model):
+                filename_model_final = frost_model
             if not os.path.exists(filename_model_final):
                 self.show_message(
                     f"Model file not found for {code}: {filename_model_final}",

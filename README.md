@@ -1,4 +1,4 @@
-# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.24
+# Tomofast-x QGIS and ArcGIS Pro Plugin v0.2.25
  GIS Plugin to help Tomofast-x usage
 
 **[User Manual](docs/UserManual.md)** &nbsp;|&nbsp; **[Reference Manual](docs/ReferenceManual.md)** &nbsp;|&nbsp; **[Changelog](CHANGELOG.md)** &nbsp;|&nbsp;  
@@ -12,6 +12,14 @@ Magnetic inversion of the igneous intrusions hosting  the Cajati Carbonatite com
 * [Changelog](CHANGELOG.md): full version history
 
 Tooltips in the plugin show the paramfile name of each parameter in square brackets.
+
+## Frost: fast FFT inversion
+Tick **Frost** in Step 1 to invert a gridded (GeoTIFF/ERS) gravity or magnetic data set with a fast Fourier-transform method instead of Tomofast-x. It returns the smallest depth-weighted model that fits the data to the noise level (by default 2 % of the largest datum), with no bounds or other constraints, in seconds even for large grids. It runs inside QGIS or the ArcGIS Pro panel, so Tomofast-x is not needed for it.
+- With Frost ticked, the mesh cell size is set to the grid cell size (x, y and z), padding is 0 and the DTM step is disabled. Joint inversion, CSV point data, gravity gradiometry, multi-component data, MVI and 2D profiles are not supported.
+- **Save Files** writes the data as usual and adds `global.useFFT = 1` to `paramfile.txt`. **Run Inversion** runs Frost for any parameter file with `global.useFFT = 1`, and Tomofast-x otherwise.
+- The depth-weighting power, sensor height, unit multipliers and IGRF field are taken from the plugin settings. A sensor height of 0 is treated as 1 m (ground data).
+- Results: `OUTPUT/Paraview` holds the same VTK files that Tomofast-x writes (so **Visualise** and ParaView work as usual); `OUTPUT/Frost` holds the model (`*_final_model_full.txt`, also used by **Export Model**), the observed, calculated and residual data, `frost_summary.txt` and `frost_log.txt`.
+- Needs the Python package `scipy` (included by the ArcGIS Pro setup tool; in QGIS install it if it is missing). The inversion code is `fast_inversion.py`; `frost_runner.py` drives it from a parameter file and can also be run on its own: `python frost_runner.py paramfile.txt`.
 
 ## QGIS Plugin Install
 Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from the Plugin Repository (experimental). To get the newest version, download the zip file of the **main** branch of this repository and use Install from Zip file in the QGIS Plugin Manager of QGIS 3.xx or QGIS 4.xx.   
@@ -42,6 +50,7 @@ Use QGIS Plugin Manager in QGIS 3.xx to install the latest released version from
   - iv) Finalize: Click OK. The cloning process may take several minutes.
 - b) Once the cloned environment has been created, search for and install the following packages, **if they are not already installed**:
   - pandas
+  - scipy (needed for Frost)
   - pyvista (needed for Visualise). It is not in Package Manager, so install it from a Windows Command Prompt with the clone's Python, e.g. `"%LOCALAPPDATA%\ESRI\conda\envs\<your-clone>\python.exe" -m pip install pyvista`
 - c) Activate the clone and restart ArcGIS Pro.
 
@@ -55,4 +64,5 @@ See the [Installation instructions](https://github.com/TOMOFAST/Tomofast-manual/
 ## Credits    
 Plugin construction - Mark Jessell using QGIS Plugin Builder Plugin and code from Vitaliy Ogarko   
 Tomofast-x - Vitaliy Ogarko   
+Frost fast FFT inversion (fast_inversion.py) - Vitaliy Ogarko   
 IGRF calculation - https://github.com/klaundal/ppigrf  

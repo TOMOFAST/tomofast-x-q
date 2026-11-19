@@ -4,7 +4,8 @@ from tomofast_arcgis_data import DataMixin
 from tomofast_arcgis_mesh import MeshMixin
 from tomofast_arcgis_params import ParamsMixin
 from tomofast_arcgis_run import RunMixin
+from tomofast_arcgis_frost import FrostMixin
 
 
-class TomofastArcGIS(RunMixin, ParamsMixin, MeshMixin, DataMixin, TomofastArcGISBase):
+class TomofastArcGIS(FrostMixin, RunMixin, ParamsMixin, MeshMixin, DataMixin, TomofastArcGISBase):
     pass

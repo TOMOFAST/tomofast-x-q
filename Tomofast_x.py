@@ -57,6 +57,8 @@ from qgis.core import (
     QgsClassificationEqualInterval,
     QgsWkbTypes,
     QgsProcessingUtils,
+    QgsApplication,
+    QgsTask,
 )
 
 # Qt5/Qt6 Compatibility Layer
@@ -169,6 +171,7 @@ class Tomofast_x:
         self._debug_log_path = ""
         self._debug_log_pos = 0
         self._process = None
+        self._frost_task = None
         self._exit_reported = False
         self._wsl_distro = ""
         self._wsl_param_path = ""
@@ -196,6 +199,12 @@ class Tomofast_x:
                 self.dlg.textEdit_experiment_description,
                 str,
                 "plainText",
+            ],
+            "global.useFFT": [
+                self.global_useFFT,
+                self.dlg.checkBox_frost,
+                int,
+                "check",
             ],
             "global.experimentType": [
                 self.global_experimentType,
@@ -498,8 +507,8 @@ class Tomofast_x:
                 "value",
             ],
             # MESH
-            "mesh.cellx": [self.cell_x, self.dlg.mQgsSpinBox_mesh_size_x, int, "value"],
-            "mesh.celly": [self.cell_y, self.dlg.mQgsSpinBox_mesh_size_y, int, "value"],
+            "mesh.cellx": [self.cell_x, self.dlg.mQgsSpinBox_mesh_size_x, float, "value"],
+            "mesh.celly": [self.cell_y, self.dlg.mQgsSpinBox_mesh_size_y, float, "value"],
             "mesh.cellz": [self.dz, self.dlg.mQgsSpinBox_mesh_size_z, float, "value"],
             "mesh.z.coreDepth": [
                 self.z_coreDepth,
@@ -761,6 +770,7 @@ class Tomofast_x:
                 self.dlg.radioButton_joint_inv.toggled.connect(
                     self._on_inversion_type_toggled
                 )
+                self.dlg.checkBox_frost.toggled.connect(self._on_frost_toggled)
 
                 self.dlg.doubleSpinBox_coreDepth.valueChanged.connect(self.mesh_layers)
                 self.dlg.doubleSpinBox_fullDepth.valueChanged.connect(self.mesh_layers)
@@ -1166,6 +1176,13 @@ class Tomofast_x:
 
     def cancel_inversion(self):
         """Kill the running tomofast job (and any child processes)."""
+        if self._frost_task is not None:
+            self._frost_task.cancel()
+            self.dlg.textEdit_inversion_log.appendPlainText(
+                "\n*** Cancelling: Frost stops at the end of its current step ***"
+            )
+            self.dlg.pushButton_cancel_inversion.setEnabled(False)
+            return
         process = self._process
         if process is None or process.poll() is not None:
             self.dlg.pushButton_cancel_inversion.setEnabled(False)
@@ -1559,6 +1576,16 @@ pv.Render()
                 ok(f"Magnetic susceptibility range acceptable (min={last_min:.4g}, max={last_max:.4g})")
     
     def run_inversion(self):
+        if self._frost_task is not None:
+            self.iface.messageBar().pushMessage(
+                "A Frost inversion is already running", level=Qgis.MessageLevel.Warning, duration=10
+            )
+            return
+        if self.paramfile_Path and os.path.exists(self.paramfile_Path):
+            from .frost_runner import uses_fft
+            if uses_fft(self.paramfile_Path):
+                self._run_frost()
+                return
         if (
             os.path.exists(self.paramfile_Path)
             and self.paramfile_Path != ""
@@ -1627,6 +1654,182 @@ pv.Render()
                 "Paths to tomofastx and paramfile must be defined",
                 level=Qgis.MessageLevel.Warning,
                 duration=15,
+            )
+
+    # ================================================================================= Frost (FFT inversion)
+    def _frost_on(self):
+        """True when the Frost (FFT) inversion is selected in Step 1."""
+        return self.dlg is not None and self.dlg.checkBox_frost.isChecked()
+
+    def _on_frost_toggled(self, checked):
+        """Frost: one gridded data set, no DTM, no padding, mesh = data grid."""
+        self.global_useFFT = 1 if checked else 0
+
+        # Frost inverts one data set at a time
+        if checked and self.dlg.radioButton_joint_inv.isChecked():
+            self.dlg.radioButton_grav_inv.setChecked(True)
+            self.iface.messageBar().pushMessage(
+                "Frost inverts one data set at a time: switched to Gravity",
+                level=Qgis.MessageLevel.Info,
+                duration=10,
+            )
+        self.dlg.radioButton_joint_inv.setEnabled(not checked)
+
+        if checked:
+            # The FFT method assumes a level surface: drop any DTM
+            if self.global_elevType == 2 or self.dtm_filename:
+                self.global_elevType = 1
+                self.global_elevFilename = ""
+                self.dtm_filename = ""
+                self.forward_depthWeighting_type = 1
+                self.dlg.lineEdit_dtm_path.clear()
+            self.dlg.groupBox_dtm.setEnabled(False)
+        else:
+            # the DTM step is available again once data are loaded (same time as the mesh step)
+            self.dlg.groupBox_dtm.setEnabled(self.dlg.groupBox_mesh_params.isEnabled())
+
+        self.dlg.mQgsSpinBox_mesh_padding.setEnabled(not checked)
+        if checked:
+            self._apply_frost_mesh()
+        else:
+            self._sync_padding_to_depth()
+
+    def _apply_frost_mesh(self):
+        """Frost: one model column per grid node, so the cell size is the grid cell size and there is no padding."""
+        if not self._frost_on():
+            return
+        self.dlg.mQgsSpinBox_mesh_padding.setValue(0)
+        layer = getattr(self, "data_raster_layer", None)
+        if layer is None or not layer.isValid():
+            return
+        px = layer.rasterUnitsPerPixelX()
+        py = layer.rasterUnitsPerPixelY()
+        self.dlg.mQgsSpinBox_mesh_size_x.setValue(px)
+        self.dlg.mQgsSpinBox_mesh_size_y.setValue(py)
+        self.dlg.mQgsSpinBox_mesh_size_z.setValue(px)
+
+    def _frost_check_setup(self):
+        """Before saving the files: is this a problem Frost can solve? Pushes a message and returns False if not."""
+        problems = []
+        if self.global_experimentType == 3:
+            problems.append("joint inversion (choose Gravity or Mag)")
+        if self.is_2d:
+            problems.append("2D profile data")
+        if getattr(self, "global_dataType", "") != "raster":
+            problems.append("point (csv) data: Frost needs a grid (GeoTIFF/ERS)")
+        if self.global_experimentType == 1:
+            if self.dlg.comboBox_grav_type.currentData() == 2:
+                problems.append("gravity gradiometry")
+            if (self.dlg.comboBox_grav_ncomp.currentData() or 1) != 1:
+                problems.append("multi-component gravity data")
+        if self.global_experimentType == 2:
+            if (self.dlg.comboBox_magn_ncomp.currentData() or 1) != 1:
+                problems.append("multi-component magnetic data")
+            if (self.dlg.comboBox_magn_nmodel.currentData() or 1) != 1:
+                problems.append("MVI (Frost inverts for susceptibility)")
+        if problems:
+            self.iface.messageBar().pushMessage(
+                "Frost does not support",
+                "; ".join(problems),
+                level=Qgis.MessageLevel.Critical,
+                duration=30,
+            )
+            return False
+        # no padding and a level surface
+        self.dlg.mQgsSpinBox_mesh_padding.setValue(0)
+        self.global_elevType = 1
+        return True
+
+    def _run_frost(self):
+        """Run the FFT inversion of the active parameter file as a background QGIS task."""
+        from . import frost_runner
+
+        param_path = os.path.abspath(self.paramfile_Path)
+        _out_dir, _paraview_dir, frost_dir = frost_runner.output_dirs(param_path)
+        try:
+            os.makedirs(frost_dir, exist_ok=True)
+        except OSError as e:
+            self.iface.messageBar().pushMessage(
+                "Could not create the Frost output folder", str(e),
+                level=Qgis.MessageLevel.Critical, duration=30,
+            )
+            return
+        log_path = os.path.join(frost_dir, "frost_log.txt")
+        try:
+            if os.path.exists(log_path):
+                os.remove(log_path)
+        except OSError:
+            pass
+
+        # the log is tailed into the GUI by _poll_debug_log, as for Tomofast-x
+        self._process = None
+        self._debug_log_path = log_path
+        self._debug_log_pos = 0
+        self._exit_reported = False
+        self.dlg.textEdit_inversion_log.clear()
+        self._log_colored("Frost (FFT) inversion  [global.useFFT = 1]", "cyan", bold=True)
+
+        task = QgsTask.fromFunction(
+            "Frost inversion",
+            self._frost_task_run,
+            param_path,
+            log_path,
+            on_finished=self._on_frost_finished,
+        )
+        self._frost_task = task
+        QgsApplication.taskManager().addTask(task)
+        self.dlg.pushButton_cancel_inversion.setEnabled(True)
+        self._debug_log_timer.start(500)
+        self.iface.messageBar().pushMessage(
+            "Frost inversion started", "running in the background",
+            level=Qgis.MessageLevel.Success, duration=10,
+        )
+
+    @staticmethod
+    def _frost_task_run(task, param_path, log_path):
+        """Worker thread: no GUI calls here."""
+        from .frost_runner import run_frost
+
+        return run_frost(param_path, log_path=log_path, is_cancelled=task.isCanceled)
+
+    def _on_frost_finished(self, exception, result=None):
+        """Main thread: report the outcome of the Frost task."""
+        from .frost_runner import FrostCancelled
+
+        self._frost_task = None
+        if self.dlg is None:
+            return
+        self._poll_debug_log()  # pick up the last lines of the log
+        self._debug_log_timer.stop()
+        self.dlg.pushButton_cancel_inversion.setEnabled(False)
+
+        if exception is None and result:
+            units = "mGal" if result["kind"] == "gravity" else "nT"
+            self._log_colored("─" * 60, "gray")
+            self._log_colored(
+                f"PASS  Frost inversion finished in {result['total_time_s']:.1f} s "
+                f"({result['nx']} x {result['ny']} x {result['nz']} cells)", "green", bold=True)
+            self._log_colored(
+                f"PASS  Data RMS residual {result['rms']:.4g} {units}; "
+                f"model min/max {result['model_min']:.4g} / {result['model_max']:.4g}", "green", bold=True)
+            self._log_colored(f"PASS  Paraview files: {result['paraview_dir']}", "green", bold=True)
+            self._log_colored(f"PASS  Other outputs: {result['frost_dir']}", "green", bold=True)
+            self.iface.messageBar().pushMessage(
+                "Frost inversion finished", result["paraview_dir"],
+                level=Qgis.MessageLevel.Success, duration=30,
+            )
+        elif isinstance(exception, FrostCancelled) or (
+            exception is not None and "cancel" in str(exception).lower()
+        ):
+            self.dlg.textEdit_inversion_log.appendPlainText("\n*** Frost inversion cancelled by user ***")
+            self.iface.messageBar().pushMessage(
+                "Frost inversion cancelled", level=Qgis.MessageLevel.Info, duration=10
+            )
+        else:
+            self._log_colored(f"ERROR  {exception}", "red", bold=True)
+            self.iface.messageBar().pushMessage(
+                "Frost inversion failed", str(exception),
+                level=Qgis.MessageLevel.Critical, duration=60,
             )
 
     def _run_windows_native(self, noProc):
@@ -2091,7 +2294,7 @@ pv.Render()
         # --- Enable downstream widget groups now that data is present ---
         if grav_loaded or magn_loaded:
             self.update_widgets()
-            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(not self._frost_on())
             self.dlg.groupBox_mesh_params.setEnabled(True)
 
     # select existing parfile
@@ -2275,6 +2478,9 @@ pv.Render()
         self._apply_dtm_path()
 
     def _apply_dtm_path(self):
+        if self._frost_on():
+            self.dtm_filename = ""
+            return
         self.dlg.lineEdit_dtm_path.setText(self.dtm_filename)
 
         if self.dtm_filename != "" and os.path.exists(self.dtm_filename):
@@ -2381,7 +2587,7 @@ pv.Render()
 
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
         else:
-            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(not self._frost_on())
             self.dlg.groupBox_grav_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
             self.dlg.pushButton_select_dtm_path.setEnabled(False)
@@ -2501,7 +2707,7 @@ pv.Render()
             self.datacol_grav = self.dlg.comboBox_grav_field_data.currentText()
 
             # enable GroupBox 2
-            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(not self._frost_on())
             self.dlg.groupBox_grav_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(False)
             self.dlg.pushButton_select_dtm_path.setEnabled(True)
@@ -2517,7 +2723,7 @@ pv.Render()
             self.datacol_magn = self.dlg.comboBox_magn_field_data.currentText()
 
             # enable GroupBox 2
-            self.dlg.groupBox_dtm.setEnabled(True)
+            self.dlg.groupBox_dtm.setEnabled(not self._frost_on())
             self.dlg.groupBox_magn_fields.setEnabled(True)
             self.dlg.lineEdit_dtm_path.setEnabled(True)
             self.dlg.pushButton_select_dtm_path.setEnabled(True)
@@ -2689,26 +2895,22 @@ pv.Render()
             df[2] = py1 + d_along * uy + d_cross * qy
 
         temp = QgsVectorLayer("Point", "model_grid", "memory")
-        # Start of the edition
-        temp.startEditing()
-
-        # Creation of my fields
-        for head in df:
-            myField = QgsField(str(head), _FIELD_DOUBLE)
-            temp.addAttribute(myField)
-        # Update
+        provider = temp.dataProvider()
+        provider.addAttributes([QgsField(str(head), _FIELD_DOUBLE) for head in df])
         temp.updateFields()
 
-        # Addition of features
-        # [1] because i don't want the indexes
-        for row in df.itertuples():
-            f = QgsFeature()
-            f.setAttributes([row[1], row[2]])
-            f.setGeometry(QgsPoint(row[1], row[2]))
-            temp.addFeature(f)
+        # Add all features in one call (in mesh order: sample_elevation relies on it);
+        # adding them one by one in an edit session is very slow for large grids.
+        fields = temp.fields()
+        features = []
+        for x, y in zip(df[0].values.tolist(), df[2].values.tolist()):
+            f = QgsFeature(fields)
+            f.setAttributes([x, y])
+            f.setGeometry(QgsPoint(x, y))
+            features.append(f)
+        provider.addFeatures(features)
+        temp.updateExtents()
 
-        # saving changes and adding the layer
-        temp.commitChanges()
         if self.global_experimentType == 1 or self.global_experimentType == 3:
             crs = QgsCoordinateReferenceSystem(self.grav_proj_out)
         else:
@@ -2716,8 +2918,6 @@ pv.Render()
 
         temp.setCrs(crs)
         temp.renderer().symbol().setSize(0.25)
-
-        temp.commitChanges()
 
         QgsProject.instance().addMapLayer(temp)
         if self.global_elevType == 2:
@@ -3108,6 +3308,7 @@ pv.Render()
                 # Add the raster layer to the QGIS project (unless it is already there)
                 if existing_layer is None:
                     QgsProject.instance().addMapLayer(self.data_raster_layer)
+                self._apply_frost_mesh()
                 self.update_model_grid_size()
 
             self.global_dataType = "raster"
@@ -3153,6 +3354,8 @@ pv.Render()
 
     # calculate mesh and add topographic info before saveing out again
     def save_outputs(self):
+        if self._frost_on() and not self._frost_check_setup():
+            return False
         self.forward_magneticField_declination = self.dlg.doubleSpinBox_mag_dec.value()
         self.forward_magneticField_inclination = self.dlg.doubleSpinBox_mag_inc.value()
         self.forward_magneticField_intensity = self.dlg.doubleSpinBox_mag_int.value()
@@ -3253,10 +3456,12 @@ pv.Render()
             temp_file.flush()
             temp_file.close()
 
-        temp_data = pd.read_csv(
-            temp_file_path1,
-            na_values=["", " "],
-            sep=" ",  # single space keeps empty (missing) fields aligned
+        temp_data = self._retry_file_op(
+            lambda: pd.read_csv(
+                temp_file_path1,
+                na_values=["", " "],
+                sep=" ",  # single space keeps empty (missing) fields aligned
+            )
         )
         temp_data = temp_data.dropna()
         data_len = len(temp_data)
@@ -3265,7 +3470,8 @@ pv.Render()
         else:
             self.forward_data_magn_nData = data_len
 
-        time.sleep(5)
+        # The files below were written moments ago; on Windows they may still be
+        # held open briefly, so each step is retried (see _retry_file_op).
 
         # For 2D profile: data_temp.csv needs world coords for QGIS display,
         # but fileName1 (the Tomofast-x input) must keep local profile coords.
@@ -3273,20 +3479,50 @@ pv.Render()
             (x1w, y1w) = self.profile_line_pts[0]
             (ux, uy), _, _ = self._profile_unit_vectors()
             along = temp_data["x"].values
-            temp_world = temp_data.copy()
-            temp_world["x"] = x1w + along * ux
-            temp_world["y"] = y1w + along * uy
-            temp_world.to_csv(temp_file_path1, sep=" ", index=False)
+            temp_display = temp_data.copy()
+            temp_display["x"] = x1w + along * ux
+            temp_display["y"] = y1w + along * uy
         else:
-            temp_data.to_csv(temp_file_path1, sep=" ", index=False)
+            temp_display = temp_data
+        self._retry_file_op(
+            lambda: temp_display.to_csv(temp_file_path1, sep=" ", index=False)
+        )
 
-        with open(fileName1, "w") as temp_file:
+        def write_data_file():
+            with open(fileName1, "w") as temp_file:
+                temp_file.writelines(f"{data_len}\n")
+            temp_data.to_csv(f"{fileName1}", sep=" ", header=False, index=False, mode="a")
 
-            temp_file.writelines(f"{data_len}\n")
-            temp_file.flush()
-            temp_file.close()
+        self._retry_file_op(write_data_file)
 
-        temp_data.to_csv(f"{fileName1}", sep=" ", header=False, index=False, mode="a")
+    @staticmethod
+    def _retry_file_op(func, timeout=5.0, interval=0.2):
+        """Run func(); on Windows, retry while a file is still in use.
+
+        Antivirus or the search indexer can hold a just-written file open for a
+        moment, so reopening it fails with PermissionError (sharing violation).
+        Retry every `interval` seconds for up to `timeout` seconds; other
+        platforms release files at once, so errors are raised straight away.
+        """
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                return func()
+            except PermissionError:
+                if platform.system() != "Windows" or time.monotonic() >= deadline:
+                    raise
+                time.sleep(interval)
+
+    @staticmethod
+    def _load_vector_layer(uri, name, provider, timeout=5.0, interval=0.2):
+        """QgsVectorLayer(uri, name, provider), retried on Windows while the
+        file it reads may still be held open (see _retry_file_op)."""
+        deadline = time.monotonic() + timeout
+        while True:
+            layer = QgsVectorLayer(uri, name, provider)
+            if layer.isValid() or platform.system() != "Windows" or time.monotonic() >= deadline:
+                return layer
+            time.sleep(interval)
 
     # close temp layers, load reprojected layers and update project crs
     def tidy_layers(self):
@@ -3319,7 +3555,7 @@ pv.Render()
             uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&escape=&maxFields=10000&detectTypes=yes&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no&crs={proj1}"
 
             # Load the layer as a point layer
-            layer = QgsVectorLayer(uri, dataName1, "delimitedtext")
+            layer = self._load_vector_layer(uri, dataName1, "delimitedtext")
 
             if layer.isValid():
                 QgsProject.instance().addMapLayer(layer)
@@ -3343,7 +3579,7 @@ pv.Render()
 
                 uri = f"file:///{temp_file_path1}?type=csv&delimiter=,%20&quote=&xField=x&yField=y&detectTypes=no&geomType=Point&spatialIndex=no&crs={proj1}"
 
-                layer = QgsVectorLayer(uri, dataName2, "delimitedtext")
+                layer = self._load_vector_layer(uri, dataName2, "delimitedtext")
 
                 if layer.isValid():
                     QgsProject.instance().addMapLayer(layer)
@@ -3607,41 +3843,18 @@ pv.Render()
             df["x_world"] = (df["x1"] + df["x2"]) / 2.0
             df["y_world"] = (df["y1"] + df["y2"]) / 2.0
 
-        # Create an empty memory layer (point geometry type, with a CRS, e.g., EPSG:4326)
+        # Mesh points to sample: the cells whose centre lies in the mesh box (all
+        # cells for 2D). World coordinates (x_world/y_world) are used so that 2D
+        # profile cells, stored in profile coordinates, are sampled at their true positions.
+        px = df["x_world"].values.astype(float)
+        py = df["y_world"].values.astype(float)
+        if not self.is_2d:
+            keep = (
+                (px >= self.meshBox["west"]) & (px <= self.meshBox["east"])
+                & (py >= self.meshBox["south"]) & (py <= self.meshBox["north"])
+            )
+            px, py = px[keep], py[keep]
 
-        mesh_layer = QgsVectorLayer(f"Point", "Extracted Data", "memory")
-
-        new_crs = QgsCoordinateReferenceSystem(proj_out)
-        mesh_layer.setCrs(new_crs)
-
-        # Get the data provider for the layer
-        provider = mesh_layer.dataProvider()
-
-        # Define the fields (attributes) for the layer
-        fields = QgsFields()
-        fields.append(QgsField("id", _FIELD_INT))
-
-        # Add the fields to the provider
-        provider.addAttributes(fields)
-        mesh_layer.updateFields()
-
-        # Loop over the DataFrame rows to create features and add them to the layer.
-        # Use pre-computed world coordinates (x_world/y_world) so that 2D profile
-        # cells — stored in profile coordinates — are sampled at their true world positions.
-        for idx, row in df.iterrows():
-            feature = QgsFeature()
-            x = row["x_world"]
-            y = row["y_world"]
-            if self.is_2d or self.in_ROI(x, y, self.meshBox):
-                point = QgsPointXY(x, y)
-                feature.setGeometry(QgsGeometry.fromPointXY(point))
-                provider.addFeature(feature)
-
-        # Update the layer's extent
-        mesh_layer.updateExtents()
-
-        # Add the layer to the QGIS project
-        QgsProject.instance().addMapLayer(mesh_layer)
         # Determine source CRS directly from stored proj_in — avoids fragile layer name lookup
         if dataType == 1:
             source_crs = QgsCoordinateReferenceSystem(self.grav_proj_in)
@@ -3664,7 +3877,7 @@ pv.Render()
                     ".tif", f"_{k + 1}.tif"
                 )
             comp_df = self._sample_raster_at_mesh(
-                raster_path, reproj_raster_path, mesh_layer, source_crs, proj_out,
+                raster_path, reproj_raster_path, px, py, source_crs, proj_out,
                 "data" if k == 0 else f"data{k + 1}_",
             )
             if data_df is None:
@@ -3749,11 +3962,14 @@ pv.Render()
         return found
 
     def _sample_raster_at_mesh(
-        self, src_path, reproj_path, mesh_layer, source_crs, proj_out, prefix
+        self, src_path, reproj_path, px, py, source_crs, proj_out, prefix
     ):
-        """Warp src_path to proj_out and sample band 1 at the mesh points.
+        """Warp src_path to proj_out and sample band 1 at the points (px, py).
 
-        Returns a DataFrame with POINT_X, POINT_Y and the sampled values (third column).
+        Returns a DataFrame with POINT_X, POINT_Y and the sampled values (third
+        column, NaN outside the raster or on nodata). The pixels are looked up
+        directly in the warped array, which is much faster than building a point
+        layer and running native:rastersampling for large grids.
         """
         src_ds = gdal.Open(src_path)
         if src_ds is None:
@@ -3769,27 +3985,29 @@ pv.Render()
         out_ds = None  # flush and close
         src_ds = None
 
-        # native:rastersampling requires a QgsRasterLayer for RASTERCOPY, not a path.
-        reproj_layer = QgsRasterLayer(reproj_path, "reproj_data_temp")
-        if not reproj_layer.isValid():
-            raise RuntimeError(f"Could not load reprojected raster: {reproj_path}")
+        ds = gdal.Open(reproj_path)
+        if ds is None:
+            raise RuntimeError(f"Could not open reprojected raster: {reproj_path}")
+        band = ds.GetRasterBand(1)
+        grid = band.ReadAsArray().astype(float)
+        nodata = band.GetNoDataValue()
+        if nodata is not None:
+            grid[(grid == nodata) | (np.isnan(nodata) & np.isnan(grid))] = np.nan
+        scale = band.GetScale()
+        offset = band.GetOffset()
+        if scale not in (None, 1.0) or offset not in (None, 0.0):
+            grid = grid * (scale if scale is not None else 1.0) + (offset or 0.0)
+        gt = ds.GetGeoTransform()
+        ds = None
 
-        parameter = {
-            "INPUT": mesh_layer,
-            "RASTERCOPY": reproj_layer,
-            "COLUMN_PREFIX": prefix,
-            "OUTPUT": "TEMPORARY_OUTPUT",
-        }
-        layer_id = processing.runAndLoadResults("native:rastersampling", parameter)["OUTPUT"]
-        sampled = QgsProject.instance().mapLayer(layer_id)
+        # pixel containing each point (the warped raster is north-up)
+        col = np.floor((px - gt[0]) / gt[1]).astype(np.int64)
+        row = np.floor((py - gt[3]) / gt[5]).astype(np.int64)
+        inside = (col >= 0) & (col < grid.shape[1]) & (row >= 0) & (row < grid.shape[0])
+        values = np.full(px.shape, np.nan)
+        values[inside] = grid[row[inside], col[inside]]
 
-        sampled_field = prefix + "1"
-        rows = []
-        for feature in sampled.getFeatures():
-            point = feature.geometry().asPoint()
-            rows.append([point.x(), point.y(), feature[sampled_field]])
-        QgsProject.instance().removeMapLayer(sampled)
-        return pd.DataFrame(rows, columns=["POINT_X", "POINT_Y", sampled_field])
+        return pd.DataFrame({"POINT_X": px, "POINT_Y": py, prefix + "1": values})
 
     def _n_components(self, kind):
         """Number of data components selected in the GUI for 'grav' or 'magn'."""
@@ -4344,6 +4562,9 @@ pv.Render()
         self.f_params.write(
             "global.description                  = {}\n".format(self.global_description)
         )
+        if self._frost_on():
+            # Frost (FFT) inversion: run by the plugin instead of Tomofast-x
+            self.f_params.write("global.useFFT                       = 1\n")
         self.f_params.write(
             "#global.experimentType               = {}\n".format(
                 self.global_experimentType
@@ -4900,6 +5121,9 @@ pv.Render()
                 output_dir, "model", code + "_final_model_full.txt"
             )
 
+            frost_model = os.path.join(output_dir, "Frost", code + "_final_model_full.txt")
+            if not os.path.exists(filename_model_final) and os.path.exists(frost_model):
+                filename_model_final = frost_model
             if not os.path.exists(filename_model_final):
                 self.iface.messageBar().pushMessage(
                     f"Model file not found for {code}: {filename_model_final}",
@@ -5459,6 +5683,9 @@ pv.Render()
     def _sync_padding_to_depth(self, *_):
         if getattr(self, "_suppress_padding_sync", False):
             return
+        if self._frost_on():
+            self.dlg.mQgsSpinBox_mesh_padding.setValue(0)
+            return
         total = 0.0
         for x in self.dlg.textEdit_z_layer_thickness_list.toPlainText().split(","):
             try:
@@ -5476,6 +5703,13 @@ pv.Render()
         self.dlg.doubleSpinBox_fullDepth.setEnabled(True)
 
     def define_tips(self):
+        self.dlg.checkBox_frost.setToolTip(
+            "Frost: fast FFT inversion of gridded (raster) gravity or magnetic data\n"
+            "(smallest depth-weighted model, no bounds or constraints).\n\n"
+            "Mesh cell size = grid cell size, no padding, no DTM.\n"
+            "Run Inversion runs it inside QGIS; results in OUTPUT/Paraview and OUTPUT/Frost.\n\n"
+            "[global.useFFT]"
+        )
         self.dlg.checkBox_read_sens_matrix.setToolTip(
             "Load previously calculated sensistivity matrix\n\n[forward.sensit.readFromFiles]"
         )
@@ -5856,6 +6090,7 @@ pv.Render()
         self.global_elevType = 1
         self.global_elevFilename = ""
         self.dtm_filename = ""
+        self.global_useFFT = 0  # 1: Frost (FFT) inversion instead of Tomofast-x
         self.dtm_array = None
         self.data_df = None
         self.ROIFileName = ""

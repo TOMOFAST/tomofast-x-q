@@ -83,6 +83,8 @@ class DataMixin:
             gt = src_ds.GetGeoTransform()
             nx = src_ds.RasterXSize
             ny = src_ds.RasterYSize
+            # grid cell size, used as the mesh cell size by Frost
+            self._frost_grid_cell = (abs(gt[1]), abs(gt[5]))
             xmin = gt[0]
             ymax = gt[3]
             xmax = gt[0] + nx * gt[1]
@@ -119,6 +121,7 @@ class DataMixin:
                 "north": int(ymax),
                 "east":  int(xmax),
             }
+            self._apply_frost_mesh()
             self.update_model_grid_size()
             self.global_dataType = "raster"
             self._record_pending(filename)
@@ -153,6 +156,9 @@ class DataMixin:
             title="Select DTM File",
             filetypes=[("TIFF", "*.tif *.tiff *.TIF *.TIFF")],
         )
+        if self._frost_on():
+            self.dtm_filename = ""
+            return
         self.ui.lineEdit_dtm_path.setText(self.dtm_filename)
         if self.dtm_filename and os.path.exists(self.dtm_filename):
             self.load_dtm()
@@ -205,7 +211,7 @@ class DataMixin:
                 self.ui.pushButton_assign_magn_fields.setEnabled(True)
             self.ui.pushButton_select_dtm_path.setEnabled(False)
         else:
-            self.ui.groupBox_dtm.setEnabled(True)
+            self.ui.groupBox_dtm.setEnabled(not self._frost_on())
             self.ui.groupBox_grav_fields.setEnabled(True)
             self.ui.lineEdit_dtm_path.setEnabled(False)
             self.ui.pushButton_select_dtm_path.setEnabled(False)
@@ -231,7 +237,7 @@ class DataMixin:
             self.ycol_grav = self.ui.comboBox_grav_field_y.currentText()
             self.datacol_grav = self.ui.comboBox_grav_field_data.currentText()
 
-            self.ui.groupBox_dtm.setEnabled(True)
+            self.ui.groupBox_dtm.setEnabled(not self._frost_on())
             self.ui.groupBox_grav_fields.setEnabled(True)
             self.ui.lineEdit_dtm_path.setEnabled(False)
             self.ui.pushButton_select_dtm_path.setEnabled(True)
@@ -245,7 +251,7 @@ class DataMixin:
             self.ycol_magn = self.ui.comboBox_magn_field_y.currentText()
             self.datacol_magn = self.ui.comboBox_magn_field_data.currentText()
 
-            self.ui.groupBox_dtm.setEnabled(True)
+            self.ui.groupBox_dtm.setEnabled(not self._frost_on())
             self.ui.groupBox_magn_fields.setEnabled(True)
             self.ui.lineEdit_dtm_path.setEnabled(True)
             self.ui.pushButton_select_dtm_path.setEnabled(True)
