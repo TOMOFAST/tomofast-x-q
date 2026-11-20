@@ -566,6 +566,10 @@ Frost inverts a gridded gravity or magnetic data set with fast Fourier transform
 
 **Setting up.**
 
+<img src="images/frost_step1.png" width="282" alt="Step 1 box with Mag selected and the Frost tick box ticked; the Joint option is greyed out.">
+
+*Step 1 with Frost ticked.*
+
 1. Step 1: choose **Gravity** or **Mag** and tick **Frost**. Joint is disabled.
 2. Step 2a/3a: load a raster (GeoTIFF or ERS). Cell Size x, y and Core Cell Size z are set to the grid cell size and the padding to 0, so there is one model column under each grid node. The z cells can be changed (Core Depth, Full Depth or the z lists); layers of different thickness are allowed.
 3. Step 4 (DTM) is disabled: Frost assumes the stations are on a level surface.

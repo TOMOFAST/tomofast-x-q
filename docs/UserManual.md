@@ -28,7 +28,8 @@ For a **joint** inversion, fill in everything marked 🟧 Grav, 🟦 Mag and �
 5. [Run Inversion tab: run, view and export](#5-run-inversion-tab-run-view-and-export)
 6. [Advanced tab](#6-advanced-tab)
 7. [Differences for gravity and joint inversions](#7-differences-for-gravity-and-joint-inversions)
-8. [Where next](#8-where-next)
+8. [Fast inversion with Frost](#8-fast-inversion-with-frost)
+9. [Where next](#9-where-next)
 
 ---
 
@@ -112,7 +113,7 @@ Choose **Gravity**, **Mag** or **Joint**. Only the boxes for that type are enabl
 *Figure 2. Mag selected. The gravity boxes (Step 2a/2b) are disabled and the magnetics boxes (Step 3a/3b) are enabled.*
 
 > [!TIP]
-> **Frost** (tick box next to Joint, off by default) runs a fast FFT inversion of a gridded data set inside QGIS instead of Tomofast-x: seconds rather than minutes, with no Tomofast-x installation, but no bounds or other constraints. When it is ticked, the cell sizes are set to the grid cell size, the padding to 0 and the DTM step is disabled. This manual uses Tomofast-x; see [Frost](ReferenceManual.md#19-frost-fast-fft-inversion) in the Reference Manual.
+> **Frost** (tick box next to Joint, off by default) runs a fast FFT inversion of a gridded data set inside QGIS instead of Tomofast-x: seconds rather than minutes, with no Tomofast-x installation, but no bounds or other constraints. The example in this manual uses Tomofast-x, so leave Frost unticked; see [Fast inversion with Frost](#8-fast-inversion-with-frost).
 
 ### Step 3a: Select the magnetics data file 🟦 Mag
 
@@ -287,7 +288,30 @@ Gravity data are expected in mGal: the default **Data** unit multiplier of `1e-0
 
 ---
 
-## 8. Where next
+## 8. Fast inversion with Frost
+
+Frost inverts one gridded gravity or magnetic data set with fast Fourier transforms. It runs inside QGIS, so Tomofast-x is not needed, and it takes seconds even for large grids. It returns the smallest depth-weighted model that fits the data to the noise level (2 % of the largest datum), without bounds or other constraints: a quick first look at the data, or a starting point for a full Tomofast-x inversion.
+
+To run the example grid with Frost instead of Tomofast-x:
+
+1. **Step 1**: choose **Mag** (or **Gravity**) and tick **Frost**. **Joint** is greyed out.
+
+   <img src="images/frost_step1.png" width="282" alt="Step 1 box with Mag selected and the Frost tick box ticked; the Joint option is greyed out.">
+
+   *Figure 15. Frost ticked for a magnetic inversion.*
+
+2. **Step 3a** (or 2a): load a grid (GeoTIFF or ERS). CSV point data cannot be used with Frost. **Cell Size x**, **Cell Size y** and **Core Cell Size z** are set to the grid cell size and **Horizontal Padding** to 0, which cannot be changed, so there is one model column under each grid node.
+3. **Step 4** (DTM) is greyed out: Frost assumes the data were collected on a level surface.
+4. **Step 5**: set the depth of the model with **Core Depth** and **Full Depth**, or with the z lists, as for Tomofast-x. The mesh limits and ROI work as before.
+5. **Save Outputs**: enter the sensor height and, for magnetics, press **Calculate from Survey Parameters**, then **Save Files**. The parameter file now contains `global.useFFT = 1`.
+6. **Run Inversion**: press **Run Inversion** (Path to tomofast is not needed). The log shows Frost's progress and ends with green **PASS** lines giving the run time, the data RMS residual, the range of model values and the output folders.
+7. **Visualise** and **Export** work as for Tomofast-x. The model is in `OUTPUT/Paraview` (the same VTK files that Tomofast-x writes) and `OUTPUT/Frost` (model, observed, calculated and residual data, a summary and the log).
+
+Untick Frost and press **Save Files** again to go back to a Tomofast-x inversion. Frost models are smooth and their values are lower than the true contrasts; the [Reference Manual](ReferenceManual.md#19-frost-fast-fft-inversion) explains what to expect and lists the parameters Frost uses.
+
+---
+
+## 9. Where next
 
 - The [Reference Manual](ReferenceManual.md) describes every field, including the optional ones skipped here: loading an existing parameter file, unit multipliers, model damping, ADMM bound constraints, joint weights, magnetisation vector inversion (MVI), gravity gradiometry, 2D profile inversion, re-using a sensitivity kernel and the fast [Frost](ReferenceManual.md#19-frost-fast-fft-inversion) inversion.
 - The [Changelog](../CHANGELOG.md) lists what changed in each version.
