@@ -101,6 +101,7 @@ import pandas as pd
 from osgeo import gdal
 import processing
 
+import math
 import os
 from .ppigrf import igrf, get_inclination_declination
 from datetime import datetime
@@ -4061,10 +4062,12 @@ pv.Render()
             core = float(self.dlg.doubleSpinBox_coreDepth.value())
             full = float(self.dlg.doubleSpinBox_fullDepth.value())
             ncore = int(core / size_z) if size_z > 0 else 0
-            try:
-                npad = int(np.log((full - core) / size_z) / np.log(1.15))
-            except (ValueError, ZeroDivisionError):
-                npad = 0
+            # Guard explicitly: numpy returns inf/nan (not an exception) for
+            # log(0) or log(<0), e.g. after a dialog reset leaves size_z = 0
+            # or full depth <= core depth, and int(inf) raises OverflowError.
+            npad = 0
+            if size_z > 0 and full - core > size_z:
+                npad = int(math.log((full - core) / size_z) / math.log(1.15))
             nz = ncore + npad
         return nx, ny, nz, data_nx, data_ny
 
