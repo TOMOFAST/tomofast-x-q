@@ -673,8 +673,10 @@ class Tomofast_x:
 
         # print "** CLOSING Tomofast_x"
 
-        # disconnects
-        self.dlg.closingPlugin.disconnect(self.onClosePlugin)
+        # The signal stays connected: the dock widget is kept and reused, and it
+        # is connected only once, when it is created. Disconnecting here meant
+        # the second close was never noticed, so the toolbar icon then did
+        # nothing until the plugin was reloaded.
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
@@ -699,6 +701,14 @@ class Tomofast_x:
 
     def run(self):
         """Run method that loads and starts the plugin"""
+
+        if self.pluginIsActive and self.dlg is not None:
+            # Already open: bring the panel back and to the front. It may have
+            # been closed without notice, or be hidden behind another dock
+            # tabbed with it; the settings in it are kept.
+            self.dlg.show()
+            self.dlg.raise_()
+            return
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
