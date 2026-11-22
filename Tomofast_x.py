@@ -113,6 +113,7 @@ import sys
 import shutil
 import time
 import re
+import json
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -3190,6 +3191,17 @@ pv.Render()
             self.dlg.mQgsDoubleSpinBox_grav_weight.setValue(0.0)
             self.dlg.mQgsDoubleSpinBox_magn_weight.setValue(1.0)
 
+        # Only the inputs in this signature shape the grid and data files; if
+        # they match an earlier save, reuse its files and just rewrite the paramfile.
+        signature = self._grid_inputs_signature()
+        if self._reuse_grid_files(signature):
+            return True
+
+        # Remove any old signature first so a failed rebuild is never reused
+        sig_path = os.path.join(self.global_outputFolderPath, self.GRID_SIGNATURE_FILE)
+        if os.path.exists(sig_path):
+            os.remove(sig_path)
+
         if self.global_dataType == "points":
             self.convert_point_data(self.global_dataType)
         else:
@@ -3237,7 +3249,147 @@ pv.Render()
                 if os.path.exists(fpath):
                     os.remove(fpath)
 
+        self._write_grid_signature(signature)
         return True
+
+    # ------------------------------------------------------------------
+    # Reuse of grid and data files when only inversion settings change
+    # ------------------------------------------------------------------
+    GRID_SIGNATURE_FILE = ".tomofast_inputs.json"
+    GRID_SIGNATURE_VERSION = 1
+
+    @staticmethod
+    def _file_stamp(path):
+        """[path, size, mtime] so edits to an input file force a rebuild."""
+        try:
+            st = os.stat(path)
+            return [os.path.normcase(os.path.abspath(path)), st.st_size, st.st_mtime]
+        except (OSError, TypeError, ValueError):
+            return [path, None, None]
+
+    def _grid_inputs_signature(self):
+        """Every input that affects model_grid.txt and the data_*.csv files.
+        Needs setupMesh() first. Inversion settings are deliberately left out."""
+        exp = self.global_experimentType
+        sig = {
+            "version": self.GRID_SIGNATURE_VERSION,
+            "experimentType": exp,
+            "dataType": getattr(self, "global_dataType", ""),
+            "is_2d": bool(self.is_2d),
+            "profile": [list(map(float, p)) for p in (self.profile_line_pts or [])]
+            if self.is_2d else None,
+            "cell": [self.cell_x, self.cell_y, self.dz, self.padding],
+            "z_lists": [self.z_cell_size_list, self.z_layer_thickness_list],
+            "meshBox": self.meshBox,
+            "elevType": self.global_elevType,
+        }
+        if self.global_elevType == 2:
+            sig["dtm"] = self._file_stamp(self.dlg.lineEdit_dtm_path.text())
+        for kind, active in (("grav", exp in (1, 3)), ("magn", exp in (2, 3))):
+            if not active:
+                continue
+            path = getattr(self.dlg, f"lineEdit_{kind}_data_path").text()
+            try:
+                files = self.find_component_rasters(path, kind) if sig["dataType"] != "points" else [path]
+            except Exception:
+                files = [path]
+            sig[kind] = {
+                "files": [self._file_stamp(f) for f in files],
+                "proj": [getattr(self, f"{kind}_proj_in", ""), getattr(self, f"{kind}_proj_out", "")],
+                "cols": [getattr(self, f"xcol_{kind}", ""), getattr(self, f"ycol_{kind}", ""),
+                         getattr(self, f"datacol_{kind}", "")] if sig["dataType"] == "points" else None,
+                "nComponents": self._n_components(kind),
+                "sensor_height": getattr(self, f"global_{kind}_sensor_height"),
+            }
+        # JSON round trip so tuples/numpy floats compare equal to a loaded file
+        return json.loads(json.dumps(sig, default=float))
+
+    def _grid_files(self):
+        """Generated files the paramfile depends on (the grid first)."""
+        names = ["model_grid.txt"]
+        if self.global_experimentType in (1, 3):
+            names.append("data_grav.csv")
+        if self.global_experimentType in (2, 3):
+            names.append("data_magn.csv")
+        return names
+
+    def _write_grid_signature(self, signature, folder=None):
+        folder = folder or self.global_outputFolderPath
+        try:
+            with open(os.path.join(folder, self.GRID_SIGNATURE_FILE), "w") as fh:
+                json.dump(
+                    {
+                        "signature": signature,
+                        "size": [int(self.dlg.nx_label.text()), int(self.dlg.ny_label.text()),
+                                 int(self.dlg.nz_label.text())],
+                    },
+                    fh,
+                    indent=1,
+                )
+        except Exception as e:  # reuse is an optimisation only
+            print(f"Could not write grid signature: {e}")
+
+    def _read_grid_signature(self, folder):
+        """Stored {'signature', 'size'} for folder if all its files exist, else None."""
+        try:
+            with open(os.path.join(folder, self.GRID_SIGNATURE_FILE)) as fh:
+                stored = json.load(fh)
+        except (OSError, ValueError):
+            return None
+        if not all(os.path.isfile(os.path.join(folder, f)) for f in self._grid_files()):
+            return None
+        return stored
+
+    def _reuse_grid_files(self, signature):
+        """If the grid inputs match an earlier save (in the chosen folder, or the
+        folder of the current paramfile), reuse those files and return True."""
+        out_dir = self.global_outputFolderPath
+        same = lambda a, b: os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+        candidates = [out_dir]
+        prev = self.dlg.lineEdit_2_parfilePath.text() or self.paramfile_Path
+        if prev:
+            prev_dir = os.path.dirname(prev)
+            if prev_dir and os.path.isdir(prev_dir) and not same(prev_dir, out_dir):
+                candidates.append(prev_dir)
+
+        for folder in candidates:
+            stored = self._read_grid_signature(folder)
+            if not stored or stored.get("signature") != signature:
+                continue
+            copied = not same(folder, out_dir)
+            if copied:
+                for name in self._grid_files() + ["elevation_grid.csv", self.GRID_SIGNATURE_FILE]:
+                    src = os.path.join(folder, name)
+                    if os.path.isfile(src):
+                        shutil.copy2(src, os.path.join(out_dir, name))
+
+            nx, ny, nz = stored["size"]
+            self.data2tomofast.nx, self.data2tomofast.ny, self.data2tomofast.nz = nx, ny, nz
+            self.dlg.nx_label.setText(str(nx))
+            self.dlg.ny_label.setText(str(ny))
+            self.dlg.nz_label.setText(str(nz))
+
+            # nData is the first line of each data file
+            for kind in ("grav", "magn"):
+                path = os.path.join(out_dir, f"data_{kind}.csv")
+                if f"data_{kind}.csv" in self._grid_files():
+                    with open(path) as fh:
+                        setattr(self, f"forward_data_{kind}_nData", int(fh.readline().split()[0]))
+                    if self.global_dataType != "points":
+                        # as convert_raster_data would have set them
+                        setattr(self, f"filename_{kind}", out_dir + f"/data_{kind}.csv")
+                        setattr(self, f"datacol_{kind}", "data1")
+
+            self.iface.messageBar().pushMessage(
+                "Grid and data unchanged",
+                "copied from {} - only the paramfile was rewritten".format(folder)
+                if copied else "only the paramfile was rewritten",
+                level=Qgis.MessageLevel.Info,
+                duration=15,
+            )
+            return True
+        return False
 
     def tidy_data(self, temp_file_path1, fileName1, dataName1):
         # Read the file manually, skipping the first line, and saving it as temporary CSV
